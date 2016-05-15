@@ -1,0 +1,346 @@
+  
+
+saveDatasets  <- function( .path="../data/colorSpec.rda" )
+    {
+    savevec = character(0)
+    
+
+    ##-------------------------     illuminant power functions     -----------------------------##
+    #   illuminant A
+    path    =  "../inst/extdata/illuminants/A.1nm.txt"
+    A.1nm = readSpectra( path )
+    organization( A.1nm ) = 'vector'
+    A.1nm   = A.1nm / 100
+    specnames(A.1nm) = "A"
+    savevec = c( savevec, "A.1nm" )
+    
+    #   illuminant B
+    path    =  "../inst/extdata/illuminants/B.txt"
+    B.5nm = readSpectra( path )
+    organization( B.5nm ) = 'vector'
+    B.5nm   = B.5nm / 100    
+    specnames(B.5nm) = "B"
+    savevec = c( savevec, "B.5nm" )
+    
+    #   illuminant C
+    path    =  "../inst/extdata/illuminants/C.txt"
+    C.5nm = readSpectra( path )
+    organization( C.5nm ) = 'vector'
+    C.5nm   = C.5nm / 100        
+    specnames(C.5nm) = "C"
+    savevec = c( savevec, "C.5nm" )
+    
+    
+    #   D50 with Standard UV
+    #D50.5nm = readSpectra( "../inst/extdata/illuminants/D50_1.0.sp" ) #; print( str(D50) )
+    #organization( D50.5nm ) = 'vector'
+    #   D50.5nm = D50.5nm / 100       #   we know that D50_1.0.sp is normalized to 100, but we prefer 1
+    #specnames(D50.5nm) = "D50.Power"
+    #savevec = c( savevec, "D50.5nm" )
+    
+    #   D50 with Standard UV
+    correction  = 14388 / 14380     # note 5, page 69 in CIE:15:2004
+    D50.10nm    = daylightSpectra( correction*5000, components=daylight1964, wavelength=seq(300,830,by=10), roundMs=TRUE )
+    #wave        = seq(300,830,by=5)    
+    #vec.5nm     = approx( wavelength(D50.10nm), coredata(D50.10nm), wave )$y
+    D50.5nm     = resample( D50.10nm, seq(300,830,by=5) , method='linear')
+    #   vec.5nm     = round( vec.5nm, 5 )
+    D50.5nm     = round( D50.5nm, 5 )
+    #   D50.5nm     = colorSpec( vec.5nm, wave, 'power', 'vector' )
+    specnames(D50.5nm)  = 'D50'
+    desc                = "computed from the 1964 daylight components: S0, S1, and S2"   
+    metadata(D50.5nm)   = list( description=desc )    
+    savevec     = c( savevec, "D50.5nm" )
+
+    #   illuminant D65
+    path  = "../inst/extdata/illuminants/D65.1nm.txt" 
+    D65.1nm = readSpectra( path )
+    organization( D65.1nm ) = 'vector'
+    D65.1nm   = D65.1nm / 100        
+    specnames(D65.1nm) = "D65"
+    savevec = c( savevec, "D65.1nm" )
+
+    path  = "../inst/extdata/illuminants/D65.5nm.txt" 
+    D65.5nm = readSpectra( path )
+    organization( D65.5nm ) = 'vector'
+    D65.5nm   = D65.5nm / 100            
+    specnames(D65.5nm) = "D65"
+    savevec = c( savevec, "D65.5nm" )
+
+    
+    
+    
+    ##---------------       series D daylight characteristic spectra      ---------------##
+    path  = "../inst/extdata/illuminants/daylight1964.txt"
+    daylight1964 = readSpectraXYY( path )
+    organization(daylight1964)  = mostEfficientOrganization(daylight1964)    
+    savevec = c( savevec, "daylight1964" )
+    
+    #  smoothed version of series D daylight from 2013
+    path  = "../inst/extdata/illuminants/daylight2013.txt"
+    daylight2013 = readSpectraXYY( path )
+    organization(daylight2013)  = mostEfficientOrganization(daylight2013)        
+    savevec = c( savevec, "daylight2013" )
+    
+    ##---------------     series F Fluorescent illuminants          ----------------------------##    
+    path  = "../inst/extdata/illuminants/Fs.5nm.txt"
+    Fs.5nm = readSpectraXYY( path )  
+    organization( Fs.5nm ) = mostEfficientOrganization( Fs.5nm )
+    savevec = c( savevec, "Fs.5nm" )
+    
+    
+    ##--------------    Solar Irradiance and Atmospheric Transmittance     -----------------##
+    path    = "../inst/extdata/illuminants/ASTMG173.txt"
+    solar.irradiance    = readSpectra( path )
+    #   solar.irradiance    = subset( solar.irradiance, c(1,3) )    # throw away the global which includes skylight
+    solar.irradiance    = resample( solar.irradiance, 280:1000 )
+    specnames(solar.irradiance) = c( "AirMass.0", "GlobalTilt", "AirMass.1.5" )
+    #   print( summary(solar.irradiance) )
+    organization(solar.irradiance)  = mostEfficientOrganization(solar.irradiance)
+    savevec = c( savevec, "solar.irradiance" )
+    
+    atmosphere2003  = solar.irradiance[ ,3] / solar.irradiance[ ,1]
+    atmosphere2003  = colorSpec( atmosphere2003, wavelength(solar.irradiance), 'transmittance' )
+    specnames(atmosphere2003)  =  "AirMass.1.5"
+    desc    = "from ASTM G163-03"
+    desc    = c( desc, "Standard Tables for Reference Solar Spectral Irradiances: Direct Normal and Hemispherical on 37\u00B0 Tilted Surface" )     # degree symbol:  °
+    desc    = c( desc, "transmittance of the atmosphere through Air Mass 1.5 is the quotient AM1.5/AM0" )    
+    metadata(atmosphere2003)    = list( header=desc )
+    #   metadata(atmosphere)  = list( description=desc )  
+    #   print( summary(solar.transmittance) )
+    organization(atmosphere2003)  = mostEfficientOrganization(atmosphere2003)      
+    savevec = c( savevec, "atmosphere2003" )
+    
+    
+    ##------------------        photons/sec  or  photon flux      --------------##
+    path    = "../inst/extdata/sources/F96T12-GR8D.txt"
+    F96T12  = readSpectra( path )
+    specnames(F96T12) = "F96T12"
+    #   print( summary(F96T12) )
+    organization(F96T12)  = mostEfficientOrganization(F96T12)
+    savevec = c( savevec, "F96T12" )
+    
+    
+    ##-------------------------     human eyes     -----------------------------##
+    #   the CMFs of 1931 - 2-degree
+    path        = "../inst/extdata/eyes/ciexyz31_1.csv"
+    xyz1931.1nm = readSpectraXYY( path )
+    organization(xyz1931.1nm)  = mostEfficientOrganization(xyz1931.1nm)        
+    savevec = c( savevec, "xyz1931.1nm" )
+
+    path        = "../inst/extdata/eyes/xyz1931.5nm.txt"
+    xyz1931.5nm = readSpectraXYY( path )
+    organization(xyz1931.5nm)  = mostEfficientOrganization(xyz1931.5nm)        
+    savevec = c( savevec, "xyz1931.5nm" )
+
+    #   the CMFs of 1964 - 10-degrees
+    path        = "../inst/extdata/eyes/ciexyz64_1.csv"
+    xyz1964.1nm = readSpectraXYY( path )
+    organization(xyz1964.1nm)  = mostEfficientOrganization(xyz1964.1nm)        
+    savevec = c( savevec, "xyz1964.1nm" )
+
+    path        = "../inst/extdata/eyes/xyz1964.5nm.txt"
+    xyz1964.5nm = readSpectraXYY( path )
+    organization(xyz1964.5nm)  = mostEfficientOrganization(xyz1964.5nm)        
+    savevec = c( savevec, "xyz1964.5nm" )
+
+    #   Judd and Vos cone fundamentals
+    lms1971.5nm = readSpectraXYY( "../inst/extdata/eyes/lms1971.txt" )
+    organization(lms1971.5nm)  = mostEfficientOrganization(lms1971.5nm)        
+    savevec = c( savevec, "lms1971.5nm" )
+    
+    #   Stockman and Sharpe cone fundamentals
+    lms2000.1nm = readSpectraXYY( "../inst/extdata/eyes/lms2000.1nm.csv" )
+    organization(lms2000.1nm)  = mostEfficientOrganization(lms2000.1nm)        
+    savevec = c( savevec, "lms2000.1nm" )
+
+    
+    
+    ##-------------------------     animal eyes     -----------------------------##    
+    
+    #   Higher Passerines bird vision - 4-channel
+    HigherPasserines    = readSpectraXYY( "../inst/extdata/eyes/BirdEyes.txt" )
+    HigherPasserines    = subset( HigherPasserines, 1:4 )
+    HigherPasserines    = multiply( HigherPasserines, 0.01 )
+    specnames(HigherPasserines) = c("UV","Short","Medium","Long")
+    quantity(HigherPasserines)  = "photons->neural"
+    organization(HigherPasserines)  = mostEfficientOrganization(HigherPasserines)         
+    savevec = c( savevec, "HigherPasserines" )
+
+
+
+    ##---------------       cameras     ----------------------------##        
+    
+    Flea2.RGB   = readSpectra( "../inst/extdata/cameras/Flea2-spectral.txt", seq(360,800,by=10) )
+    organization(Flea2.RGB)  = mostEfficientOrganization(Flea2.RGB)       
+    savevec = c( savevec, "Flea2.RGB" )
+    
+    # ideal BT.709 camera with negative lobes impossible to actually build.  D65 maps to RGB=(1,1,1)
+    mat3x3  = matrix( c(3.2404542, -1.5371385, -0.4985314,  -0.9692660,  1.8760108,  0.0415560,   0.0556434, -0.2040259,  1.0572252 ), 3, 3, byrow=F )
+    BT.709.RGB  = multiply( xyz1931.1nm, mat3x3 )
+    specnames(BT.709.RGB)   = c( 'r', 'g', 'b' )
+    quantity(BT.709.RGB)    = "power->electrical"
+    #   BT.709.RGB  = colorSpec( mat, wavelength(xyz1931.1nm), "power->electrical" )
+    #   normalize so D65 creates response RGB=(1,1,1)
+    D65 = resample( D65.1nm, wavelength(BT.709.RGB) )
+    #rgb = product( D65, BT.709.RGB )    # ; print(rgb)
+    #BT.709.RGB  = multiply( BT.709.RGB, 1 / as.double(rgb) )
+    BT.709.RGB  = calibrate( BT.709.RGB, stimulus=D65, response=1, method='scaling' )
+    desc    = "This is a theoretical RGB camera"
+    desc    = c( desc, "They acquire RGB components for display using BT.709 primaries, which are the same as sRGB primaries." )
+    desc    = c( desc, "This theoretical camera satisfies the Maxwell-Ives condition, but has negative lobes." )    
+    desc    = c( desc, "Compare with Figure 26.5 on page 302 of:" )
+    desc    = c( desc, "Poynton, Charles" )
+    desc    = c( desc, "Digital Video and HD - Algorithms and Interfaces." )
+    desc    = c( desc, "Second Edition. 2012." )
+    metadata(BT.709.RGB)    = list( header=desc )    
+    metadata(BT.709.RGB)    = list( path=NULL )         # erase it    
+    organization(BT.709.RGB)  = mostEfficientOrganization(BT.709.RGB)         
+    savevec = c( savevec, "BT.709.RGB" )
+    
+    # ideal Adobe.RGB camera with negative lobes impossible to actually build.  D65 maps to RGB=(1,1,1)
+    mat3x3  = matrix( c( 2.0413690, -0.5649464, -0.3446944, -0.9692660,  1.8760108,  0.0415560,  0.0134474, -0.1183897, 1.0154096 ), 3, 3, byrow=F )  
+    Adobe.RGB  = multiply( xyz1931.1nm, mat3x3 )
+    specnames(Adobe.RGB)   = c( 'r', 'g', 'b' )
+    quantity(Adobe.RGB)    = "power->electrical"    
+    #mat = coredata(xyz1931.1nm) %*% mat3x3
+    #colnames(mat)   = c( 'R', 'G', 'B' )
+    #   Adobe.RGB   = colorSpec( mat, wavelength(xyz1931.1nm), "power->electrical" )
+    D65 = resample( D65.1nm, wavelength(Adobe.RGB) )
+    #   rgb = product( D65, Adobe.RGB ) #; print(rgb)
+    #   Adobe.RGB  = multiply( Adobe.RGB, 1 / as.double(rgb) )
+    Adobe.RGB  = calibrate( Adobe.RGB, stimulus=D65, response=1, method='scaling' )    
+    desc    = "This is a theoretical RGB camera"
+    desc    = c( desc, "They acquire RGB components for display using Adobe RGB primaries." )
+    desc    = c( desc, "This theoretical camera satisfies the Maxwell-Ives condition, but has negative lobes." )
+    metadata(Adobe.RGB) = list( header=desc )
+    metadata(Adobe.RGB) = list( path=NULL )         # erase it       
+    organization(Adobe.RGB)  = mostEfficientOrganization(Adobe.RGB)         
+    savevec = c( savevec, "Adobe.RGB" )
+    
+    
+    
+    
+    
+    ##---------------       materials     ----------------------------##    
+    
+    #ColorChecker = readSpectra( "../inst/extdata/targets/CC_Avg20_spectrum_XYY.txt" )
+    #savevec = c( savevec, "ColorChecker" )
+    
+    Hoya = readSpectra( "../inst/extdata/filters/Hoya.txt" )
+    organization(Hoya)  = mostEfficientOrganization(Hoya)         
+    savevec = c( savevec, "Hoya" )
+        
+        
+    ##------------------   material responders  (scanners)  ----------##
+    
+    scanner.ACES    = readSpectraXYY( "../inst/extdata/scanners/SMPTE-ST-2065-2.txt" )
+    #scanner.ACES    = normalize( scanner.ACES, "L1" )   #  normalize so perfect-reflecting-diffuser response is RGB=(1,1,1)
+    #metadata(scanner.ACES)  = list( normalized=TRUE )    
+    scanner.ACES    = calibrate( scanner.ACES, stimulus=neutralMaterial(1,wavelength(scanner.ACES)), response=1, method='scaling' ) # so perfect-reflecting-diffuser response is RGB=(1,1,1)
+    organization(scanner.ACES)  = mostEfficientOrganization(scanner.ACES)      
+    #   summary( scanner.ACES )
+    savevec = c( savevec, "scanner.ACES" )
+        
+
+    ##  finally ready to save it
+    save( list=savevec, file=.path, compress='xz' )   #     'xz'  'gzip'  FALSE
+    
+    return( invisible(TRUE) )
+    }
+    
+    
+savePrivateDatasets  <- function( .path="sysdata.rda" )
+    {
+    savevec = character(0)
+        
+    ##---------------       CCT table    ------------------------##
+    path    = "../inst/extdata/illuminants/dataCCT.txt"
+    dataCCT = read.table( path, sep='\t', header=T, stringsAsFactors=F )
+    attr(dataCCT,"description") = readComments( path )
+    savevec = c( savevec, "dataCCT" )
+
+    ##---------------       illuminants table    ------------------------##
+    path    = "../inst/extdata/illuminants/illuminants.txt"
+    dataIlluminants = read.table( path, sep='\t', header=T, stringsAsFactors=F )
+    attr(dataIlluminants,"description") = readComments( path )
+    savevec = c( savevec, "dataIlluminants" )
+
+    #---------------       spectra for CRI     ------------------------##
+    path    = "../inst/extdata/targets/TCSforCRI.txt"
+    TCSforCRI = readSpectra( path )
+    savevec = c( savevec, "TCSforCRI" )
+
+    #---------------       lens absorbance dependence on age     -------##
+    path    = "../inst/extdata/eyes/LensAbsorbance1987.txt"
+    LensAbsorbance1987 = readSpectra( path )
+    organization(LensAbsorbance1987)  = mostEfficientOrganization(LensAbsorbance1987)        
+    savevec = c( savevec, "LensAbsorbance1987" )
+
+    ##  finally ready to save it
+    save( list=savevec, file=.path, compress='xz' )   #     'xz'  'gzip'  FALSE
+    
+    return( invisible(TRUE) )
+    }    
+    
+    
+pingDatasets  <- function( .path="../data/colorSpec.rda", .verbose=FALSE )    
+    {
+    theName     = load(.path)
+    print( theName )
+    
+    if( 0 < length(theName)  &&  .verbose )
+        {
+        for( k in 1:length(theName ) )
+            {
+            obj = get( theName[k] )
+            cat( '\n', theName[k], '\n' )
+            print( str(obj) )
+            }
+        }
+        
+    return( invisible(T) )
+    }
+    
+    
+loadDatasets  <- function( .path="../data/colorSpec.rda" )
+    {
+    load( .path, parent.frame(n=2) )
+    }    
+    
+
+refreshDatasets  <- function( .path="../data/colorSpec.rda" )
+    {
+    saveDatasets( .path )
+    load( .path, parent.frame(n=2) )
+    }
+  
+
+readComments <- function( .path )
+    {
+    line    = readLines( .path, n=1024 )
+    
+    out = line[ grepl( "^[ \t]*#", line ) ]
+    
+    if( length(out) == 0 )  out = NULL
+    
+    return( out )
+    }
+    
+mostEfficientOrganization  <- function( obj )
+    {
+    if( organization(obj) == 'df.row' ) 
+        {
+        if( ncol(obj) <= 1 )
+            #   no extradata, only 1 spectrum
+            return( 'vector' )
+        else
+            #   must preserve the extradata
+            return( 'df.row' )
+        }
+        
+    if( numSpectra(obj) == 1 )
+        return( 'vector' )
+    else
+        return( 'matrix' )
+    }

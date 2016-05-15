@@ -1,0 +1,41 @@
+Martin Aube, Johanne Roby, Miroslav Kocifaj
+Evaluating Potential Spectral Impacts of Various Artificial Lights on Melatonin Suppression, Photosynthesis, and Star Visibility
+PLOS ONE | www.plosone.org 1 July 2013 | Volume 8 | Issue 7 | e67798
+PLoS ONE 8(7): e67798. doi:10.1371/journal.pone.0067798
+Figure 2. page 3.
+
+quantity    photons->action
+ 
+[Control]
+Xpx	Ypx	X	Y
+75 337 380 0
+725 337 730 0
+75 106 380 1
+
+[PAS]
+75 337
+75 337
+130 170
+147 134
+158 115
+168 106
+188 109
+205 114
+214 121
+239 124
+258 130
+280 149
+296 172
+318 209
+330 229
+336 239
+353 251
+373 251
+391 247
+442 220
+595 146
+614 147
+633 162
+652 192
+725 337
+725 337

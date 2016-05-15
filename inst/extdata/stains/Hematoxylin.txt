@@ -1,0 +1,42 @@
+#
+#   Hematoxylin.txt
+#
+#   HEM-T from Figure 4 in:
+#
+#   A Novel Spectral Microscope System: Application in Quantitative Pathology
+#   Antonis Papadakis, Efstathios Stathopoulos, George Delides, Konstantinos Berberides, George Nikiforidis, and Costas Balas*
+#   IEEE TRANSACTIONS ON BIOMEDICAL ENGINEERING, VOL. 50, NO. 2, FEBRUARY 2003
+
+[Control]
+Xpx	Ypx	X	Y
+101	486	400	0.0
+541	486	800	0.0
+101	27	400	1.0
+541	27	800	1.0
+
+[Absorbance]
+101	397
+134	381
+163	391
+197	357
+224	305
+259	249
+298	208
+318	197
+334	193
+360	210
+366	223
+381	263
+394	312
+416	393
+443	446
+465	464
+488	472
+523	475
+541	475
+569	475
+600	475
+650	475
+
+
+

@@ -1,0 +1,48 @@
+#
+#   FastRed.txt
+#
+#   from Figure 4c in:
+#
+#   A Novel Spectral Microscope System: Application in Quantitative Pathology
+#   Antonis Papadakis, Efstathios Stathopoulos, George Delides, Konstantinos Berberides, George Nikiforidis, and Costas Balas*
+#   IEEE TRANSACTIONS ON BIOMEDICAL ENGINEERING, VOL. 50, NO. 2, FEBRUARY 2003
+
+[Control]
+Xpx	Ypx	X	Y
+85	385	400	0.0
+437	385	800	0.0
+85	79	400	1.0
+437	79	800	1.0
+
+[Absorbance]
+103	152
+125	161
+138	162
+155	154
+173	128
+186	106
+195	90
+203	95
+213	102
+226	88
+230	77
+234	75
+239	87
+243	114
+248	143
+252	173
+257	201
+261	218
+265	233
+270	244
+279	259
+288	267
+302	277
+327	291
+354	299
+398	309
+433	317
+441	318
+451	320
+
+

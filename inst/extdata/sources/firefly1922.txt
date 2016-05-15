@@ -1,0 +1,45 @@
+#
+#   Herbert E. Ives
+#   The Fire-fly as an Illuminant
+#   Journal of the Franklin Institute - vol 194 (1922)
+#   pp. 213-230
+#   Figure 6
+#
+#   quantity    power
+
+[Control]
+Xpx Ypx X Y
+351 978 500 0
+681 1006 675 0
+383 602 500 160
+#   713 627 675 160     # 3 points are enough for an exact fit
+
+[Fire-Fly]
+351	978
+351	978
+374 973
+386 964
+397 946
+410 899
+419 860
+437 794
+449 746
+464 701
+491 666
+503 656
+517 658
+522 669
+531 711
+537 741
+548 784
+561 828
+567 852
+576 886
+585 918
+594 944
+605 966
+626 986
+643 996
+662 1002
+681 1006
+681 1006

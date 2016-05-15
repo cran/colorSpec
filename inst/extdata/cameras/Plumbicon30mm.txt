@@ -1,0 +1,22 @@
+#
+#   Plumbicon   Elcoma Philips
+#
+#   A. M. Dhake
+#   TV and Video Engineering. 2nd edition.  1995
+#   Figure 4.14,  page 65
+#
+Wavelength  Gray
+400         218
+420         245
+440         265
+460         278
+480         281
+500         279
+520         265
+540         231
+560         180
+580         105
+600         55
+620         25
+640         5
+660         0

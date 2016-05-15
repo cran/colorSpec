@@ -1,0 +1,42 @@
+#
+#   DABs.txt
+#
+#   DAB in solution
+#
+#   from Figure 3 in:
+#
+#   A Novel Spectral Microscope System: Application in Quantitative Pathology
+#   Antonis Papadakis, Efstathios Stathopoulos, George Delides, Konstantinos Berberides, George Nikiforidis, and Costas Balas*
+#   IEEE TRANSACTIONS ON BIOMEDICAL ENGINEERING, VOL. 50, NO. 2, FEBRUARY 2003
+
+[Control]
+Xpx	Ypx	X	Y
+103	415	400	0.0
+736	415	900	0.0
+103	48	400	0.8
+736	48	900	0.8
+
+
+[Absorbance]
+103	176
+120	121
+148	95
+162	89
+172	87
+181	88
+199	106
+227	144
+267	206
+300	253
+327	282
+359	307
+379	322
+404	341
+436	358
+454	364
+489	376
+518	381
+578	389
+607	391
+740	393
+

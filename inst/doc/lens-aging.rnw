@@ -1,0 +1,255 @@
+% lens-aging.rnw
+% Time-stamp: "lens-aging.rnw"
+
+\documentclass[11pt]{article}
+
+% Set margins to be narrow
+\RequirePackage[left=1in,top=0.75in,right=1in,bottom=0.75in]{geometry}
+
+
+%\VignetteIndexEntry{The Effect of the Aging Human Lens on Color Vision}
+%\VignetteEngine{knitr::knitr}
+
+\RequirePackage{color}
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{lightblue}{rgb}{0.2,0.2,0.9}
+\definecolor{darkred}{rgb}{0.6,0.0,0.0}
+\definecolor{red}{rgb}{0.7,0,0}
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
+\definecolor{darkorange}{rgb}{0.75, 0.45, 0}
+\definecolor{purple}{rgb}{0.65, 0, 0.75}
+\definecolor{goldenrod}{rgb}{0.80, 0.61, 0.11}
+\definecolor{lightyellow}{rgb}{0.98,0.94,0.83}
+
+
+\RequirePackage{fancyvrb}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{ae}       % ComputerModern Fonts
+\RequirePackage{fancyhdr}
+\RequirePackage{float}
+\RequirePackage{hyperref}
+\usepackage{lastpage}
+
+\pagestyle{fancy}
+\cfoot{page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+
+% \code mini environment ttfamily->texttt
+\newcommand\code{\bgroup\@codex}
+\def\@codex#1{{\color{darkred} \normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
+
+% This environment defines the look of R ouput
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{
+  fontsize=\small,
+  formatcom=\color{darkblue}
+}
+
+\begin{document}
+% \SweaveOpts{concordance=TRUE}
+
+\title{ {\Huge The Effect of the Aging Lens on Color Vision} }
+\author{Glenn Davis  \url{    <gdavis@gluonics.com>}}
+\maketitle
+% \thispagestyle{fancy}
+
+% Setup stuff.
+<<setup, echo=FALSE, results="hide">>=
+require("knitr",quietly=TRUE)
+opts_chunk$set(fig.path="figs/ag2-", fig.align="center",
+  fig.width=7, fig.height=7, comment="")
+knit_hooks$set(output = function(x, options) {
+  paste('\\begin{Soutput}\n', x, '\\end{Soutput}\n', sep = '')
+})
+options(width=90)
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+if(!file.exists("figs")) dir.create("figs")
+@
+
+
+The goal of this \textbf{colorSpec} vignette is to simulate the effect
+of age on human color vision.
+The colored figures are best viewed by an observer with age of 32 years, 
+and on a display calibrated for sRGB.
+
+
+% ----------------------------------------------------------------------------
+\section*{The Human Lens}
+
+It is well known that the lens in the human eye does not transmit all wavelengths equally;
+the transmission at short wavelengths is less, which means the lens is yellowish.
+In the UV there is very little transmission;
+which is a good thing since the lens protects the retina from UV damage.
+It is also well known that the lens gets yellower with age.
+When making these colored images it is appropriate to use the
+CIE 1931 color matching functions (CMFs).
+Unfortunately I could not find the average age of the observers used to
+establish the 1931 standard observer (there were 17 of them).
+But it \emph{is} known that the average age of the observers used to create the 
+CIE 1964 standard observer is 32 years, see \cite{Pokorny}.
+So we'll take 32 years for the CIE 1931 standard observer as well.
+
+Start the \textbf{R} session and load the \textbf{colorSpec} package,
+
+<<packs, echo=TRUE, message=FALSE>>=
+library( colorSpec )
+@
+
+Compute and plot lens transmittance at 32 and 64 years using the model in \cite{Pokorny}.
+
+<<lens1, echo=TRUE, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='Human Lens Transmittance at age=32 and age=64' >>=
+lens.trans = linearize( lensAbsorbance( c(32,64), wave=380:780 ) )   
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
+plot( lens.trans, color='black', lty=1:2, main=FALSE, legend='topleft' )
+@
+
+To compare the color appearance at age 64 to that at age 32,
+we need the transmittance at age 64 relative to that at age 32.
+We know that object \code{lens.trans} is a matrix, 
+so use the standard \textbf{R} matrix subset operation to extract each spectrum.
+Then perform the division and plot the ratio.
+
+<<lens2, echo=TRUE, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='Human Lens Transmittance at age 64 relative to age 32' >>=
+lens.64 = lens.trans[ ,2] / lens.trans[ ,1]
+lens.64 = colorSpec( lens.64, wavelength(lens.trans), 'transmittance' )
+specnames(lens.64) = "trans.64 / trans.32"
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
+plot( lens.64, main=TRUE, legend=FALSE, ylab='Relative Transmittance', col='black' )
+@
+
+Think of this curve as defining a pair of glasses with a yellowish tint.
+In this vignette, going from an age of 32 years to 64 years is equivalent to
+putting on these tinted glasses.
+
+
+% ----------------------------------------------------------------------------
+\section*{The Macbeth ColorChecker with Observer Age 32}
+
+We first read the spectra of the \emph{ColorChecker} target.  
+This data has been kindly provided in CGATS format by \cite{Pascale}.
+\emph{ColorChecker} is a Registered Trademark of X-Rite, and X-Rite is a Trademark. 
+
+<<target, echo=TRUE, message=FALSE>>=
+path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec') 
+MacbethCC = readSpectra( path, wave=wavelength(lens.64) ) 
+MacbethCC = MacbethCC[ order(MacbethCC$SAMPLE_ID), ]
+print( extradata(MacbethCC), row.names=F )
+@
+
+Note that \code{MacbethCC} is organized as \code{'df.row'} 
+and contains extra data for each spectrum, notably the coordinates of the patch rectangle.
+
+Now build the "material responder" from Illuminant D65 and the 1931 CMFs:
+
+<<lee10, echo=TRUE, message=FALSE >>=
+D65.eye = product( D65.1nm, "artwork", xyz1931.1nm, wave=wavelength(lens.64) )
+#   calibrate so the perfect-reflecting-diffuser is the 'official XYZ'
+#   scale XYZ independently
+prd = neutralMaterial( 1, wavelength(lens.64) )
+D65.eye = calibrate( D65.eye, stimulus=prd, response=officialXYZ('D65'), method='scaling' )
+@
+Calculate XYZ and then RGB:
+<<lee11, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=32' >>=
+XYZ = product( MacbethCC, D65.eye, wave=wavelength(lens.64) )
+RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+# add the rectangle data to RGB, so they can be plotted in proper places
+# in cbind() use as.data.frame.model.matrix() so RGB is a single column in patches
+patches = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+patches.first = patches   # save this reference object for later
+#  display in proper location, and use the sRGB display transfer function
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( patches, gamma='sRGB', back='gray20', labels=FALSE )
+@
+This figure has the colors as perceived by the 1931 standard observer.
+
+
+
+\section*{The Macbeth ColorChecker with Observer Age 64}
+
+Make new responder by inserting the hypothetical pair of tinted glasses
+(defined by \code{lens.64} in Figure 2)
+between target and the eye, and then recalculate RGBs.
+
+<<lee20, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=64 without adaption' >>=
+D65.eye.64 = applyspec( D65.eye, function(y) {lens.64 * y} )
+XYZ = product( MacbethCC, D65.eye.64, wave=wavelength(lens.64) )
+RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+patches = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( patches, gamma='sRGB', back='gray20', labels=FALSE )
+@
+As expected, the result has a yellow tint.
+Now make a plot that compares the effective responsivities.
+<<lee21, echo=TRUE,  fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='comparison of effective responsivities, at age=32 and age=64' >>=
+#   the effective responsivities for age=32
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
+specnames( D65.eye ) = sprintf( "%s.32", c('x','y','z') )
+plot( D65.eye,  lty=1, legend='top' )
+#   the effective responsivities for age=64
+specnames( D65.eye.64 ) = sprintf( "%s.64", c('x','y','z') )
+plot( D65.eye.64,  lty=2, add=TRUE, legend='topright' )
+@
+
+But these figures are only appropriate for the instant in time that the change was made, 
+and before the eye and brain have had the time to adapt.
+In electronic camera terms, there is no "white balance" yet.
+
+So now calibrate and adapt to D65 using the \emph{Bradford Method}.
+This method is regarded as being a good model for the way that the
+human eye and brain achieve \emph{color constancy}, see \cite{Lindbloom}.
+<<lee22, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=64 after chromatic adaption' >>=
+prd = neutralMaterial( 1, wavelength(lens.64) )
+XYZ.D65 = officialXYZ('D65')
+D65.eye.64 = calibrate( D65.eye.64, stimulus=prd, response=XYZ.D65, method='Bradford' )
+XYZ = product( MacbethCC, D65.eye.64, wave=wavelength(lens.64) )
+RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+patches = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( patches, gamma='sRGB', back='gray20', labels=FALSE )
+@
+The tint is now gone.
+But it hard to compare colors in this figure with the ones way back in Figure 3.
+So combine the original age=32 rendering with the age=64 rendering
+by splitting each square into 2 triangles.
+<<lee23, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with both age=32 (Figure 3), and age=64 (Figure 6)' >>=
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+#  draw full squares from Figure 3
+plotPatchesRGB( patches.first, gamma='sRGB', back='gray20', labels=F )
+#  overwrite the squares with triangles by setting shape= and add=
+plotPatchesRGB( patches, gamma='sRGB', labels=F, shape='bottomright', add=T )
+@
+The top-left triangle has the color from Figure 3
+and the bottom-right triangle has the color from Figure 6.
+There are minor differences in the \textbf{Red} and \textbf{Magenta} patches,
+and some smaller differences in a few others.
+
+Here are the responsivity functions \emph{after} adaption:
+<<lee30, echo=TRUE,  fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='comparison of effective responsivities' >>=
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
+plot( D65.eye,  lty=1, legend='top', main=FALSE )
+plot( D65.eye.64, lty=2, add=TRUE, legend='topright' )
+@
+So despite the fairly radical yellowing of the lens with age (in Figure 2),
+this adaption model shows that the perceived colors are not all that different.
+Great !
+
+
+% \pagebreak
+
+\bibliographystyle{alpha}
+\bibliography{lens-aging}
+
+
+% ----------------------------------------------------------------------------
+
+
+\section*{Appendix}
+This document was prepared \today \quad with the following configuration:
+<<finish, echo=FALSE, results="asis">>=
+knit_hooks$set(output = function(x, options) { x })
+toLatex(sessionInfo(), locale=FALSE)
+@
+
+
+\end{document}

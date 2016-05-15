@@ -1,0 +1,192 @@
+% optimals.rnw
+% Time-stamp: "optimals.rnw"
+
+\documentclass[11pt]{article}
+
+% Set margins to be narrow
+\RequirePackage[left=1in,top=0.75in,right=1in,bottom=0.75in]{geometry}
+
+
+%\VignetteIndexEntry{Plotting Chromaticity Loci of Optimal Colors - the MacAdam Limits}
+%\VignetteEngine{knitr::knitr}
+
+\RequirePackage{color}
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{lightblue}{rgb}{0.2,0.2,0.9}
+\definecolor{darkred}{rgb}{0.6,0.0,0.0}
+\definecolor{red}{rgb}{0.7,0,0}
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
+\definecolor{darkorange}{rgb}{0.75, 0.45, 0}
+\definecolor{purple}{rgb}{0.65, 0, 0.75}
+\definecolor{goldenrod}{rgb}{0.80, 0.61, 0.11}
+\definecolor{lightyellow}{rgb}{0.98,0.94,0.83}
+
+
+\RequirePackage{fancyvrb}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{ae}       % ComputerModern Fonts
+\RequirePackage{fancyhdr}
+\RequirePackage{float}
+\RequirePackage{hyperref}
+\usepackage{lastpage}
+
+\pagestyle{fancy}
+\cfoot{page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+
+% \code mini environment ttfamily->texttt
+\newcommand\code{\bgroup\@codex}
+\def\@codex#1{{\color{darkred} \normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
+
+% This environment defines the look of R ouput
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{
+  fontsize=\small,
+  formatcom=\color{darkblue}
+}
+
+\begin{document}
+% \SweaveOpts{concordance=TRUE}
+
+\title{ {\Huge Plotting Chromaticity Loci of Optimal Colors} \\ {\Large Reproducing plots of MacAdam Limits}}
+\author{Glenn Davis}
+\maketitle
+% \thispagestyle{fancy}
+
+% Setup stuff.
+<<setup, echo=FALSE, results="hide">>=
+require("knitr",quietly=TRUE)
+opts_chunk$set(fig.path="figs/ag2-", fig.align="center",
+  fig.width=7, fig.height=7, comment="")
+knit_hooks$set(output = function(x, options) {
+  paste('\\begin{Soutput}\n', x, '\\end{Soutput}\n', sep = '')
+})
+options(width=90)
+if(!file.exists("figs")) dir.create("figs")
+@
+% ----------------------------------------------------------------------------
+\section*{Introduction}
+
+The goal of this vignette is to reproduce 2 figures in \cite{W&S},
+and to make similar ones.
+The key function from \textbf{colorSpec} used in this vignette is \code{probeOptimalColors()}.
+But it requires some help from
+the functions \code{computeOptimals()} and \code{plotOptimals()}
+in the file \code{optimal-help.R}.
+
+<<packs, echo=TRUE, message=FALSE>>=
+library( colorSpec )
+source( "optimal-help.R" )
+@
+
+
+% ----------------------------------------------------------------------------
+
+\section*{Illuminant A}
+
+First, build the "material responder" from Illuminant A and standard CMFs:
+
+\setcounter{figure}{0}  
+<<lee10, echo=TRUE, message=FALSE >>=
+A.eye = product( A.1nm, "VARMATERIAL", xyz1931.1nm, wavelength='auto' )
+@
+Compute a data frame with 3600 rows. There are 10 gray levels and 360 angles for each level.
+<<lee11, echo=TRUE, message=FALSE >>=
+A.data = computeOptimals( A.eye, .angles=360 )
+@
+
+Now, make the plot:
+<<lee12, echo=TRUE, fig.pos="H", fig.height=6.5, out.width='1.0\\linewidth', fig.cap='MacAdam Limits for Illuminant A' >>=
+par( omi=rep(0,4), mai=c(0.5,0.6,0,0) )
+plotOptimals( A.eye, A.data )
+@
+Compare this with Figure 3(3.7) from \cite{W&S}.
+
+
+\section*{Illuminant D65}
+
+First, build the "material responder" from Illuminant D65 and standard CMFs:
+
+<<lee20, echo=TRUE, message=FALSE >>=
+D65.eye = product( D65.1nm, "VARMATERIAL", xyz1931.1nm, wavelength='auto' )
+@
+Compute a data frame with 3600 rows. There are 10 gray levels and 360 angles for each level.
+<<lee21, echo=TRUE, message=FALSE >>=
+D65.data = computeOptimals( D65.eye, .angles=360 )
+@
+Now, make the plot:
+<<lee22, echo=TRUE, fig.pos="H", fig.height=6.5, out.width='1.0\\linewidth', fig.cap='MacAdam Limits for Illuminant D65' >>=
+par( omi=rep(0,4), mai=c(0.5,0.6,0,0) )
+plotOptimals( D65.eye, D65.data )
+@
+Compare this with Figure 4(3.7) from \cite{W&S}.
+
+
+\section*{Illuminant C}
+
+First, build the "material responder" from Illuminant C and standard CMFs:
+
+<<lee40, echo=TRUE, message=FALSE >>=
+C.eye = product( C.5nm, "VARMATERIAL", xyz1931.1nm, wavelength='auto' )
+@
+Compute a data frame with 3600 rows. There are 10 gray levels and 360 angles for each level.
+<<lee41, echo=TRUE, message=FALSE >>=
+C.data = computeOptimals( C.eye, .angles=360 )
+@
+Now, make the plot:
+<<lee42, echo=TRUE, fig.pos="H", fig.height=6.5, out.width='1.0\\linewidth', fig.cap='MacAdam Limits for Illuminant C' >>=
+par( omi=rep(0,4), mai=c(0.5,0.6,0,0) )
+plotOptimals( C.eye, C.data )
+@
+
+
+
+
+
+\section*{An RGB Scanner}
+
+This also works with object color from an electrical RGB scanner.
+The chromaticities in this case are:
+
+$$ r = R/(R + G + B) ~~~~~~   g = G/(R + G + B)$$
+
+Make a scanner from a tungsten source and a Flea2 camera:
+<<lee30, echo=TRUE, message=FALSE >>=
+Flea2.scanner = product( A.1nm, "VARMATERIAL", Flea2.RGB, wavelength=420:680 )
+@
+Compute a data frame with 3600 rows. There are 10 gray levels and 360 angles for each level.
+<<lee31, echo=TRUE, message=FALSE >>=
+Flea2.data = computeOptimals( Flea2.scanner, .angles=360 )
+@
+Now, make the plot:
+<<lee32, echo=TRUE, fig.pos="H", fig.height=6.5, out.width='1.0\\linewidth', fig.cap='Approximate Output Limits for an RGB scanner' >>=
+par( omi=rep(0,4), mai=c(0.5,0.6,0,0) )
+plotOptimals( Flea2.scanner, Flea2.data )
+@
+The wavelengths have been trimmed at each end to avoid weak
+responsivities that wander around too much.
+Note that the chromaticity diagram is not convex.
+The system does not satisfy the 2-transition assumption,
+and the so-called "optimal colors" here are not necessarily optimal, see \cite{West}.
+The limits here can be regarded as the approximate output limits of the scanner.
+
+
+% \pagebreak
+
+\bibliographystyle{apalike}
+\bibliography{optimals}
+
+
+% ----------------------------------------------------------------------------
+
+
+\section*{Appendix}
+This document was prepared \today \quad with the following configuration:
+<<finish, echo=FALSE, results="asis">>=
+knit_hooks$set(output = function(x, options) { x })
+toLatex(sessionInfo(), locale=FALSE)
+@
+
+
+\end{document}

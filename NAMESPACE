@@ -1,0 +1,148 @@
+
+exportClasses(colorSpec)
+
+## methods for class colorSpec
+S3method(numSpectra,colorSpec)
+S3method(numWavelengths,colorSpec)
+S3method(organization,colorSpec)
+S3method("organization<-",colorSpec)
+S3method(coredata,colorSpec)
+S3method(as.matrix,colorSpec)
+S3method(extradata,colorSpec)
+S3method("extradata<-",colorSpec)
+S3method(wavelength,colorSpec)
+S3method("wavelength<-",colorSpec)
+S3method(type,colorSpec)
+S3method(quantity,colorSpec)
+S3method("quantity<-",colorSpec)
+S3method(specnames,colorSpec)
+S3method("specnames<-",colorSpec)
+S3method(metadata,colorSpec)
+S3method("metadata<-",colorSpec)
+S3method(is.regular,colorSpec)
+#   S3method(isValid,colorSpec)
+S3method(step.wl,colorSpec)
+S3method(bind,colorSpec)
+S3method(resample,colorSpec)
+S3method(subset,colorSpec)
+S3method(mean,colorSpec)
+S3method(normalize,colorSpec)
+S3method(linearize,colorSpec)
+S3method(chop,colorSpec)
+S3method(multiply,colorSpec)
+S3method(applyspec,colorSpec)
+S3method(convolvewith,colorSpec)
+S3method(plot,colorSpec)
+S3method(print,colorSpec)
+S3method(summary,colorSpec)
+S3method(product,colorSpec)
+S3method(calibrate,colorSpec)
+S3method(computeCCT,colorSpec)
+S3method(computeCRI,colorSpec)
+S3method(radiometric,colorSpec)
+S3method(photometric,colorSpec)
+S3method(probeOptimalColors,colorSpec)
+S3method(plotOptimals3D,colorSpec)
+S3method(computeADL,colorSpec)
+              
+    
+    
+export(numSpectra, 
+    numWavelengths, 
+    organization, 
+    "organization<-",
+    coredata,
+    extradata,
+    "extradata<-",
+    wavelength,
+    "wavelength<-",
+    type,
+    quantity,
+    "quantity<-",
+    specnames,
+    "specnames<-",
+    metadata,
+    "metadata<-",
+    is.regular,
+    is.colorSpec,
+#   isValid,
+    step.wl,
+    product,
+    calibrate,    
+    normalize,
+    linearize,
+    chop,        
+    multiply,
+    bind,
+    resample,
+    applyspec,
+    convolvewith,
+    computeCCT,
+    computeCRI,    
+    radiometric,
+    photometric,
+    probeOptimalColors,
+    plotOptimals3D,
+    computeADL    
+    )
+    
+#   functions that are already generic, for S3 classes    
+export( 
+    subset.colorSpec,
+    mean.colorSpec,
+    as.matrix.colorSpec,
+    print.colorSpec,
+    summary.colorSpec,
+    plot.colorSpec
+    )
+    
+export(
+    plotPatchesRGB    
+    )
+    
+
+export( colorSpec )
+export( 
+    readSpectra,
+#   readAllSpectra,
+    readSpectraControl,
+    readSpectraXYY,
+    readSpectraSpreadsheet,
+#   readSpectraExcel,
+    readSpectraCGATS,
+    readSpectrumScope
+    )
+    
+#   spectra with an equation    
+export(
+    erythemalSpectrum,
+    neutralMaterial,
+    lensAbsorbance,
+    planckSpectra,
+    daylightSpectra,
+    illuminantE   
+    )
+    
+export(
+    #   daylightLocus,
+    CCTfromXYZ
+    )
+    
+export(DisplayRGBfromLinearRGB)
+export(officialXYZ)
+export(RGBfromXYZ)
+
+export(cs.options)
+#   export(log.string,log.object)
+
+importFrom(MASS,ginv)
+importFrom("grDevices", "colorRampPalette", "rgb")
+importFrom("graphics", "abline", "grid", "legend", "lines",
+             "lines.default", "par", "plot", "plot.default", "plot.new",
+             "plot.window", "points", "points.default", "polygon",
+             "rect", "text", "title")
+importFrom("stats", "approx", "coef", "lm", "loess", "predict",
+             "runif", "spline", "splinefun")
+importFrom("utils", "capture.output", "flush.console", "modifyList",
+             "object.size", "read.table", "str", "type.convert")
+             

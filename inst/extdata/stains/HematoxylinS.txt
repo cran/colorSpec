@@ -1,0 +1,40 @@
+#
+#   Hematoxylin-S.txt
+#
+#   from Figure 3 in:
+#
+#   A Novel Spectral Microscope System: Application in Quantitative Pathology
+#   Antonis Papadakis, Efstathios Stathopoulos, George Delides, Konstantinos Berberides, George Nikiforidis, and Costas Balas*
+#   IEEE TRANSACTIONS ON BIOMEDICAL ENGINEERING, VOL. 50, NO. 2, FEBRUARY 2003
+
+
+
+
+[Control]
+Xpx	Ypx	X	Y
+108	433	400	0.0
+487	433	700	0.0
+108	67	400	0.8
+487	67	700	0.8
+
+
+[Absorbance]
+108	400
+134	362
+162	360
+183	351
+204	318
+221	275
+251	191
+277	131
+296	107
+308	98
+322	108
+344	179
+364	271
+390	362
+417	406
+440	422
+464	430
+487	433
+550	433

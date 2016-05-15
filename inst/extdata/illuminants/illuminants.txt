@@ -1,0 +1,20 @@
+#
+#	Standard Illuminants - White Point values in 1931 XYZ
+#
+#	http://en.wikipedia.org/wiki/Illuminants
+#	http://brucelindbloom.com/
+#   ASTM E308-1
+
+Name	X	Y	Z	CCT	Note	Source
+A	1.09850	1	0.35585	2856	Incandescent / Tungsten	ASTM E308-1
+B	0.99072	1	0.85223	4874	Direct sunlight at noon {obsolete}	Wyszecki & Stiles
+C	0.98074	1	1.18232	6774	Average / North sky Daylight {obsolete}	ASTM E308-1
+D50	0.96422	1	0.82521	5001.8	Horizon Light	ASTM E308-1
+D50.ICC	0.96420288	1	0.82490540	5000.7	ICC profile PCS reference white.  with 16-bit resolution	ICC publications
+D55	0.95682	1	0.92149	5503	Mid-morning / Mid-afternoon Daylight	ASTM E308-1
+D65	0.95047	1	1.08883	6504	Noon Daylight: Television, sRGB color space	ASTM E308-1
+D75	0.94972	1	1.22638	7504	North sky Daylight	ASTM E308-1
+E	1	1	1	5454	Equal energy white	ASTM E308-1
+F2	0.99186	1	0.67393	4230	Cool White Fluorescent	ASTM E308-1
+F7	0.95041	1	1.08747	6500	D65 simulator, Daylight simulator	ASTM E308-1
+F11	1.00962	1	0.64350	4000	Philips TL84, Ultralume 40	ASTM E308-1

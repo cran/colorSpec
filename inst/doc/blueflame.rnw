@@ -1,0 +1,274 @@
+% blueflame.rnw
+% Time-stamp: "blueflame.rnw"
+
+\documentclass[11pt]{article}
+
+% Set margins to be narrow
+\RequirePackage[left=1in,top=0.75in,right=1in,bottom=0.75in]{geometry}
+
+
+%\VignetteIndexEntry{Blue Flame and Green Comet - being a Spectral Analysis of Comet Vapor}
+%\VignetteEngine{knitr::knitr}
+
+\RequirePackage{color}
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{lightblue}{rgb}{0.2,0.2,0.9}
+\definecolor{darkred}{rgb}{0.6,0.0,0.0}
+\definecolor{red}{rgb}{0.7,0,0}
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
+\definecolor{darkorange}{rgb}{0.75, 0.45, 0}
+\definecolor{purple}{rgb}{0.65, 0, 0.75}
+\definecolor{goldenrod}{rgb}{0.80, 0.61, 0.11}
+\definecolor{lightyellow}{rgb}{0.98,0.94,0.83}
+
+
+\RequirePackage{fancyvrb}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{ae}       % ComputerModern Fonts
+\RequirePackage{fancyhdr}
+\RequirePackage{float}
+\RequirePackage{hyperref}
+\usepackage{lastpage}
+
+\pagestyle{fancy}
+\cfoot{page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+
+% \code mini environment ttfamily->texttt
+\newcommand\code{\bgroup\@codex}
+\def\@codex#1{{\color{darkred} \normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
+
+% This environment defines the look of R ouput
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{
+  fontsize=\small,
+  formatcom=\color{darkblue}
+}
+
+\begin{document}
+% \SweaveOpts{concordance=TRUE}
+
+\title{ {\Huge Blue Flame and Green Comet} \\ {\Large being a spectral analysis of comet vapor, expounding on its relation to a commonly observed phenomenon on Earth}}
+\author{Glenn Davis}
+\maketitle
+% \thispagestyle{fancy}
+
+% Setup stuff.
+<<setup, echo=FALSE, results="hide">>=
+require("knitr",quietly=TRUE)
+opts_chunk$set(fig.path="figs/ag2-", fig.align="center",
+  fig.width=7, fig.height=7, comment="")
+knit_hooks$set(output = function(x, options) {
+  paste('\\begin{Soutput}\n', x, '\\end{Soutput}\n', sep = '')
+})
+options(width=90)
+if(!file.exists("figs")) dir.create("figs")
+@
+
+% ----------------------------------------------------------------------------
+\section*{Introduction}
+
+In March, Judy sent me an article \cite{Bennet} about Comet 252P/LINEAR - a green
+comet passing close to earth.
+Green is not a common color in astronomy so I decided to investigate.
+The green color comes from diatomic carbon vapor - C\textsubscript{2} - and its \textit{Swan bands}.
+These wavelength bands (about 5 major ones) were discovered in a Bunsen burner flame by 
+Scottish physicist William Swan \cite{Swan}, who wrote:
+
+\begin{quote}
+\begingroup
+\fontfamily{pnc}\selectfont
+While in the ordinary flames of coal gas and oil, solid carbon is separated, it
+is well known that by burning a mixture of gas and air, the separation of carbon
+may be entirely prevented, and a smokeless flame obtained. My attention was at
+first accidentally directed to the subject of this paper while using a species of
+gas lamp in which this object is effected in a very simple manner. 
+As this lamp - the invention of Professor B\textsc{unsen} of Heidelberg - has only lately been
+introduced into this country, and as I have made extensive use of it in my experiments, 
+it may be proper to explain its construction.
+\endgroup
+\end{quote}
+
+Swan thought that the the source of the bands was hydrocarbon molecules.
+After seven decades of controversy, it was definitively determined that the source of these bands was actually 
+diatomic carbon \cite{0959-5309-40-1-313}.
+The color of a blue butane flame is a mixture of the colors from hydrocarbons and diatomic carbon.
+I thought it would be interesting to
+separate the light from hydrocarbons and the light from diatomic carbon
+and to display both colors accurately.
+
+
+
+<<packs, echo=TRUE, message=FALSE>>=
+library( colorSpec )
+@
+
+
+%\section*{Lucid output?}
+
+% ----------------------------------------------------------------------------
+
+\section*{The Flame}
+
+I found this spectrum of the blue part of a butane flame in a Wikipedia article \cite{wiki:1} on the Swan bands:
+
+\begin{center}
+\includegraphics[width=0.8\textwidth]{1200px-Spectrum_of_blue_flame_-_intensity_corrected}
+
+Figure 1.  The spectrum of a blue flame
+\end{center}
+
+Note that there is a dividing point at about 435 nm.
+Below this point the spectrum is from CH (carbyne) and above this point the spectrum is from C\textsubscript{2}.
+Fortunately user Deglr6328 also posted the numerical data,
+which is included in this package as \code{blueflame.txt}.
+Here is the same data as plotted using \textbf{R}.
+
+\setcounter{figure}{1}  
+<<lee1, echo=TRUE, fig.pos="H", fig.height=3.8, out.width='1.0\\linewidth',  fig.cap='The spectrum of a blue flame'  >>=
+path = system.file( "extdata/sources/blueflame.txt", package="colorSpec" )
+blueflame = readSpectra( path, seq(375,650,0.5) )
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
+plot( blueflame )
+@
+
+The flame color you see here is accurate on a display calibrated for sRGB \cite{wiki:2}.
+
+
+\section*{Splitting the Flame}
+
+
+Here is a simple split into low and high parts:
+
+<<lee2, echo=TRUE, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='The sum of the low and high parts is the original spectrum' >>=
+flame.split = chop( blueflame, interval=c(432,435), adj=0.8 )
+combo = bind(flame.split,blueflame)
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
+plot( combo, subset=c(T,T,F) )
+@
+
+Note that the Swan bands, in the high part on the right, are a bluish-green.
+The CH bands, in the low part on the left, are violet.
+Here is a zoomed-in plot at the splitting interval (432 to 435 nm):
+<<lee3, echo=TRUE, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='The sum of the low and high parts is the original spectrum' >>=
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
+plot( combo, subset=c(T,T,F), xlim=c(430,440) )
+@
+
+The 2 colors you see here are fairly accurate on a display calibrated for sRGB,
+except that both are too vivid for sRGB and so they have been clippped.
+The sum of these 2 colors is (approximately) equal to the color in Figure 2.
+Later these will be displayed as large patches.
+
+
+\section*{The Atmosphere}
+
+But wait a minute !  
+This blue-green color is what would be viewed from the neighborhood of the comet in space.
+We are viewing it through the atmosphere, and we know that the molecules of air scatter blue light
+(short wavelength) more than green light (middle wavelength), through Rayleigh scattering. 
+So the comet should appear a little greener from the surface of the earth than from space.
+Fortunately there is a standard, \cite{ASTM:1}, for the typical transmittance of the atmosphere:
+
+<<lee4, echo=TRUE, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='The transmittance of the atmosphere, for an Air Mass of 1.5' >>=
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
+plot( atmosphere2003, xlim=c(375,650), ylim=c(0,1), col='black' )
+@
+
+So the blue region is attenuated more than the green region.
+An \textit{Air Mass} of 1.5 means that the optical path length of the light is 1.5 times what it is at the zenith.
+This means that the comet is being viewed at about 48{\textdegree} from the zenith.
+I could not find any data on the transmittance at the zenith itself.
+The insignificant dips in the transmittance spectrum are due to molecular absorption (probably water vapor) and not scattering.
+
+And here is the effect of the atmosphere on the Swan bands:
+
+<<lee5, echo=TRUE, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='The transmittance of the atmosphere, for an Air Mass of 1.5' >>=
+atmosphere = resample(atmosphere2003,wavelength(blueflame))
+swan.atmo  = product( subset(flame.split,2), atmosphere )
+specnames(swan.atmo) = "Swan bands, as viewed through the atmosphere"
+combo = bind( blueflame, flame.split, swan.atmo )
+specnames(combo) = c( "blue flame", 
+                      "CH part of blue flame", "Swan bands, as viewed in space", 
+                      "Swan bands, as viewed through the atmosphere")
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
+plot( combo, xlim=c(375,650), ylim=c(0,0.7), subset=3:4 )
+@
+
+The second color is definitely greener than the first, and the next section will show this even better.
+
+
+\section*{Colored Patches for an sRGB Display}
+
+Here we collect the colors discussed above and display them as large rectangular patches.
+
+<<lee6, echo=T, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='Colors as patches - computed for an sRGB display' >>=
+mat = product( combo, BT.709.RGB, wavelength='auto' )
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( mat, norm=T )
+@
+
+In this figure:
+\begin{center}
+color(blue flame) = color(CH part of blue flame) + color(Swan bands, as viewed in space)
+\end{center}
+The object \code{BT.709.RGB} is a built-in hypothetical camera.
+Except for the blue flame itself, the colors are slightly outside the sRGB gamut.
+For this reason they are slightly inaccurate when viewed
+on a display calibrated to sRGB, but see the next section.
+
+
+\section*{Colored Patches for an Adobe RGB Display}
+
+Wide-gamut displays are not that common, but are becoming more so.
+Most of them can be calibrated to the Adobe RGB color space  \cite{wiki:3}, 
+which is probably the most popular wide-gamut RGB space.
+Here are the same large patches as in the previous section, but computed for Adobe RGB.
+
+<<lee7, echo=T, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='Colors as patches - computed for an Adobe RGB display' >>=
+mat = product( combo, Adobe.RGB, wavelength='auto' )
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( mat, gamma=2.2, norm=T )
+@
+
+For Adobe RGB, the "CH part of blue flame" is still too vivid (the green is negative)
+but the other 3 colors are accurate.
+Here is a diagram comparing the 2 color spaces, taken from \cite{wiki:3}
+
+\begin{center}
+\includegraphics[width=0.8\textwidth]{CIExy1931_AdobeRGB_vs_sRGB}
+
+Figure 9. A comparison of the Adobe RGB (1998) and sRGB chromaticity gamuts within the CIE 1931 xy chromaticity diagram. 
+The sRGB gamut is lacking in cyan-green hues.
+\end{center}
+
+
+\section*{Further Analysis}
+
+Of course, real comet vapor has many more molecules than diatomic carbon.
+A better analysis of comet color would include those chemical spectra in the mix.
+Also notice that the blue flame spectrum has a positive baseline,
+so a better analysis would find the source(s) of this baseline and possibly subtract it.
+
+
+
+
+\pagebreak
+
+\bibliographystyle{apalike}
+\bibliography{blueflame}
+
+
+% ----------------------------------------------------------------------------
+
+
+\section*{Appendix}
+This document was prepared \today \quad with the following configuration:
+<<finish, echo=FALSE, results="asis">>=
+knit_hooks$set(output = function(x, options) { x })
+toLatex(sessionInfo(), locale=FALSE)
+@
+
+
+\end{document}

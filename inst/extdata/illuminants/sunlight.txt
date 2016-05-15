@@ -1,0 +1,73 @@
+#
+#   http://hyperphysics.phy-astr.gsu.edu/hbase/vision/solirrad.html
+#
+#   This is a plot of the standard NASA data for the spectral irradiance of the solar disk in Watts/m2mm. 
+#   The upper curve is formed by joining the data points for data outside the atmosphere. 
+#   The lower curve is attributed to the Earth's surface under the condition described as "air mass 2". 
+#   This designation corresponds to an angle of 60° between the zenith and the Sun. 
+#   The data for the surface is from 
+#   Brandhorst, et al.,
+#   Interim solar cell testing procedures for terrestrial applications, 
+#   NASA Rep. TM X-71771 (Lewis Research Center) 1975. 
+#   The points are actually calculated using the data from outside the atmosphere 
+#   assuming a water content of 20 mmHg and ozone 3.4 mm Hg. 
+#   The data for outside the atmosphere is from 
+#   Thekaekara, M. P., 
+#   Solar energy outside the earth's atmosphere, 
+#   Solar Energy 14, 109 (1973).
+
+Wavelength  Power
+300	0
+310	1
+320	50
+330	105
+340	177
+350	217
+360	255
+370	320
+380	344
+390	371
+400	530
+410	693
+420	737
+430	737
+440	867
+450	1022
+460	1089
+470	1107
+480	1167
+490	1133
+500	1165
+510	1147
+520	1136
+530	1159
+540	1140
+550	1120
+560	1111
+570	1134
+580	1147
+590	1148
+600	1135
+610	1137
+620	1137
+630	1137
+640	1141
+650	1140
+660	1136
+670	1127
+680	1119
+690	1114
+700	1102
+710	1089
+720	1071
+730	1058
+740	1040
+750	1026
+760	660
+770	997
+780	981
+790	965
+800	950
+810	850
+820	900
+830	898

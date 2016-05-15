@@ -1,0 +1,229 @@
+% optimals.rnw
+% Time-stamp: "optimals.rnw"
+
+\documentclass[11pt]{article}
+
+% Set margins to be narrow
+\RequirePackage[left=1in,top=0.75in,right=1in,bottom=0.75in]{geometry}
+
+
+%\VignetteIndexEntry{Viewing Object Colors in a Gallery}
+%\VignetteEngine{knitr::knitr}
+
+\RequirePackage{color}
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{lightblue}{rgb}{0.2,0.2,0.9}
+\definecolor{darkred}{rgb}{0.6,0.0,0.0}
+\definecolor{red}{rgb}{0.7,0,0}
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
+\definecolor{darkorange}{rgb}{0.75, 0.45, 0}
+\definecolor{purple}{rgb}{0.65, 0, 0.75}
+\definecolor{goldenrod}{rgb}{0.80, 0.61, 0.11}
+\definecolor{lightyellow}{rgb}{0.98,0.94,0.83}
+
+
+\RequirePackage{fancyvrb}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{ae}       % ComputerModern Fonts
+\RequirePackage{fancyhdr}
+\RequirePackage{float}
+\RequirePackage{hyperref}
+\usepackage{lastpage}
+
+\pagestyle{fancy}
+\cfoot{page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+
+% \code mini environment ttfamily->texttt
+\newcommand\code{\bgroup\@codex}
+\def\@codex#1{{\color{darkred} \normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
+
+% This environment defines the look of R ouput
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{
+  fontsize=\small,
+  formatcom=\color{darkblue}
+}
+
+\begin{document}
+% \SweaveOpts{concordance=TRUE}
+
+\title{ {\Huge Viewing Object Colors in a Gallery} }
+\author{Glenn Davis  \url{    <gdavis@gluonics.com>}}
+\maketitle
+% \thispagestyle{fancy}
+
+% Setup stuff.
+<<setup, echo=FALSE, results="hide">>=
+require("knitr",quietly=TRUE)
+opts_chunk$set(fig.path="figs/ag2-", fig.align="center",
+  fig.width=7, fig.height=7, comment="")
+knit_hooks$set(output = function(x, options) {
+  paste('\\begin{Soutput}\n', x, '\\end{Soutput}\n', sep = '')
+})
+options(width=90)
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+if(!file.exists("figs")) dir.create("figs")
+@
+
+% ----------------------------------------------------------------------------
+\section*{Introduction}
+
+The goal of this package \textbf{colorSpec} vignette is to display rendered images of a popular color target
+with different illuminants, both with and without chromatic adaption methods.
+The figures are best viewed on a display calibrated for sRGB.
+
+
+<<packs, echo=TRUE, message=FALSE>>=
+library( colorSpec )
+@
+
+Read the target spectra.  This data has been kindly provided in CGATS format by \cite{Pascale}.
+\emph{ColorChecker} is a Registered Trademark of X-Rite, and X-Rite is a Trademark. 
+
+<<target, echo=TRUE, message=FALSE>>=
+# read the Macbeth ColorCheck target
+path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec') 
+MacbethCC = readSpectra( path )           # MacbethCC is a 'colorSpec' object
+MacbethCC = MacbethCC[ order(MacbethCC$SAMPLE_ID), ]  # still class 'colorSpec'
+print( extradata(MacbethCC), row.names=F )
+@
+
+Note that \code{MacbethCC} is organized as \code{'df.row'} and contains extra data for each spectrum,
+notably the coordinates of the patch rectangle.
+
+% ----------------------------------------------------------------------------
+
+\section*{Viewing with Illuminant D65}
+
+Build the "material responder" from Illuminant D65 and standard CMFs:
+
+\setcounter{figure}{0}  
+<<lee10, echo=TRUE, message=FALSE >>=
+D65.eye = product( D65.1nm, "artwork", xyz1931.1nm, wave='auto' )
+#   calibrate so the perfect-reflecting-diffuser is the 'official XYZ'
+#   scale XYZ independently
+PRD = neutralMaterial( 1, wavelength(D65.eye) )
+D65.eye = calibrate( D65.eye, stimulus=PRD, response=officialXYZ('D65'), method='scaling' )
+@
+Calculate XYZ and then RGB:
+<<lee11, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm' >>=
+XYZ = product( MacbethCC, D65.eye, wave='auto' )
+RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+# add the rectangle data to RGB, so they can be plotted in proper places
+# in cbind() use as.data.frame.model.matrix() so RGB is a single column in obj
+obj = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+#  display in proper location, and use the sRGB display transfer function
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
+obj.first = obj   # save this reference object for later
+@
+Here are the 8-bit device values:
+<<lee13, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='8-bit Device Values' >>=
+RGB8 = round( 255 * DisplayRGBfromLinearRGB( RGB, gamma='sRGB' ) )
+print( RGB8 )
+@
+Note that all of these patches are inside the sRGB gamut, exept for Cyan.
+
+Another way to do the same thing is use the built-in theoretical camera
+\code{BT.709.RGB} that computes sRGB directly from spectra, and has already been calibrated.
+<<lee12, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and Theoretical BT.709.RGB Camera' >>=
+RGB = product( D65.1nm, MacbethCC, BT.709.RGB, wave='auto' )    # this is *linear* sRGB
+obj = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
+@
+
+
+
+\section*{Viewing with Illuminant D50}
+
+Build the "material responder" from Illuminant D50 and standard CMFs:
+
+<<lee20, echo=TRUE, message=FALSE >>=
+D50.eye = product( D50.5nm, "artwork", xyz1931.5nm, wave='auto' )
+#   calibrate so the response to the perfect-reflecting-diffuser is the 'official XYZ' of D50
+#   scale XYZ independently
+PRD = neutralMaterial( 1, wavelength(D50.eye) )
+D50.eye = calibrate( D50.eye, stimulus=PRD, response=officialXYZ('D50'), method='scaling' )
+@
+Calculate XYZ and then RGB:
+<<lee21, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D50 and xyz1931.5nm' >>=
+XYZ = product( MacbethCC, D50.eye, wave='auto' )
+RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+obj = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
+@
+Since D50 is yellower than D65, the result has a yellow cast.
+Start over, but this time calibrate and adapt to D65 using the Bradford method.
+<<lee22, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D50 and xyz1931.5nm, but then adapted to D65' >>=
+D50.eye = product( D50.5nm, "artwork", xyz1931.5nm, wave='auto' )
+#  calibrate so the response to the perfect-reflecting-diffuser is the 'official XYZ' of D65
+#  with this chromatic adaption the destination XYZ is a 3x3 matrix times the source XYZ
+PRD = neutralMaterial( 1, wavelength(D50.eye) )
+XYZ.D65 = officialXYZ('D65')
+D50toD65.eye = calibrate( D50.eye, stimulus=PRD, response=XYZ.D65, method='Bradford' )
+XYZ = product( MacbethCC, D50toD65.eye, wave='auto' )
+RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+obj = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
+@
+The white-balance here is much improved.
+But it hard to compare colors in this figure with the ones way back in Figure 1.
+So combine the original D65 rendering in Figure 1 with this D50 rendering
+in Figure 4 by splitting each square into 2 triangles.
+We can do this by setting \code{add=T} in the second plot.
+<<lee23, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with both D65 (Figure 1), and D50 then adapted to D65 (Figure 4)' >>=
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( obj.first, gamma='sRGB', back='gray20', labels=F )
+plotPatchesRGB( obj, gamma='sRGB', labels=F, shape='bottomright', add=T )
+@
+The top-left triangle has the color from Figure 1 
+and the bottom-right triangle has the color from Figure 4.
+There is a noticeable difference in the \textbf{Red} and \textbf{Magenta} patches.
+
+
+\section*{A Rendering with a Scanner}
+
+Here we calculate a rendering on an RGB scanner.
+This is not really a gallery situation, but illustrates the similarity of the 2 RGB calculations.
+
+<<lee30, echo=TRUE,  fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with a generic  RGB scanner' >>=
+#   Build a scanner from Illuminant F11 and the Flea2 camera
+scanner = product( subset(Fs.5nm,'F11'), 'artwork', Flea2.RGB, wave='auto' )
+#   calibrate scanner so the response to the perfect-reflecting-diffuser is RGB=(1,1,1)
+#   set the RGB gains independently
+PRD = neutralMaterial( 1, wavelength(scanner) )
+scanner = calibrate( scanner, stimulus=PRD, response=1, method='scaling' )
+RGB = product( MacbethCC, scanner, wave='auto' )       # this RGB is not sRGB
+obj = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
+@
+The colors are too pale; this time \code{Cyan} has a substantial Red signal.
+Some sort of color management is necessary in this scanner to improve accuracy.
+
+For an interactive viewer along these lines, see \cite{Lindbloom}.
+
+
+% \pagebreak
+
+\bibliographystyle{apalike}
+\bibliography{gallery}
+
+
+% ----------------------------------------------------------------------------
+
+
+\section*{Appendix}
+This document was prepared \today \quad with the following configuration:
+<<finish, echo=FALSE, results="asis">>=
+knit_hooks$set(output = function(x, options) { x })
+toLatex(sessionInfo(), locale=FALSE)
+@
+
+
+\end{document}
