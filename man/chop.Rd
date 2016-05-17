@@ -43,7 +43,7 @@
 
 \examples{
 # chop blue butane flame into diatomic carbon and hydrocarbon parts
-path = system.file( "extdata/sources/blueflame.txt", package="colorSpec" )
+path = system.file( "extdata/sources/BlueFlame.txt", package="colorSpec" )
 blueflame = readSpectra( path, seq(375,650,0.5) )
 plot( chop( blueflame, interval=c(432,435), adj=0.8 ) )
 

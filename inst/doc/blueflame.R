@@ -12,7 +12,7 @@ if(!file.exists("figs")) dir.create("figs")
 library( colorSpec )
 
 ## ----lee1, echo=TRUE, fig.pos="H", fig.height=3.8, out.width='1.0\\linewidth',  fig.cap='The spectrum of a blue flame'----
-path = system.file( "extdata/sources/blueflame.txt", package="colorSpec" )
+path = system.file( "extdata/sources/BlueFlame.txt", package="colorSpec" )
 blueflame = readSpectra( path, seq(375,650,0.5) )
 par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
 plot( blueflame )

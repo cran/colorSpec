@@ -1,5 +1,5 @@
 CGATS.17
-ORIGINATOR	"BabelColor PatchTool, version 3.7.0 b275"
+ORIGINATOR	"fields SAMPLE_ID to HEIGHT from Glenn Davis, and spectral data from http://www.babelcolor.com/colorchecker-2.htm"
 LGOROWLENGTH	4
 CREATED	"2012-04-13"  # Time: 11:24:37
 INSTRUMENTATION	"Unknown"
@@ -7,7 +7,6 @@ MEASUREMENT_SOURCE	"Illumination=Unknown ObserverAngle=Unknown WhiteBase=Abs Fil
 WEIGHTING_FUNCTION	"ILLUMINANT, Unknown"
 WEIGHTING_FUNCTION	"OBSERVER, Unknown degree"
 QUANTITY	"reflectance"
-# 
 KEYWORD	"SAMPLE_ID"
 KEYWORD	"SAMPLE_NAME"
 KEYWORD	"Munsell"

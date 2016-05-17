@@ -231,7 +231,7 @@ product( subset(solar.irradiance,1), atmosphere2003, blocker.IR, Hoya, wave='aut
 
 
 #  sequence 3.
-plumbicon = readSpectra( system.file( "extdata/cameras/Plumbicon30mm.txt", package='colorSpec' ) )
+plumbicon = readSpectra( system.file( "extdata/cameras/plumbicon30mm.txt", package='colorSpec' ) )
 product( blocker.IR, subset(Hoya,1:3), plumbicon, wave='auto' )
 
 

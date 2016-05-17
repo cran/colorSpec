@@ -31,6 +31,7 @@
 \RequirePackage{float}
 \RequirePackage{hyperref}
 \usepackage{lastpage}
+\usepackage{fixltx2e}    % for \textsubscript{} ?
 
 \pagestyle{fancy}
 \cfoot{page \thepage\ of \pageref{LastPage}}
@@ -122,12 +123,12 @@ Figure 1.  The spectrum of a blue flame
 Note that there is a dividing point at about 435 nm.
 Below this point the spectrum is from CH (carbyne) and above this point the spectrum is from C\textsubscript{2}.
 Fortunately user Deglr6328 also posted the numerical data,
-which is included in this package as \code{blueflame.txt}.
+which is included in this package as \code{BlueFlame.txt}.
 Here is the same data as plotted using \textbf{R}.
 
 \setcounter{figure}{1}  
 <<lee1, echo=TRUE, fig.pos="H", fig.height=3.8, out.width='1.0\\linewidth',  fig.cap='The spectrum of a blue flame'  >>=
-path = system.file( "extdata/sources/blueflame.txt", package="colorSpec" )
+path = system.file( "extdata/sources/BlueFlame.txt", package="colorSpec" )
 blueflame = readSpectra( path, seq(375,650,0.5) )
 par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
 plot( blueflame )

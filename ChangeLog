@@ -1,4 +1,10 @@
 
-Version: 0.5 (2016-05-14, the first release)
+colorSpec changes
 
+Version: 0.5-3 (2016-05-16)
+Fixed filename case problem on non-Windows platforms and resubmitted
 
+Version: 0.5-2 (2016-05-15)
+Fixed 2 NOTEs and resubmitted
+
+Version: 0.5-1 (2016-05-14, the first submission)
