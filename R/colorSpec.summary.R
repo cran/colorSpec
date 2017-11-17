@@ -51,7 +51,7 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
             aka = "number of photons, which is actinometric"
             
         if( spectra == 1 )
-            mess    = sprintf( "%s describes a source of light, and the quantity is '%s' (%s).", 
+            mess    = sprintf( "%s describes a single source of light, and the quantity is '%s' (%s).", 
                             theName, quantity, aka )
         else
             mess    = sprintf( "%s describes %d sources of light, and the quantity is '%s' (%s).", 
@@ -188,12 +188,10 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
             {
             #   mess    = sprintf( "Product Terms:  %s is not a product of other colorSpec objects.", theName )
             }
-        out = c( out, '', mess, '' )  
-        
+        out = c( out, '', mess, '' )
         }
         
-        
-    cat( out, sep='\n' )
+    cat( out, sep='\n', file=stderr() )
     
     return( invisible(out) )
     }

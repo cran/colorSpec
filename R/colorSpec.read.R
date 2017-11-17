@@ -502,12 +502,12 @@ readSpectraSpreadsheet <- function( path)
         
 #   .path       to a CGATS file, e.g. .sp or .cal or .txt, or the Rosco files
 #
-#   returns a *list* of colorSpec objects, with organization 'df.row'.   
+#   returns a *list* of colorSpec objects, each with organization 'df.row'.   
 #   WARNING:  does not return a single object.
     
 readSpectraCGATS <-  function( path )
     {
-    theData = importCGATS( path )
+    theData = readCGATS( path )
     
     if( is.null(theData) )  return(NULL)
     
@@ -519,49 +519,43 @@ readSpectraCGATS <-  function( path )
     
     #   attr_name = c( "Substrate", "RefractiveIndex", "Thickness" )
     
-    for( i in 1:n )
+    #   iterate in reverse order, so we can drop the tables with non-spectral data
+    for( i in n:1 )
         {
         #   replace columns with spectral data by a single model.matrix
         df = theData[[i]]
         
-        mask    = grepl( pattern, colnames(df) )  # ; print( idx )
+        colspec = waveColumns( colnames(df), path, i )  #; print( colspec )
         
-        idx     = which( mask )
-        
-        contig = 0<length(idx)  &&  all( diff(idx) == 1 )
-        
-        if( ! contig )
+        if( is.null(colspec)  ||  length(colspec$wavelength)==0 )
             {
-            log.string( ERROR, "In file '%s', spectral columns in table %d are not existent or not contiguous.", path, i )
-            log.object( ERROR, idx )            
-            return(NULL)
+            #   table i does not have spectral data, so delete it
+            theData = theData[-i]
+            next
             }
-            
-        wavelength.char = sub( pattern, "\\2", colnames(df)[idx] )      #; print( wavelength.char )
         
-        wavelength      = as.double( wavelength.char )    #; print( wavelength )
-                    
-        if( any( is.na(wavelength) ) )
-            {
-            log.string( ERROR, "In file '%s', cannot extract wavelengths from table %d.", path, i )   
-            return(NULL)
-            }
-            
+        mask        = colspec$mask
+        wavelength  = colspec$wavelength
+        
+        idx     = which( mask )                            
         mat = as.matrix.data.frame( df[ ,idx, drop=F] )
         
         mat = t( mat )  
         
-        rownames( mat ) = wavelength.char   #; print( str(mat) )      # colnames(df)[idx]
 
-        specnames   = paste( base, as.character( 1:nrow(df)), sep='.' )     # just the defaults
+        rownames( mat ) = as.character( wavelength )   #; print( str(mat) )      # colnames(df)[idx]
+
+        #   specnames   = paste( base, as.character( 1:nrow(df)), sep='.' )     # just the defaults
+        
+        tableid = sprintf( "%s-%d", base, i )
         
         if( all(mask) )
             {
             #   the row has no good name column, so use the filename and rownumber
             if( nrow(df) == 1 )
-                specnames   = base
+                specnames   = tableid
             else
-                specnames   = paste( base, as.character( 1:nrow(df)), sep='.' ) 
+                specnames   = paste( tableid, as.character( 1:nrow(df)), sep='.' ) 
             }
         else
             {
@@ -596,7 +590,7 @@ readSpectraCGATS <-  function( path )
         if( 0 < discrep  &&  discrep < 0.5 )
             {
             step.wl     = wavereg[2] - wavereg[1]
-            log.string( WARN, "Corrected wavelengths in '%s' to have equal increments of %g nm [%g to %g nm]\n", 
+            log.string( WARN, "Perturbed wavelengths in '%s' to have equal increments of %g nm [%g to %g nm]", 
                                 path, step.wl, wavereg[1], wavereg[ length(wavereg) ] )
             wavelength(part_right)  = wavereg                                
             }
@@ -607,9 +601,18 @@ readSpectraCGATS <-  function( path )
         
         theData[[i]]    = part_right
         
-        metadata( theData[[i]] )    = list( path=path, header=attr(df,"header"), date=attr(df,"date"), 
-                                            originator=attr(df,"originator"), white.point=attr(df,"white.point") )
+        metadata( theData[[i]] )    = list( path=path, 
+                                            header=attr(df,"header"), 
+                                            date=attr(df,"date"),
+                                            descriptor=attr(df,"descriptor"),                                             
+                                            originator=attr(df,"originator") )
         }
+        
+    if( length(theData) == 0 )
+        {
+        log.string( ERROR, "Found no tables with spectral data in '%s'.", path )
+        return(NULL)
+        }    
         
     attr( theData, 'path' ) = path
     
@@ -617,9 +620,44 @@ readSpectraCGATS <-  function( path )
     }
         
         
+#   cname       vector of column names
+#   path        to the file
+#   idxtable    index of the table in path
+#   a list with 2 items
+#       mask        logical vector of columns that correspond to a wavelength; the TRUE values (if present) are contiguous        
+#       wavelength  vector of wavelengths, possibly empty
+#
+waveColumns <- function( cname, path, idxtable )        
+    {
+    pattern = "^(nm|SPEC_|SPECTRAL_)[_A-Z]*([0-9.]+)$"
     
+    out = list()
+    out$mask        = grepl( pattern, cname )  # ; print( idx )
+    out$wavelength  = numeric(0)   
     
+    idx     = which( out$mask )
     
+    contig = 0<length(idx)  &&  all( diff(idx) == 1 )
+    
+    if( ! contig )
+        {
+        log.string( WARN, "In file '%s', spectral columns in table %d are not existent or not contiguous.", path, idxtable )
+        #   log.object( WARN, idx )            
+        return(out)
+        }
+        
+    wavelength.char = sub( pattern, "\\2", cname[idx] )      #; print( wavelength.char )
+    
+    out$wavelength      = as.double( wavelength.char )    #; print( wavelength )
+                
+    if( any( is.na(out$wavelength) ) )
+        {
+        log.string( ERROR, "In file '%s', cannot extract wavelengths from table %d.", path, idxtable )   
+        return(NULL)
+        }
+
+    return(out)    
+    }
     
 
 #   read Ocean Optics format

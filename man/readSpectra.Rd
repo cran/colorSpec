@@ -1,4 +1,4 @@
-% File colorSpec.Rd
+% File readSpectra.Rd
 
 \name{readSpectra}
 \title{read colorSpec objects from files}
@@ -49,7 +49,7 @@ readSpectraControl( path )
   \code{readSpectra} returns a single \bold{colorSpec} object or \code{NULL} in case of ERROR.
   If there are multiple files in \code{pathvec} and they cannot be combined using \code{bind} because
   their wavelengths are different, it is an ERROR.
-  To avoid this ERROR, the \code{wavelength} argument can be used for resampling to a common wavelength.
+  To avoid this ERROR, the \code{wavelength} argument can be used for resampling to common wavelengths.
   If there are multiple files, the \code{\link{organization}} of the returned object is
   \code{"df.row"} and the first column is the \code{path} from which the spectrum was read.
   
@@ -59,18 +59,31 @@ readSpectraControl( path )
   
   The functions \code{readSpectraCGATS} and \code{readSpectraControl} are more complicated.
   These 2 file formats can contain multiple spectra with different \code{wavelength} vectors
-  so both functions return a \emph{list}   of \bold{colorSpec} objects.  
-  When \code{readSpectra} is called with   a \code{wavelength} argument, 
-  these multiple spectra are resampled using \code{\link{resample}} and combined using \code{bind}
-  into a single \bold{colorSpec} object, which makes it much more convenient to read such files.
+  so both functions return a \emph{list}   of \bold{colorSpec} objects
+  (unless the list is of length 1,
+  when just that single \bold{colorSpec} object is returned).  
+  
+  If \code{readSpectra} calls \code{readSpectraCGATS} or \code{readSpectraControl}
+  and receives a list of \bold{colorSpec} objects,
+  \code{readSpectra} attempts to \code{\link{bind}} them into a single object.
+  If they all have the same wavelength vector, then the \code{bind} succeeds and the
+  single \bold{colorSpec} object is returned.
+  Otherwise the \code{bind} fails, and it is an ERROR.
+  To avoid this error \code{readSpectra} can be called with a \code{wavelength} argument. 
+  The multiple spectra are resampled using \code{\link{resample}} and
+  \emph{then} combined using \code{bind},
+  which makes it much more convenient to read such files.
   }
 
 
 
 \details{
-The file formats are:
+\code{readSpectra} reads the first few lines of the file in order to determine the format,
+and then calls the corresponding format-specific function.
+If \code{readSpectra} cannot determine the format, it returns NULL.
+The 5 file formats are:
   
-\code{XYY} \cr 
+\code{XYY} \cr         
 There is a column header line matching \code{^(wave|wl)} (not case sensitive) followed by the the names of the spectra. 
 All lines above this one are taken to be \code{metadata}.
 The separarator on this header line can be space, tab, or comma; 
@@ -98,11 +111,21 @@ See the sample file \code{pos1-20x.scope}. \cr
 
 \code{CGATS}  \cr
 This is a complex format that is best understood by looking at some samples,
-such as \code{extdata/filters/Rosco.txt};
+such as \code{extdata/objects/Rosco.txt};
 see also \cite{CGATS.17}.
-The fields with spectral data match the pattern \code{"^(nm|SPEC_|SPECTRAL_)[0-9.]+"}
+The function \code{\link{readCGATS}} is first called to get all the tables,
+and then for each table the column names are examined.
+The column names that match the pattern \code{"^(nm|SPEC_|SPECTRAL_)[0-9.]+"}
+are considered to be spectral data,
 and other fields are considered \code{extradata}.
-The organization of the returned object is \code{'df.row'}.  \cr
+The organization of the resulting \bold{colorSpec} object is \code{'df.row'}.
+If a table has no spectral data, then it is ignored.
+If the CGATS file has no tables with spectral data, then it is an ERROR
+and the function returns NULL.
+If the data.frame of \code{extradata} contains a column 
+\code{SAMPLE_NAME} or \code{SampleID} (examined in that order),
+then that column is taken to be the \code{specnames}.
+ \cr
   
 \code{Control} \cr
 This is a personal format used for digitizing images of plots from manufacturer
@@ -134,18 +157,30 @@ It is OK to put the value in quotes.  See example files under \bold{extdata}.
 
 \references{
 CGATS.17 Text File Format.   http://www.colorwiki.com/wiki/CGATS.17_Text_File_Format.
+
+ANSI/CGATS.17. 
+Graphic technology - Exchange format for colour and process control data using XML or ASCII text.
+https://webstore.ansi.org/
+2009.
+
+ISO/28178. Graphic technology - Exchange format for colour and process control data using XML or ASCII text.
+https://www.iso.org/standard/44527.html.
+2009.
+\cr
 }
+
 
 \seealso{
 \code{\link{wavelength}},
 \code{\link{quantity}},
 \code{\link{metadata}},
 \code{\link{resample}},
-\code{\link{bind}}  
+\code{\link{bind}},  
+\code{\link{readCGATS}}  
 }
 
 \examples{
-#   read file with header declaring the quantity to be photons->neural
+#   read file with header declaring the quantity to be "photons->neural"
 bird = readSpectra( system.file( "extdata/eyes/BirdEyes.txt", package='colorSpec' ) )
 quantity(bird)   # [1] "photons->neural"
 }

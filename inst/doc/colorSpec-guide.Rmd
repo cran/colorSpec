@@ -1,0 +1,496 @@
+---
+title: "colorSpec User Guide"
+author: "Glenn Davis"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+bibliography: bibliography.bib
+csl: personal.csl
+# csl: institute-of-mathematical-statistics.csl
+# csl: transactions-on-mathematical-software.csl
+vignette: >
+  %\VignetteIndexEntry{colorSpec}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(colorSpec)
+```
+
+
+**colorSpec** is an **R** package providing an S3 class with methods for color spectra. 
+It supports the standard calculations with spectral properties of light sources, materials, cameras, eyes, scanners, etc.. 
+And it works well with the more general action spectra. 
+Many ideas are taken from packages
+**hsdar** @hsdar,
+**hyperSpec** @hyperSpec,
+**pavo** @pavo,
+**photobiology** @photobiology, and
+**zoo** @zoo.
+There is no support for 3D colors spaces other than XYZ and RGB; 
+see packages **colorspace** @colorspace and **colorscience** @colorscience for more 3D spaces.
+
+```{r echo=FALSE, results='asis'}
+    includetable  <-  function( path, height ) {
+        tmp1 <- URLencode( paste(readLines(path,warn=FALSE), collapse="\n"), reserved = TRUE  )
+        
+        tmp2 <- sprintf( '",  style="border: none; seamless:seamless; width: 900px; height: %s" ></iframe>', height )
+
+        cat( '<iframe src="data:text/html;charset=utf-8,', tmp1 , tmp2 )    
+    }
+
+    includeplain  <-  function( path ) {
+        tmp <- readLines(path,warn=FALSE)
+        writeLines( tmp )    
+    }
+```
+
+
+<br>
+
+# Spectrum Types
+
+Pick up any book on color physics
+(e.g. @wyszecki2000color, @packer2003, @oleari2016standard, or @koenderink)
+or color management
+(e.g. @giorgianni2009digital)
+and you will see plots of many spectra. 
+Let's start with a simple division of these spectra into 4 basic types:
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-1.1.html", "550px" )
+```
+
+For the infinite-dimensional spaces, the interval [380,780] is used for illustration; 
+in specific calculations it can vary. 
+Note that of the 4 vector spaces, only $L^*$ and $M$ are isomorphic, 
+but we take the mathematical point of view that although they are isomorphic, they are not the same.
+For a proof of this isomorphism, see **Appendix D**.
+Multiplication operators are the infinite-dimensional generalization of diagonal matrices. 
+For more background on this functional analysis, 
+see @wiki:MO and @LangReal.
+
+For the finite-dimensional spaces, it takes the full sequence of wavelengths and not just the endpoints. The wavelength sequence is typically regular not always. 
+In this case all 4 vector spaces are isomorphic (since
+they are the same dimension), but we still take the mathematical point of view that they are not the _same_ space.
+
+The last `type = 'responsivity.material'` is perhaps the least common.
+There is an example in @giorgianni2009digital
+(Figure 10.11a, page 141) of a scanner,
+where the 3 spectra are called the _effective spectral responsivities_.
+There is also a standard scanner from SMPTE, see @7292043.
+
+Every **colorSpec** object has one of these types, but it is not stored with the object. 
+The object stores a `quantity` which then determines the `type`;
+see the next section for more discussion. 
+A synonym for `type` might be `space`, but this could be confused with _color space_.
+
+**colorSpec** does not actually use the finite-dimensional representations in Table 1.1;
+the organization is flexible. 
+And it would not be efficient memory use to store a diagonal matrix as such. 
+For discussion of the organization, see section 4.
+
+Given 2 finite-dimensional spectra of types `'light'` and `'responsivity.light'` the response (a real
+number) is their dot product multiplied by the step between wavelengths.
+
+All materials in this document are non-fluorescent; 
+i.e. the outgoing photons reflected (or transmitted) only
+come from incoming photons of the same wavelength. 
+A transparent material transmits an incoming light
+spectrum and a new spectrum emerges on the other side. If the material is not fluorescent, the outgoing
+spectrum is the same as the incoming, except there is a reduction of power that depends only on the
+wavelength (and the material). 
+If the light power were divided into N bins, the transmitted power spectrum
+would be a diagonal NxN matrix times the incoming spectrum.
+
+A reflectance spectrum is mathematically the same as a transmittance spectrum, except we compare the
+outgoing light spectrum to that of a _perfect reflecting diffuser_. 
+Such a material does not exist, like many concepts in physics, but it is a very useful idealization.
+
+<br>
+
+# Spectrum Quantities
+
+Unfortunately there are two common metrics for quantifying  spectra with `type='light'` -
+_power of photons_ and _number of photons/sec_.
+The former – _radiometric_ - is the oldest, being used in the 19^th^ century. 
+The latter – _actinometric_ - was not used until the 20th century 
+(after the modern concept of photons was proposed in 1905). 
+So colorimetry uses radiometric quantities by convention and actinometric ones are converted to
+radiometric automatically for calculations. 
+The conversion is easy; see the function `radiometric()`,
+@packer2003 pp. 93-94,
+and @oleari2016standard p. 12.
+
+Similarly, `'responsivity.light'` can be radiometric (e.g. the CIE color matching functions)
+or actinometric (e.g. the quantum efficiency of a CMOS sensor). 
+These actinometric spectra are also converted to radiometric on the fly.
+
+For responsivity we distinguish between 3 types of response: _electrical_, _neural_, and _action_. 
+In **colorSpec** this 3-way distinction is only used in two places: 
+in the y label of the spectrum `plot()`, and to determine default adaption methods in `calibrate()`. 
+Note that the `action` response is really a grab-bag for responses that are neither 
+`electrical` (a modern solid-state photosensor) nor `neural` (a biological eye).
+
+Here are the valid types and their quantities:
+
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-2.1.html", "600px" )
+```
+
+Note that `'photons'` is an acceptable synonym for `'photons/sec'`
+(although `'photons'` is really a measure of energy).
+
+<br>
+
+# Construction of colorSpec objects
+
+The user constructs a `colorSpec` object `x` using the function `colorSpec()`:
+```
+x <- colorSpec( data, wavelength, quantity='auto', organization='auto' )
+```
+The arguments are:
+
+`data`  
+a vector or matrix of the spectrum values. 
+In case `data` is a vector, `x` has a single spectrum and the number of points in that 
+spectrum is the length of the vector. 
+In case `data` is a matrix, the spectra are stored in the columns, 
+so the number of points in each spectrum is the number of rows in `data`. 
+It is OK for the matrix to have only 0 or 1 column. 
+The column names (if any) are taken as the spectrum names. 
+If no column names are given, then dummy names `'S1'`, `'S2'`, ... are used, and a warning is issued.
+Names can also be assigned after construction too; see `specnames()`.
+Compare `colorSpec()` with the function `ts()` in package **stats**.
+
+`wavelength`  
+a numeric vector of wavelengths for all the spectra in `x`. 
+The length of this vector must be equal to `NROW(data)`. 
+
+`quantity`   
+a character string giving the quantity of all spectra;
+see Table 2.1 for a list of valid values. 
+In case `quantity='auto'`, a guess is made from the column names. 
+The `quantity` of `x` can be changed later.
+
+`organization`  
+a character string giving the desired organization of the returned colorSpec object. 
+In case `organization='auto'`, the organization is `'vector'` or `'matrix'` depending on `data`.
+The `organization` of `x`  can be changed later;
+see the next section for discussion of all 4 possible organizations.
+
+<br>
+
+# colorSpec object organization
+
+A spectrum is similar to a time-series (with time replaced by wavelength), 
+and so the organization of a `colorSpec` object is similar to that of the 
+time-series objects in package **stats**. 
+A single time-series is organized as a vector with class `ts`, 
+and a multiple time series is organized as a matrix (with the series in the columns) with class `mts`.
+We decided to use a single class name `colorSpec`, 
+continue the idea of different organizations, and allow 2 _more_ organizations. 
+Here are the 4 possible organizations, in order of increasing complexity:
+
+`'vector'`   
+The object is a numeric vector with attributes but no dimensions, like a time-series `ts`. 
+This organization works for a single spectrum only, which is very common. 
+The common arithmetic operations work well with this organization.
+The length of the vector is the number of wavelengths. 
+The class of the object is `c('colorSpec','numeric')`.
+
+`'matrix'`  
+The object is a matrix with attributes, like a multiple time-series `mts`.
+This is probably the most suitable organization in most cases, 
+but it does not support extra data (see `'df.row'` below). 
+The common arithmetic and subsetting operations work well; and even `round()` works.
+The number of columns is the number of spectra, and the spectrum names are stored as the column names. This organization can be used for any number of spectra, including 0 or 1. 
+The class of the object is `c('colorSpec', 'matrix')`.
+
+`'df.col'`  
+The object is a data frame with attributes. 
+The spectra are stored in the columns.
+But the first column is always the wavelength sequence, so the spectra are in columns 2:(M+1),
+where M is the number of spectra.
+This organization mirrors the most common organization in text files and spreadsheets.
+The common arithmetic operations do not work, and the initial wavelength column is awkward to handle.
+The spectrum names are stored as the column names of the data frame.
+This organization can be used for any number of spectra, including 0 or 1.
+This organization imitates the "long" format in package **hyperSpec**.
+The class of the object is `c('colorSpec', 'data.frame')`.
+
+`'df.row'`  
+The object is a data frame with attributes.
+The last (right-most) column is a matrix with spectra in the rows.
+This matrix is the transpose of the matrix used when the organization is `'matrix'`.
+The common arithmetic operations do not work.
+The spectrum names are stored as the row names of the data frame.
+This organization can be used for any number of spectra, including 0 or 1.
+This organization imitates the "tall" format in package **hyperSpec**.
+This is the only organization that supports extra data associated with each spectrum,
+such as physical parameters, time parameters, descriptive strings, or whatever.
+This extra data occupies the initial columns of the data frame that come before the spectra,
+and can be any data frame with the right number of rows.
+This extra data can be assigned to any spectrum with the `'df.row'` organization.
+The class of the object is `c('colorSpec', 'data.frame')`.
+
+<br>
+
+# colorSpec object attributes
+
+The attribute list is kept as small as possible. Here it is:
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-5.1.html", "400px" )
+```
+These are considered internals, and user should never have to access these directly.
+
+
+<br>
+
+# Spectrum File Import
+
+There are 5 text file formats that can be imported; no binary formats are supported yet.
+The function `readSpectra()` reads a few lines from the top of the file to try and determine the type.
+If successful, it then calls the appropriate read function;
+see the **colorSpec** reference guide for details.
+The file formats are:
+
+`XYY`  
+There is a line matching `'^(wave|wl)'` (not case sensitive) followed by the the names of the spectra.
+This is the column header line. 
+All lines above this one are taken to be metadata.
+This is probably the most common file format; see the sample file `ciexyz31_1.csv`.
+
+`spreadsheet`  
+There is a line matching `'^(ID|SAMPLE|Time)'`. 
+This line and lines below must be tab-separated.
+Fields matching `'^[A-Z]+([0-9.]+)nm$'` are taken to be spectral data and other fields
+are taken to be extradata.
+All lines above this one are taken to be metadata.
+The organization of the returned object is `'df.row'`.
+This is a good format for automated acquisition of many spectra, using a spectrometer.
+See the sample file `E131102.txt`.
+
+`scope`  
+This is a file format used by Ocean Optics spectrometer software.
+There is a line `>>>>>Begin Processed Spectral Data<<<<<`.
+The following lines contain wavelength and power separated by a tab.
+There is only 1 spectrum per file.
+The organization of the returned object is `'vector'`.
+See the sample file `pos1-20x.scope`.
+
+`CGATS`   
+This is a standardized format for exchange of color data, covered by both ANSI and ISO standards,
+see @CGATS.17 and @ISO28178.
+It might be best understood by looking at some samples, such as `inst/extdata/objects/Rosco.txt`.
+Unfortunately these standards do not give a standard way to name the spectral data.
+The function `readSpectra()` considers field names that match the pattern `"^(nm|SPEC_|SPECTRAL_)[_A-Z]*([0-9.]+)$"` to be spectral data
+and other fields are considered extra data.
+The organization of the returned object is `'df.row'`.
+
+`Control`  
+This is a personal format used for digitizing images of plots from
+manufacturer datasheets and academic papers.
+It is structured like a Microsoft `.INI` file.
+There is a `[Control]` section establishing a simple linear map from the image pixels in the file
+to the wavelength and spectrum quantities.
+Only 3 points are really necessary.
+It is OK for there to be a little rotation of the plot axes relative to the image.
+This is followed by a section for each spectrum, in XY pixel units only.
+Conversion to wavelength and spectral quantities happens during on-the-fly after read.
+The organization of the returned object is `'vector'`.
+
+<br>
+
+# Package Options
+
+There is a function `cs.options()` for setting options private to the package.
+There are 3 such options, and all are related to the package logging mechanism.
+All messages go to the console.
+
+There is an option for setting the logging level.
+The levels are the 6 standard ones taken from `Log4J`:
+`FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, and `TRACE`.
+One can set higher levels to see more info.
+
+By default, when an `ERROR` event occurs, execution stops.
+But there is a **colorSpec** option to continue.
+The logging level `FATAL` is reserved for internal errors, when execution _always_ stops.
+
+Finally, there is an option for how the message is formatted - a layout option. 
+For details see the help page for the function `cs.options()`.
+
+<br>
+
+# Future Work
+
+Here are a few possible improvements and additions.
+
+wavelength   
+handling the wavelength sequence, e.g. for `product()` and `resample()`, is an annoyance.
+We might consider adding a global wavelength option that all spectra are automatically resampled to.
+
+fluorescent materials   
+Recall that a non-fluorescent material corresponds to a diagonal matrix,
+which operates in a trivial way on light spectra. 
+A diagonal matrix can be stored much more compactly as a plain vector,
+and multiplication of a diagonal matrix by a vector simplifies to entrywise (Hadamard) multiplication.
+A fluorescent material corresponds to a non-diagonal matrix – called the _Excitation Emission Matrix_
+or _Donaldson Matrix_.
+The product in **Appendix C** is still multilinear,
+but the material product in the middle is no longer symmetric,
+so enhancements to the product computations must be made.
+This is a new level of complexity and memory usage,
+and may require a new type of memory organization.
+
+comparisons  
+There should a metric of some kind that compares two material spectra.
+There should be a way to compare 2 colorSpec objects of the same type,
+especially `'responsivity.light'`. 
+For example, there would then be a way to evaluate how close an electronic camera
+comes to satisying the _Maxwell-Ives Criterion_.
+Possible metrics would be the principal angles between subspaces.
+
+`probeOptimalColors()`   
+For optimal colors in 3D, 
+better numerical handling of optimal colors near the cusps at black and white would
+be an improvement. 
+For optimal colors in 2D, it should be possible to probe the true optimal colors,
+and also the 1-transition edge-colors, or _Kantenfarben_.
+
+`plot()`   
+the `product()` function saves the terms with the product object, 
+but the `plot()` function ignores them. 
+It may be useful to have an option to plot the individual terms too.
+
+`resample()`  
+extrapolation is inconsistent and poorly documented, it should be improved
+
+
+# References
+
+<div id="refs"></div>
+
+<br>
+
+\Appendix
+
+<hr>
+
+# Appendix A - Built-in colorSpec Objects
+
+The following are built-in **colorSpec** objects that are commonly used. 
+They are global objects that are automatically available when **colorSpec** is loaded. 
+For more details on each see the corresponding help topic.
+
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-A.1.html", "400px" )
+```
+<br>
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-A.2.html", "400px" )
+```
+<br>
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-A.3.html", "200px" )
+```
+<br>
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-A.4.html", "100px" )
+```
+
+
+<br>
+<hr>
+
+# Appendix B - Bonus Spectral Data
+
+Each built-in **colorSpec** object in **Appendix A** takes time to fully document in `.Rd` help files. 
+Here are some bonus spectra files under folder `extdata` that users may find interesting and useful. 
+Use the function `readSpectra()` to construct a **colorSpec** object from the file,
+for example:
+```{r echo=TRUE}
+sunlight = readSpectra( system.file( 'extdata/illuminants/sunlight.txt', package='colorSpec' ) )
+sunlight
+```
+See the top of each file for sources, attribution, and other information.
+Alternatively, one can run `summary()` on the imported object. 
+Some of the files in `Control` format have associated `JPG` or `PNG` images of plots.
+
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-B.1.html", "350px" )
+```
+<br>
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-B.2.html", "450px" )
+```
+<br>
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-B.3.html", "400px" )
+```
+
+<br>
+
+# Appendix C - Spectrum Products
+
+This Appendix is a very formal mathematical treatment of spectra. 
+In infinite dimensions we use the terminology of functional analysis.
+In finite dimensions we use the terminology of linear algebra. 
+For easier reference here is a repeat of Table 1.1:
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-C.1.html", "550px" )
+```
+
+There are 5 natural binary products on these spaces:
+<br>
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-C.2.html", "350px" )
+```
+
+An equivalent way to handle these material diagonal matrices is to represent 
+them instead as simple vectors – the entries along the diagonal. 
+The above products with diagonal matrices then become the much simpler entrywise or Hadamard product.
+This is how it is done in **colorSpec**, using R's built-in entrywise product operation.
+
+The first 4 products can be strung together to get an associative product:
+$$L \times M_1 \times ... \times M_m \times L^* \to R$$
+It is not hard to show that this product is _multilinear_.
+This means that if one fixes all terms except the $i^{th}$ material location, then the composition:
+$$M \to L \times M_1 \times ... \times \bullet \times ... \times M_m \times L^* \to R$$
+is linear, see @LangLinear. 
+The first inclusion map means to place the material spectrum in $M$
+at the ith variable slot $\bullet$ in the product.
+The composition map is a functional on $M$ which is an element of $M^*$,
+i.e. a material responder. 
+This special method of creating a material responder - a spectrum in $M^*$ - plus all the
+products in the above table, 
+are available in the function `product()` in **colorSpec**.
+See that help page for examples.
+
+The right-hand term $R$ can be thought of as standing for _Response_ or _Real numbers_.
+In **colorSpec** the light responders can have _multiple_ channels, 
+e.g. _R_, _G_, and _B_, 
+and so there are conventions on the admissible numbers of spectra for each term in these products.
+See the help page for `colorSpec::product()` for details.
+
+<br>
+
+# Appendix D - Proofs
+
+```{r echo=FALSE, results='asis'}
+    includeplain("proofs.txt")
+```
+
+
+<br><br>
+
+# Session Information
+
+<pre>
+```{r, echo=FALSE, results='asis'}
+sessionInfo()
+```
+</pre>

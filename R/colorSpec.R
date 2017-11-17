@@ -577,6 +577,8 @@ extradata.colorSpec <- function( x )
         attr( out, a ) = attr( x, a )
         }
         
+    specnames(out)  = specnames(x)
+        
     return( out )
     }
     

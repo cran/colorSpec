@@ -22,7 +22,7 @@ testAllReads <- function()
         
     print( extdata )
     
-    pathvec = dir( extdata, recur=TRUE, full=TRUE ) #; print( pathvec )
+    pathvec = list.files( extdata, recursive=TRUE, full=TRUE ) #; print( pathvec )
     
     #   ignore some file extensions
     pattern1    = "[.](png|jpg|xls|m|htm|html)$"
@@ -56,7 +56,7 @@ testAllReads <- function()
     
 
 
-checkQuality <- function()
+checkQuantity <- function()
     {
     #   find the extdata folder
     if( grepl( "[..]Rcheck", getwd() ) )
@@ -92,9 +92,9 @@ checkQuality <- function()
         
         "action/BeanPhotosynthesis.txt",        "photons->action",
         
-        "filters/Hoya.txt",                     "transmittance",
-        "filters/Rosco.txt",                    "transmittance",        
-        "filters/Midwest-SP700-2014.txt",       "transmittance",        
+        "objects/Hoya.txt",                     "transmittance",
+        "objects/Rosco.txt",                    "transmittance",        
+        "objects/Midwest-SP700-2014.txt",       "transmittance",        
 
         "targets/CC_Avg20_spectrum_XYY.txt",    "reflectance",            
         "targets/N130501.txt",                  "transmittance",            
@@ -177,6 +177,6 @@ checkQuality <- function()
     
 if( ! testAllReads() )  stop( "testAllReads() failed !" )
 
-if( ! checkQuality() )  stop( "checkQuality() failed !" )
+if( ! checkQuantity() ) stop( "checkQuantity() failed !" )
 
 cat( "Passed all read tests !\n" )

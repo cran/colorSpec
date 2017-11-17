@@ -191,7 +191,8 @@ resampleXY <- function( .x, .y, .xnew, .method, .span )
                 
         
 #   .list       a list of colorSpec objects, with names        
-#   value       TRUE iff all objects have the same quantity and wavelength        
+#   value       TRUE iff all objects have the same quantity and wavelength, and distinct specnames
+
 areSpectraBindable <- function( .list )
     {
     if( ! is.list( .list ) )    return(FALSE)
@@ -209,11 +210,10 @@ areSpectraBindable <- function( .list )
             return(FALSE)
             }
         }
-        
-        
-        
+
     if( n == 1 )    return(TRUE)
     
+    #   identical quantities
     qvec    = sapply( .list, quantity.colorSpec )
     
     if( 2 <= length(unique(qvec)) ) 
@@ -223,6 +223,7 @@ areSpectraBindable <- function( .list )
         }
         
         
+    #   identical wavelengths
     wave    = wavelength( .list[[1]] )
     
     for( k in 2:n )
@@ -233,7 +234,15 @@ areSpectraBindable <- function( .list )
             return(FALSE)
             }
         }
-    
+        
+    #   duplicated specnames
+    namevec = unlist( sapply( .list, specnames.colorSpec ) )
+    if( any(duplicated(namevec)) ) 
+        {
+        log.string( ERROR, "The list of %d spectra are not bindable, because the specnames are not all distinct.", n )
+        return(FALSE)
+        }
+        
     return(TRUE)
     }
         

@@ -21,7 +21,7 @@ plotPatchesRGB( obj, normalize=FALSE, gamma='sRGB', background='gray50',
                 Or a data frame containing a matrix column with the exact name \code{'RGB'},
                 also with assigned rownames.
                 If the data frame has optional columns \code{LEFT,TOP,WIDTH,HEIGHT} then these
-                are used to draw the patches.  The Y coordinates increases going down the page.}
+                are used to draw the patches.  The Y coordinate increases going down the page.}
   \item{normalize}{If \code{TRUE} then all RGBs are scaled so their maximum is 1}                   
   \item{gamma}{either the string \code{'sRGB'} or a positive number giving the gamma function
                 of the display;

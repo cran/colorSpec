@@ -24,10 +24,10 @@ testProducts <- function()
         }
     
     #   read some materials
-    IR.blocker  = readSpectra( file.path( extdata, "filters/Midwest-SP700-2014.txt" ) ) # 1 spectrum
+    IR.blocker  = readSpectra( file.path( extdata, "objects/Midwest-SP700-2014.txt" ) ) # 1 spectrum
     Hematoxylin = readSpectra( file.path( extdata, "stains/Hematoxylin.txt" ) )         # 1 spectrum
-    Hoya        = readSpectra( file.path( extdata, "filters/Hoya.txt" ) )               # 4 spectra
-    Rosco       = readSpectra( file.path( extdata, "filters/Rosco.txt" ) )              # 42 spectra
+    Hoya        = readSpectra( file.path( extdata, "objects/Hoya.txt" ) )               # 4 spectra
+    Rosco       = readSpectra( file.path( extdata, "objects/Rosco.txt" ) )              # 42 spectra
     
     #   read some sources
     Lumencor    = readSpectra( file.path( extdata, "sources/Lumencor-SpectraX.txt" ), 380:720 ) # 7 spectra

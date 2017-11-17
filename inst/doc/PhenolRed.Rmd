@@ -1,0 +1,149 @@
+---
+title: "Phenol Red : pH Indicator"
+author: "Glenn Davis"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: false
+bibliography: bibliography.bib
+csl: personal.csl    
+vignette: >
+  %\VignetteIndexEntry{Phenol Red : pH Indicator}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Phenol red is an indicator commonly used to measure pH
+in swimming pool test kits, see e.g. @K-1000.
+The goal of this **colorSpec** vignette is to reproduce the colors seen in such
+a test kit, for typical values of pool pH.
+Calculations like this one might make a good project for a college freshman chemistry class.
+
+```{r, echo=TRUE, message=FALSE}
+library( colorSpec )
+```
+
+<br>
+
+## Absorbance Spectra at Different pH Values
+
+The absorbance data for phenol red has already been digitized from @Rovati:
+
+```{r fig.width=7, fig.height=4,  fig.show='hold'}
+path = system.file( "extdata/stains/PhenolRed-Fig7.txt", package="colorSpec" )
+wave = 350:650
+phenolred = readSpectra( path, wavelength=wave )
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.4,0.2) )
+plot( phenolred, main='Absorbance Spectra of Phenol Red at Different pH Values' )
+```
+Compare this plot with @Rovati, Fig. 7.
+Unfortunately, the concentration and optical path length are unknown,
+but these curves can still be used as 'relative absorbance'.
+
+
+<br>
+
+## Absorbance at Selected Wavelengths
+
+We investigate how absorbance depends on pH for a few selected wavelengths.
+
+```{r, echo=TRUE, message=TRUE, fig.width=7, fig.height=5,  fig.show='hold'}
+wavesel = c( 365, 430, 477, 520, 560, 590 )  # 365 and 477 are 'isosbestic points'
+mat = apply( as.matrix(wavesel), 1, function( lambda ) { as.numeric(lambda == wave) } )
+colnames( mat ) = sprintf( "%g nm", wavesel )
+mono = colorSpec( mat, wavelength=wave, quantity='power' )
+RGB = product( mono, BT.709.RGB, wavelength=wave )
+colvec = grDevices::rgb( DisplayRGBfromLinearRGB( RGB / max(RGB) ) )
+
+phenolsel = resample( phenolred, wavesel )
+pH = as.numeric( sub( '[^0-9]*([0-9]+)$', '\\1', specnames(phenolred) ) )
+pHvec = seq(min(pH),max(pH),by=0.05)
+phenolsel = interpolate( phenolsel, pH, pHvec )
+mat = t( as.matrix( phenolsel ) )
+par( omi=c(0,0,0,0), mai=c(0.8,0.9,0.6,0.4) )
+plot( range(pH), range(mat), las=1, xlab='pH', ylab='absorbance', type='n' )
+grid( lty=1 ) ; abline( h=0 )
+matlines( pHvec, mat, lwd=3, col=colvec, lty=1 )
+title( "Absorbance of Phenol Red at Selected Wavelengths")
+legend( 'topleft', specnames(mono), col=colvec, lty=1, lwd=3, bty='n' )
+```
+
+<br>
+
+Note that the curves for the isosbestic points 365 and 477 nm are approximately flat,
+as expected.
+But for 430 nm the curve is distinctly non-monotone.
+This indicates that the solution is not truly a mixture of the
+acidic and basic species (especially for pH $\le$ 6),
+and there may be an undesired side reaction, see @wiki:pH.
+
+<br>
+
+## Interpolation from pH=6.8 to pH=8.2
+
+Swimming pools should be slightly basic;
+a standard test kit covers the range from pH=6.8 to pH=8.2.
+```{r, echo=TRUE,  message=TRUE, results='hold', fig.width=7, fig.height=4,  fig.show='hold'}
+pHvec = seq(6.8,8.2,by=0.2)
+phenolpool = interpolate( phenolred, pH, pHvec )
+par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.4,0.2) )
+plot( phenolpool, main="Absorbance Spectra of Phenol Red at Swimming Pool pH Values" )
+```
+
+The rest of this section is best viewed on a display calibrated for sRGB, see @wiki:sRGB.
+```{r, echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'}
+# create an uncalibrated 'material responder'
+testkit = product( D65.1nm, 'solution', BT.709.RGB, wave=wave )
+# now calibrate, but lower the background a little, to allow more 'headroom' for indicator colors
+bglin = 0.96
+testkit = calibrate( testkit, response=bglin )
+RGB = product( phenolpool, testkit )
+class(RGB) = 'model.matrix'
+df.RGB = data.frame( RGB=RGB, LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
+par( omi=c(0,0,0,0), mai=c(0.3,0,0.3,0) )
+bg = rgb( DisplayRGBfromLinearRGB( t(rep(bglin,3)) ) )
+plotPatchesRGB( df.RGB, labels=F, background=bg )
+text( (1:nrow(RGB)) + 0.5, 2, sprintf("%.1f",pHvec), adj=c(0.5,1.2), xpd=NA )
+title( main='Calculated Colors for pH from 6.8 to 8.2' )
+```
+
+The background graylevel `bg` is slightly less than 255 so that the
+red channel in the colors is not saturated.
+If the background were 'peak white' (255,255,255),
+then some of the colors would be outside the sRGB gamut.
+
+In the first figure above,
+the phenol red concentration and optical path length are unknown.
+Compared to a real test kit, the calculated colors look a little faded.
+An absorbance multiplier can easily tweak the unknown concentration, as follows.
+
+```{r, echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'}
+tweak = 1.2
+phenolpool = multiply( phenolpool, tweak )
+RGB = product( phenolpool, testkit )
+class(RGB) = 'model.matrix'
+df.RGB = data.frame( RGB=RGB, LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
+par( omi=c(0,0,0,0), mai=c(0.3,0,0.3,0) )
+plotPatchesRGB( df.RGB, background=bg, labels=F )
+text( (1:nrow(RGB)) + 0.5, 2, sprintf("%.1f",pHvec), adj=c(0.5,1.2), xpd=NA )
+main = sprintf( 'Calculated Colors for pH from 6.8 to 8.2 (absorbance multiplier=%g)', tweak )
+title( main=main )
+```
+These colors are a better match to those in the test kit.
+
+
+
+## References
+
+<div id="refs"></div>
+
+<br><br>
+
+## Session Information
+
+<pre>
+```{r, echo=FALSE, results='asis'}
+sessionInfo()
+```
+</pre>

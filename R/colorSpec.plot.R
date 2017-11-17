@@ -41,7 +41,7 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
     if( is.null(color)  )
         {
         #   compute color from the spectra themselves
-        #   note that BT.709 is a global data.frames
+        #   note that BT.709.RGB is a global object
         if( type(x) == "material" )
             {
             #   compute accurate color for sRGB display
@@ -245,17 +245,48 @@ initPlot.colorSpec  <- function( .x, .xlim=c(NA,NA), .ylim=c(NA,NA), .ylab=NA, .
             ymin = min( data, 0, na.rm=T )
         }
         
+    margin.axislabels   = 0.25
     
-    plot.default( c(xmin,xmax), c(ymin,ymax), las=1, xlab='', ylab='', type='n', lab=c(10,8,7), log=.log,  tcl=0, mgp=c(3, 0.25, 0) )
+    plot.default( c(xmin,xmax), c(ymin,ymax), las=1, xlab='', ylab='', type='n', lab=c(10,8,7), log=.log,  tcl=0, mgp=c(3, margin.axislabels, 0) )
     
-    title( xlab="Wavelength (nm)", line=1.5 )
-    title( ylab=.ylab, line=2 )
+
+    title( xlab="Wavelength (nm)", line=1.25 + margin.axislabels )
+    
+    line_count = lines_for_ylab() + margin.axislabels   #; print( line_count )
+    
+    title( ylab=.ylab, line=line_count )  # or 2.5 or 2.0
     grid( lty=1, equilogs=F )
     abline( h=0 )    
     
     return( invisible(TRUE) )
     }
     
+    
+#   no argument - use the current plot context    
+lines_for_ylab <- function()
+    {
+    #cat( "------------------\n")
+    
+    str = as.character( axTicks(2) )    #; print(str)
+    width.str   = max(strwidth(str,units="inches"))
+    height.str  = max(strheight(str,units="inches"))   #   should all have the same height !
+    #cat( width.str, " ", height.str, '\n' )
+    
+    #usr = par('usr')    #; print(usr)
+    #width.plot  = abs( usr[2] - usr[1] )
+    #height.plot = abs( usr[4] - usr[3] )
+    
+    #width.plot  = par('fin')[1]
+    #height.plot = par('fin')[2]
+    
+    # height.str is now in y-units, convert to x-units
+    # height.str  = (width.plot/height.plot) * height.str ; print( height.str )
+    
+    fudge   = 0.70    
+    line_count  = fudge * width.str / height.str #; print(line_count)
+
+    return( line_count )
+    }
         
     
     

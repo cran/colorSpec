@@ -1,6 +1,7 @@
-
+CGATS.17
 CREATED	"2014-11-01" 
 ORIGINATOR	"Hoya Optics"
+DESCRIPTOR	"Transmittance for 4 commonly used Hoya color filters"
 INSTRUMENTATION	"Unknown"
 MEASUREMENT_SOURCE	"Illumination=Unknown	ObserverAngle=Unknown	WhiteBase=Abs	Filter=Unknown"
 QUANTITY	"TRANSMITTANCE"

@@ -1,5 +1,7 @@
-LGOROWLENGTH	4
+CGATS.17
 CREATED	"2013/07/19"  # Time: 22:45
+DESCRIPTOR	"transmittance of a few Rosco filters"
+ORIGINATOR	"http://rosco.com"
 INSTRUMENTATION	"Unknown"
 MEASUREMENT_SOURCE	"Illumination=Unknown	ObserverAngle=Unknown	WhiteBase=Abs	Filter=Unknown"
 QUANTITY	"TRANSMITTANCE"

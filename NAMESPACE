@@ -44,7 +44,7 @@ S3method(photometric,colorSpec)
 S3method(probeOptimalColors,colorSpec)
 S3method(plotOptimals3D,colorSpec)
 S3method(computeADL,colorSpec)
-              
+S3method(interpolate,colorSpec)
     
     
 export(numSpectra, 
@@ -83,7 +83,8 @@ export(numSpectra,
     photometric,
     probeOptimalColors,
     plotOptimals3D,
-    computeADL    
+    computeADL,
+    interpolate    
     )
     
 #   functions that are already generic, for S3 classes    
@@ -104,13 +105,13 @@ export(
 export( colorSpec )
 export( 
     readSpectra,
-#   readAllSpectra,
     readSpectraControl,
     readSpectraXYY,
     readSpectraSpreadsheet,
 #   readSpectraExcel,
+    readSpectrumScope,
     readSpectraCGATS,
-    readSpectrumScope
+    readCGATS    
     )
     
 #   spectra with an equation    
@@ -140,9 +141,9 @@ importFrom("grDevices", "colorRampPalette", "rgb")
 importFrom("graphics", "abline", "grid", "legend", "lines",
              "lines.default", "par", "plot", "plot.default", "plot.new",
              "plot.window", "points", "points.default", "polygon",
-             "rect", "text", "title")
+             "rect", "text", "title", axTicks, strwidth, strheight )
 importFrom("stats", "approx", "coef", "lm", "loess", "predict",
              "runif", "spline", "splinefun")
 importFrom("utils", "capture.output", "flush.console", "modifyList",
-             "object.size", "read.table", "str", "type.convert")
+             "object.size", "read.table", "write.table", "str", "type.convert")
              

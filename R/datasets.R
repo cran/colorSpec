@@ -227,7 +227,7 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     #ColorChecker = readSpectra( "../inst/extdata/targets/CC_Avg20_spectrum_XYY.txt" )
     #savevec = c( savevec, "ColorChecker" )
     
-    Hoya = readSpectra( "../inst/extdata/filters/Hoya.txt" )
+    Hoya = readSpectra( "../inst/extdata/objects/Hoya.txt" )
     organization(Hoya)  = mostEfficientOrganization(Hoya)         
     savevec = c( savevec, "Hoya" )
         

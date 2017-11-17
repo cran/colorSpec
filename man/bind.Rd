@@ -6,8 +6,7 @@
 \alias{bind.colorSpec}
 
 \description{
-  Take a sequence of \bold{colorSpec} objects and combine their spectra - if they all 
-  have the same \code{\link{wavelength}} and \code{\link{quantity}} 
+  Take a sequence of \bold{colorSpec} objects and combine their spectra
 }
 \usage{
 \S3method{bind}{colorSpec}( \ldots )
@@ -15,7 +14,7 @@
 }
 
 \arguments{
-  \item{...}{\bold{colorSpec} objects with the same \code{\link{wavelength}} and \code{\link{quantity}} }
+  \item{...}{\bold{colorSpec} objects with the same \code{\link{wavelength}} and \code{\link{quantity}}, and with distinct \code{\link{specnames}} }
     
 }
     
@@ -42,9 +41,11 @@
 \seealso{
   \code{\link{wavelength}},
   \code{\link{quantity}},
+  \code{\link{specnames}},    
   \code{\link{organization}},  
   \code{\link{extradata}},    
-  \code{\link{metadata}}
+  \code{\link{metadata}},
+  \code{\link[base]{merge}}  
 }
 
 

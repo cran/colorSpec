@@ -49,11 +49,11 @@ setLogFormat <- function( .fmt )
     
 log.string <- function( level, msg, ... )
     {    
-    # print( g.word )
+    conn    = stderr()
     
     if( ! is.integer(level) )
         {
-        cat( "ERROR  log.string(). level is not an integer.\n" )
+        cat( "ERROR  log.string(). level is not an integer.\n", file=conn )
         return( invisible(FALSE) )
         }
     
@@ -68,7 +68,7 @@ log.string <- function( level, msg, ... )
     idx = which( grepl("^%",g.word) )   #; print( idx )
     if( length(idx) == 0 )
         {
-        cat( msg, '\n' )
+        cat( msg, '\n', file=conn )
         return( invisible(TRUE) )
         }
         
@@ -105,7 +105,10 @@ log.string <- function( level, msg, ... )
         }
     
     # print( word )
-    cat( paste0(word,collapse=''), '\n' )   ; flush.console()
+    #   cat( paste0(word,collapse=''), '\n' )   ; flush.console()
+    
+    mess    = paste0(word,collapse='')
+    #   message( mess )   ; flush.console()
     
     #print( sys.parent(1) )
     #print( deparse(sys.call(-3L)) )        
@@ -116,18 +119,22 @@ log.string <- function( level, msg, ... )
     #print( deparse(sys.call(2L)[[1L]]) )    
     #print( deparse(sys.call(3L)[[1L]]) )    
  
-    
+   
     if( g.options$stoponerror  &&  level <= ERROR )
-        stop( "Stopping, because option stoponerror==TRUE", call.=FALSE )
-    
+        stop( mess, '\n', "Stopping, because option stoponerror==TRUE", call.=FALSE )
+
+    cat( mess, '\n', file=conn ) ;   flush(conn)
+
     return( invisible(TRUE) )
     }
     
 log.object <- function( level, obj, type='whole', addname=TRUE )
     {    
+    conn    = stderr()
+    
     if( ! is.integer(level) )
         {
-        cat( "ERROR  log.object(). level is not an integer.\n" )
+        cat( "ERROR  log.object(). level is not an integer.\n", file=conn )
         return( invisible(FALSE) )
         }
         
@@ -140,21 +147,21 @@ log.object <- function( level, obj, type='whole', addname=TRUE )
         line    = capture.output( print(obj) )
         if( addname )   
             {
-            cat( deparse(substitute(obj)) )
+            cat( deparse(substitute(obj)), file=conn )
             if( 1 < length(line) )
-                cat( '\t=\n' )
+                cat( '\t=\n', file=conn )
             else
-                cat( '\t=\t' )
+                cat( '\t=\t', file=conn )
             }
             
         for( k in 1:length(line) )
-            cat( line[k], '\n' )
+            cat( line[k], '\n', file=conn )
         }
     else if( type == 'str' )
         {
         if( addname )   
             {
-            cat( deparse(substitute(obj)), '\n' )            
+            cat( deparse(substitute(obj)), '\n', file=conn )            
             }
         print( str(obj) )
         }

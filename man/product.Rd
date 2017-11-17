@@ -221,7 +221,7 @@ http://en.wikipedia.org/wiki/Hadamard_product_\%28matrices\%29
 
 \examples{
 #  sequence 1.
-path = system.file( "extdata/filters/Midwest-SP700-2014.txt", package='colorSpec' )
+path = system.file( "extdata/objects/Midwest-SP700-2014.txt", package='colorSpec' )
 blocker.IR = readSpectra( path )
 product( blocker.IR, Hoya, wave='auto' )
 
