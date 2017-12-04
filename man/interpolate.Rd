@@ -52,7 +52,7 @@ with \code{method='natural'}.
 \code{\link{organization}},   
 \code{\link{wavelength}},
 \code{\link{extradata}},
-\code{\link[stats]{spline}}
+\code{\link{spline}}
 }
 
 \examples{

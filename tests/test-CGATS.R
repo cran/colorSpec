@@ -1,6 +1,8 @@
 
 library( colorSpec )
 
+cs.options( loglevel='TRACE' )
+
 testCGATS <- function()
     {
     mess    = sprintf( "in testCGATS().  getwd() = '%s'", getwd() )

@@ -1,16 +1,19 @@
-ORIGINATOR	"http://www.lrc.rpi.edu/programs/nlpip/lightinganswers/lightsources/scripts/NLPIP_LightSourceColor_Script.m"
+CGATS.17
+#   the white-space separator in this file is not really CGATS-standard -- it is a single-tab character.
+ORIGINATOR	"Publication 13.3, Vienna: Commission Internationale de l'Eclairage (CIE)"
+URL	"http://www.lrc.rpi.edu/programs/nlpip/lightinganswers/lightsources/scripts/NLPIP_LightSourceColor_Script.m"
 CREATED	"2016-04-05" 
 INSTRUMENTATION	"Unknown"
 MEASUREMENT_SOURCE	"Illumination=Unknown	ObserverAngle=Unknown	WhiteBase=Abs	Filter=Unknown"
 QUANTITY	"REFLECTANCE"
 KEYWORD	"SAMPLE_NAME"
 KEYWORD	"Munsell"
-KEYWORD	"ISCC-NBS Name"
+KEYWORD	"ISCC-NBS_Name"
+
 NUMBER_OF_FIELDS	98
 BEGIN_DATA_FORMAT
-SAMPLE_NAME	Munsell	ISCC-NBS Name	nm360	nm365	nm370	nm375	nm380	nm385	nm390	nm395	nm400	nm405	nm410	nm415	nm420	nm425	nm430	nm435	nm440	nm445	nm450	nm455	nm460	nm465	nm470	nm475	nm480	nm485	nm490	nm495	nm500	nm505	nm510	nm515	nm520	nm525	nm530	nm535	nm540	nm545	nm550	nm555	nm560	nm565	nm570	nm575	nm580	nm585	nm590	nm595	nm600	nm605	nm610	nm615	nm620	nm625	nm630	nm635	nm640	nm645	nm650	nm655	nm660	nm665	nm670	nm675	nm680	nm685	nm690	nm695	nm700	nm705	nm710	nm715	nm720	nm725	nm730	nm735	nm740	nm745	nm750	nm755	nm760	nm765	nm770	nm775	nm780	nm785	nm790	nm795	nm800	nm805	nm810	nm815	nm820	nm825	nm830
+SAMPLE_NAME	Munsell	ISCC-NBS_Name	nm360	nm365	nm370	nm375	nm380	nm385	nm390	nm395	nm400	nm405	nm410	nm415	nm420	nm425	nm430	nm435	nm440	nm445	nm450	nm455	nm460	nm465	nm470	nm475	nm480	nm485	nm490	nm495	nm500	nm505	nm510	nm515	nm520	nm525	nm530	nm535	nm540	nm545	nm550	nm555	nm560	nm565	nm570	nm575	nm580	nm585	nm590	nm595	nm600	nm605	nm610	nm615	nm620	nm625	nm630	nm635	nm640	nm645	nm650	nm655	nm660	nm665	nm670	nm675	nm680	nm685	nm690	nm695	nm700	nm705	nm710	nm715	nm720	nm725	nm730	nm735	nm740	nm745	nm750	nm755	nm760	nm765	nm770	nm775	nm780	nm785	nm790	nm795	nm800	nm805	nm810	nm815	nm820	nm825	nm830
 END_DATA_FORMAT
-
 NUMBER_OF_SETS	14
 BEGIN_DATA
 TCS01	7.5R 6/4	Light greyish red	0.116	0.136	0.159	0.19	0.219	0.239	0.252	0.256	0.256	0.254	0.252	0.248	0.244	0.24	0.237	0.232	0.23	0.226	0.225	0.222	0.22	0.218	0.216	0.214	0.214	0.214	0.216	0.218	0.223	0.225	0.226	0.226	0.225	0.225	0.227	0.23	0.236	0.245	0.253	0.262	0.272	0.283	0.298	0.318	0.341	0.367	0.39	0.409	0.424	0.435	0.442	0.448	0.45	0.451	0.451	0.451	0.451	0.451	0.45	0.45	0.451	0.451	0.453	0.454	0.455	0.457	0.458	0.46	0.462	0.463	0.464	0.465	0.466	0.466	0.466	0.466	0.467	0.467	0.467	0.467	0.467	0.467	0.467	0.467	0.467	0.467	0.467	0.466	0.466	0.466	0.466	0.466	0.465	0.464	0.464

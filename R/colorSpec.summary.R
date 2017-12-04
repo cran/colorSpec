@@ -10,8 +10,8 @@ print.colorSpec  <-  function( x, ... )
 
 
     
-#   object       a colorSpec object
-#   computes a pretty character string, prints it to console, and then returns it invisibly
+#   object  a colorSpec object
+#   computes a pretty character string, prints it to stdout(), and then returns it invisibly
 
 summary.colorSpec  <-  function( object, long=TRUE, ... )
     {    
@@ -191,7 +191,7 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
         out = c( out, '', mess, '' )
         }
         
-    cat( out, sep='\n', file=stderr() )
+    cat( out, sep='\n' )
     
     return( invisible(out) )
     }

@@ -33,8 +33,8 @@ For these spaces see packages \pkg{colorspace}  and  \pkg{colorscience}.
 \item  there are few non-linear operations 
 \item  there is little support for scientific units; for these see package \pkg{colorscience}
 \item photons are parameterized by wavelength in nm; 
-other wavelength units and common alternative metrics
-such as wavenumber and electronvolt are not available
+other wavelength units and alternative parameterizations,
+such as wavenumber and electronvolt, are not available
 }
 
 Regarding the non-linear operations in 2, 

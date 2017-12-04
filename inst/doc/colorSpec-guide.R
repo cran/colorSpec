@@ -20,7 +20,7 @@ library(colorSpec)
     includetable("tables/table-1.1.html", "550px" )
 
 ## ----echo=FALSE, results='asis'------------------------------------------
-    includetable("tables/table-2.1.html", "600px" )
+    includetable("tables/table-2.1.html", "620px" )
 
 ## ----echo=FALSE, results='asis'------------------------------------------
     includetable("tables/table-5.1.html", "400px" )
@@ -48,7 +48,7 @@ sunlight
     includetable("tables/table-B.2.html", "450px" )
 
 ## ----echo=FALSE, results='asis'------------------------------------------
-    includetable("tables/table-B.3.html", "400px" )
+    includetable("tables/table-B.3.html", "420px" )
 
 ## ----echo=FALSE, results='asis'------------------------------------------
     includetable("tables/table-C.1.html", "550px" )

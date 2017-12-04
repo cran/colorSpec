@@ -19,7 +19,7 @@ CCTfromXYZ( XYZ )
 \arguments{
   \item{x}{an \bold{colorSpec} \R object with \code{type} equal to \code{'light'}, and M spectra }
   
-  \item{XYZ}{a \bold{colorSpec} 3-vector with XYZ tristimuls values }
+  \item{XYZ}{a  3-vector with XYZ tristimulus values }
     
 }
 
@@ -71,6 +71,8 @@ computeCCT( D65.1nm )       # returns 6502.068
 computeCCT( A.1nm )         # returns 2855.656
 CCTfromXYZ( c(1,1,1) )      # returns 5454.028
 
+moon = readSpectra( system.file( "extdata/sources/moonlight.txt", package='colorSpec' ) )
+computeCCT( moon )          # returns 4482.371
 }
 
 

@@ -4,7 +4,7 @@
 #   collapsesingle  if there is only one table, then return the single data.frame (instead of a list with 1 data.frame)
 #    
 #   returns a list of data.frames
-#           the list is assigned attributes: "path", "preamble", and (if present) "date", "created", "originator", "file_descriptor"
+#           the list is assigned attributes: "path", "preamble", and (if present) "date", "created", "originator", "file_descriptor", "url"
 #           each data.frame is assigned attributes: "header", and (if present) "descriptor"
 #
 #   the column names are taken from the BEGIN_DATA_FORMAT line
@@ -26,7 +26,11 @@ readCGATS <-  function( path, collapsesingle=FALSE )
         {
         #   copy attributes from the list down to the 1st data.frame
         for( w in names( attributes(out) ) )
+            {
+            if( w %in% 'names' )    next
+            
             attr( out[[1]], w ) = attr( out, w )
+            }
             
         #   just return the 1st data.frame
         out = out[[1]]
@@ -56,30 +60,48 @@ parseCGATS <-  function( .line_vec )
         
     idx_begin = c( 1, idx_end[1:(tables-1)] + 1 )
     
-    out = vector( tables, mode='list' )
+    out         = vector( tables, mode='list' )
+    names(out)  = character(tables)
     
     for( k in 1:tables )
         {
         out[[k]] = extractTableCGATS( .line_vec[ idx_begin[k]:idx_end[k] ], k )
         
         if( is.null(out[[k]]) ) return(NULL)
+        
+        names(out)[k]            = attr( out[[k]], 'name' )
+        attr( out[[k]], 'name' ) = NULL
         }
         
     #   move some some lines from header #1 to preamble
     header1     = attr( out[[1]], "header" )
-    pattern     = "^ORIGINATOR|^CREATED|^FILE_DESCRIPTOR"
-    preamble    = which( grepl( pattern, header1 ) )
-    preamble    = unique( c(1,preamble) )   #   add line #1
+    pattern     = "^[ \t]*ORIGINATOR|^[ \t]*CREATED|^[ \t]*FILE_DESCRIPTOR|^[ \t]*URL"
+    preamble    = c( 1, which( grepl( pattern, header1 ) ) )
+    preamble    = 1:max(preamble)
+
+    #   preamble    = unique( c(1,preamble) )   #   add line #1
     
     attr( out[[1]], "header" )  = header1[ -preamble ]
-            
+
     preamble    = .line_vec[ preamble ]
-            
     attr( out, "preamble" ) = preamble
         
-    for( w in c("date","created","originator","file_descriptor") )
+    for( w in c("date","created","originator","file_descriptor","url") )
         attr( out, w ) = extractFieldFromHeader( preamble, w )
-              
+        
+    #   trim blank lines from the beginning of all headers
+    for( k in 1:tables )
+        {
+        header  =     attr( out[[k]], "header" )
+        idx = which( grepl( "[^ \t]+", header ) )
+        if( length(idx) == 0 )
+            header = character(0)   # ALL lines are blank
+        else
+            header = header[ idx[1]:length(header) ]
+            
+        attr( out[[k]], "header" )  = header
+        }
+
     return( out )
     }
     
@@ -91,7 +113,7 @@ parseCGATS <-  function( .line_vec )
 extractTableCGATS <- function( .line_vec, table_idx )
     {
     #   find start of the table
-    pattern =   "^NUMBER_OF_FIELDS[ \t,]([0-9]+).*$"
+    pattern =   "^NUMBER_OF_FIELDS[ \t]+([0-9]+).*$"
     
     idx_number = which( grepl( pattern, .line_vec ) )   #; print( idx_number )
     if( length(idx_number) != 1 )
@@ -100,20 +122,55 @@ extractTableCGATS <- function( .line_vec, table_idx )
                             table_idx, length(idx_number) )
         return(NULL)
         }
-       
-
+        
     number_of_fields    = sub( pattern, "\\1", .line_vec[idx_number] )
     number_of_fields    = as.integer(number_of_fields)
+                  
+       
+    header  = as.character(0)       
+       
+    if( 1 < idx_number )
+        header = .line_vec[ 1:(idx_number-1) ]
+
+    table_name  = extractFieldFromHeader( header, 'TABLE_NAME' )    
+    if( is.null(table_name) )
+        table_name  = sprintf( "TABLE_%d", table_idx )
     
-    
-    #   find column names
-    idx_format = which( grepl( "^BEGIN_DATA_FORMAT[ \t,]*$", .line_vec ) )
-    if( length(idx_format) != 1  )
+    #   find data format block
+    idx_format_begin = which( grepl( "^BEGIN_DATA_FORMAT[ \t,]*$", .line_vec ) )
+    if( length(idx_format_begin) != 1  )
         {
         log.string( ERROR, "In table %d, expected exactly 1 BEGIN_DATA_FORMAT lines, but found %d.", 
-                                    table_idx, length(idx_begin) )
+                                    table_idx, length(idx_format_begin) )
         return(NULL)
         }
+        
+    idx_format_end = which( grepl( "^END_DATA_FORMAT[ \t,]*$", .line_vec ) )
+    if( length(idx_format_begin) != 1  )
+        {
+        log.string( ERROR, "In table %d, expected exactly 1 END_DATA_FORMAT lines, but found %d.", 
+                                    table_idx, length(idx_format_end) )
+        return(NULL)
+        }
+        
+    if( idx_format_end <= idx_format_begin+1 )
+        {
+        log.string( ERROR, "In table %d, BEGIN_DATA_FORMAT and END_DATA_FORMAT lines do not enclose a valid block of lines.", 
+                                    table_idx )
+        return(NULL)
+        }
+   
+    pattern = "^NUMBER_OF_SETS[ \t]+([0-9]+).*$"
+    idx_number = which( grepl( pattern, .line_vec ) )   #; print( idx_number )
+    if( length(idx_number) != 1 )
+        {
+        log.string( ERROR, "In table %d, expected exactly 1 NUMBER_OF_SETS lines, but found %d.", 
+                            table_idx, length(idx_number) )
+        return(NULL)
+        }
+    number_of_records   = sub( pattern, "\\1", .line_vec[idx_number] )
+    number_of_records   = as.integer(number_of_records)
+
         
     #   find beginning of the table data
     idx_begin = which( grepl( "^BEGIN_DATA[ \t,]*$", .line_vec ) )
@@ -124,87 +181,134 @@ extractTableCGATS <- function( .line_vec, table_idx )
         log.object( ERROR, idx_begin )
         return(NULL)
         }
+        
+    idx_end = which( grepl( "^END_DATA[ \t,]*$", .line_vec ) )
+    if( length(idx_end) != 1 )
+        {
+        log.string( FATAL, "In table %d, expected exactly 1 END_DATA lines, but found %d.", 
+                                    table_idx, length(idx_begin) )        
+        log.object( FATAL, idx_begin )
+        return(NULL)
+        }
+    if( idx_end != length(.line_vec) )
+        {
+        log.string( FATAL, "In table %d, expected END_DATA line at line %d, but found it at line %d.", 
+                                    table_idx, length(idx_begin), idx_end )        
+        return(NULL)
+        }
+    if( idx_end <= idx_begin+1 )
+        {
+        log.string( ERROR, "In table %d, BEGIN_DATA and END_DATA lines do not enclose a valid block of lines.", 
+                                    table_idx )
+        return(NULL)
+        }        
+        
+    
+    #  analyze the data format block
+    block = .line_vec[ (idx_format_begin+1):(idx_format_end-1) ]
 
-    if( 1 < idx_number )
-        header = .line_vec[ 1:(idx_number-1) ]
-    else
-        header  = ''
-
-    
-    #  split the line after BEGIN_DATA_FORMAT
-    line = .line_vec[ idx_format+1 ]
-    
-    if( grepl( "\t", line) )
-        sep = '\t'
-    else if( grepl( ",", line) )
-        sep = ','        
-    else
-        sep = ' '
-    
-    cname = strsplit( .line_vec[ idx_format+1 ], sep )[[1]]      #; print( cname )
+    #   first split using a _single_ tab
+    cname = unlist( strsplit( block, '\t' ) )    # ; print( cname )
     
     if( length(cname) != number_of_fields )
         {
-        log.string( WARN, "NUMBER_OF_FIELDS mismatch %d != %d.",
-                        length(cname), number_of_fields )
-        }
-    
-    #   put the data into a matrix of strings
-    data = strsplit( .line_vec[ (idx_begin+1):(length(.line_vec)-1) ], sep )
-    
-    #   data is a list of character vectors, with length(data) == # of lines
-    #   TODO: add check against NUMBER_OF_SETS
-    
-    #df = as.data.frame( data, stringsAsFactors=F )
-    #print( str(df) )
-    
-    #   fill data_mat[ , ] one row at a time
-    #   data_mat = matrix( "", nrow=length(data), ncol=length(cname) ) #	; print( str(data_mat) )
-    
-    #   quick check against NUMBER_OF_FIELDS
-    for( i in 1:length(data) )
-        {
-        #	print( str(data[[i]]) )
-        if( length( data[[i]] ) != number_of_fields )
+        log.string( INFO, "In table %d, using CGATS-standard white-space specification.", table_idx )
+
+        #   try to split fields again, but this time using CGATS-standard white-space
+        cname = strsplit( paste(block,collapse=''), '[ \t\n\r]+' )[[1]]     #; print( cname )
+        if( length(cname) != number_of_fields )
             {
-            log.object( ERROR, .line_vec[ idx_begin+i ] )
-            log.string( ERROR, "In table %d and row %d, NUMBER_OF_FIELDS mismatch %d != %d.",
-                                table_idx, i, length( data[[i]] ), number_of_fields )
+            log.string( ERROR, "In table %d, cannot split format lines so that NUMBER_OF_FIELDS == %d.",
+                                table_idx, number_of_fields )
             return(NULL)
             }
-        #   data_mat[ i, ] = data[[i]]
+            
+        #   split data using standard CGATS convention
+        
+        #   extract quoted strings using scan()
+        what = rep( list(character(0)), number_of_fields )
+        #   names(what) = cname
+        
+        out = scan( text=.line_vec[ (idx_begin+1):(idx_end-1) ], what=what, flush=TRUE, quiet=TRUE )
+        }
+    else
+        {
+        log.string( INFO, "In table %d, using non-CGATS-standard single tabs for white-space.", table_idx )
+        
+        if( 0 )
+        {
+        #   check that field names do not contain a space and are non-empty
+        mask1   = grepl( " ", cname )
+        mask2   = (cname == '')
+        idx = which( mask1 | mask2  )
+        if( 0 < length(idx) )
+            {
+            log.object( ERROR, cname[idx] )
+            log.string( ERROR, "In table %d, %d field names have embedded spaces, or are empty.",
+                        table_idx, length(idx) )
+            return(NULL)
+            }
         }
 
-    data_mat    = sapply( data, function(x) {x} )
-    
-    #   should be a matrix
-    if( ! is.matrix(data_mat) )
+        #   put the data into a matrix of strings
+        data = strsplit( .line_vec[ (idx_begin+1):(idx_end-1) ], '\t' )
+               
+        #   quick check against NUMBER_OF_FIELDS
+        for( i in 1:length(data) )
+            {
+            #	print( str(data[[i]]) )
+            if( length( data[[i]] ) != number_of_fields )
+                {
+                log.object( ERROR, .line_vec[ idx_begin+i ] )
+                log.string( ERROR, "In table %d and row %d, NUMBER_OF_FIELDS mismatch %d != %d.",
+                                    table_idx, i, length( data[[i]] ), number_of_fields )
+                return(NULL)
+                }
+            #   data_mat[ i, ] = data[[i]]
+            }
+
+        data_mat    = sapply( data, function(x) {x} )
+        
+        #   should be a matrix
+        if( ! is.matrix(data_mat) )
+            {
+            log.string( FATAL, "Internal Error. Object returned from sapply should be a matrix." )
+            return(NULL)
+            }
+
+        #   make data.frame with all strings.  Note that we transpose data_mat first
+        out = as.data.frame( t(data_mat), stringsAsFactors=FALSE )
+        }
+        
+    #   check that field names are valid
+    pattern = "^[-_.:/A-Za-z0-9]+$"
+    idx = which( ! grepl(pattern,cname) )
+    if( 0 < length(idx) )
         {
-        log.string( FATAL, "Internal Error. Object returned from sapply should be a matrix." )
+        log.object( ERROR, cname[idx] )
+        log.string( ERROR, "In table %d, %d field names are invalid.",
+                    table_idx, length(idx) )
         return(NULL)
         }
         
-    #   out = data.frame( type.convert(data_mat[ ,1],as.is=TRUE), stringsAsFactors=FALSE )
+        
+    #   out is now a list of character vectors
+    #   examine each character vector, and convert to vector of numbers if possible
+    out = lapply( out, type.convert, as.is=TRUE )
     
-    #out = data.frame( row.names=1:nrow(data_mat) )  # make data.frame with 0 columns
-    #for( j in 1:ncol(data_mat) )
-    #    {
-    #    out = cbind( out, type.convert(data_mat[ ,j],as.is=TRUE), stringsAsFactors=FALSE   )
-    #    #   print( str(out) )
-    #    }
-
-    #   make data.frame with all strings.  Note that we transpose data_mat first
-    out = as.data.frame( t(data_mat), stringsAsFactors=FALSE )
+    #   out is now a list, convert to a data.frame.  assigning class(out) = 'data.frame' does not work ?? !!
+    out = as.data.frame( out, stringsAsFactors=FALSE )   #col.names=cname, 
     
-    #   examine each column of strings, and convert to numbers if possible
-    out = lapply( out, function(x) { type.convert(x,as.is=TRUE) } )
+    if( nrow(out) != number_of_records )
+        {
+        log.string( WARN, "In table %d, expected %d records, but found %d.", 
+                                    table_idx, number_of_records, nrow(out) )        
+        }
+                                        
+    colnames( out ) = cname    # duplicates in cname[] will stay that way !
     
-    #   out is now a list, convert back to a data.frame.  assigning class(out) = 'data.frame' does not work ?? !!
-    out = as.data.frame( out, col.names=cname, stringsAsFactors=FALSE )
-    
-    #   colnames( out ) = cname    
-       
-    attr( out, "header" ) = header        
+    attr( out, "name" )     = table_name     
+    attr( out, "header" )   = header        
     
     for( w in c("descriptor") )
         attr( out, w ) = extractFieldFromHeader( header, w )
@@ -214,11 +318,21 @@ extractTableCGATS <- function( .line_vec, table_idx )
     
     
 
-#   .data       a list of data.frames, or a single data.frame.  The header data is stored as attr(df,"header")
-#   .path       name of file to write to    
-writeCGATS  <- function( .data, .path, .sep='\t' )
+#   .data       a list of data.frames or colorSpec objects, or a single data.frame or colorSpec object.  
+#               If .data is a list, the preamble can be stored as attr(df,"preamble").
+#               For each object df in the list, the header data is stored as attr(df,"header")
+#   .path       name of file to write to. Can also be 'clipboard'
+#   .sep        either space ' ' or tab '\t'.  If space then character columns of df are quoted.
+writeCGATS  <- function( .data, .path, .sep=' ' )
     {
-    if( is.data.frame(.data) )
+    .sep    = .sep[1]
+    
+    if( .sep != ' '  &&  .sep != '\t' )
+        {
+        log.string( ERROR, "separator=''%s', but it must be a space or tab.\n", .sep )
+        }
+    
+    if( is.data.frame(.data)  ||  is.colorSpec(.data) )
         {
         #   make a list with only 1 data.frame
         header  = attr(.data,'header')
@@ -243,10 +357,9 @@ writeCGATS  <- function( .data, .path, .sep='\t' )
         }
         
         
-    header  = attr(.data,"header")
-    if( ! is.null(header) )
-        writeLines( header, con )
-
+    preamble  = attr(.data,"preamble")
+    if( ! is.null(preamble) )
+        writeLines( preamble, con )
         
     for( df in .data )
         {
@@ -260,16 +373,20 @@ writeCGATS  <- function( .data, .path, .sep='\t' )
         
         if( is.null(df) )   next
         
-        extra   = extradata( df )
-        extradata( df ) = cbind( extra, data.frame( SAMPLE_NAME=specnames(df), stringsAsFactors=F ) )
-        
-        cols    = length( colnames(df) )
-        field   = colnames(df)[1:(cols-1)]
-        field   = c( field, sprintf( "nm%g", wavelength(df) ) )  
-                    
+        if( is.colorSpec(df) )
+            {
+            extra   = extradata( df )
+            extradata( df ) = cbind( extra, data.frame( SAMPLE_NAME=specnames(df), stringsAsFactors=F ) )
+            cols    = length( colnames(df) )               
+            field   = colnames(df)[1:(cols-1)]                 
+            field   = c( field, sprintf( "nm%g", wavelength(df) ) )  
+            }
+        else
+            field   = colnames(df)  
+            
         #   write description of the fields
         line_vec = character(0)
-        line_vec = c( line_vec, '' )
+        #   line_vec = c( line_vec, '' )
         line_vec = c( line_vec, paste( "NUMBER_OF_FIELDS", length(field), sep=.sep ) )
         line_vec = c( line_vec, "BEGIN_DATA_FORMAT" )
         line_vec = c( line_vec, paste( field, collapse=.sep ) )
@@ -278,17 +395,22 @@ writeCGATS  <- function( .data, .path, .sep='\t' )
     
         #   write the data
         line_vec = character(0)   
-        line_vec = c( line_vec, '' )        
+        #   line_vec = c( line_vec, '' )        
         line_vec = c( line_vec, paste( "NUMBER_OF_SETS", nrow(df), sep=.sep ) )
         line_vec = c( line_vec, "BEGIN_DATA" )
         writeLines( line_vec, con )
         
         #   print( str(format(df,digits=9)) )
+        if( .sep == ' ' )
+            quote   = which( sapply( df, is.character ) )
+        else
+            quote   = FALSE
         
+        #   convert all fields to character
         df  = format( df, digits=9, scientific=F )
-        
-        write.table( df, con, append = T, quote = F, sep = .sep,
-            eol = "\n", na = "NA", dec = ".", row.names = F, col.names = F )
+
+        write.table( df, file=con, append=T, quote=quote, sep=.sep,
+                        eol="\n", na="NA", dec=".", row.names=F, col.names=F )
             
         writeLines( "END_DATA", con )
         }
@@ -297,7 +419,8 @@ writeCGATS  <- function( .data, .path, .sep='\t' )
 
     return(TRUE)
     }
-        
+
+
     
 #   .data       a data.frame with color data, but possibly with columns that are model matrices
 #
@@ -377,76 +500,37 @@ makeCompatibleCGATS  <-  function( .data )
 #   returns NULL if not found    
 extractFieldFromHeader  <-  function( .header, .name )
     {
-    out     = NA
+    #   out     = NULL
 
-    if( .name == 'date' || .name == 'created' )
-        {
-        #   look for CREATED
-        pattern = "^CREATED[ \t](.+).*$"
-        idx = which( grepl( pattern, .header, ignore.case=T ) )
-        
-        if( length(idx) != 1 )  return(NULL)
-        
-        out = sub( pattern, "\\1", .header[idx] )   # ;       print(val)
-        
-        out = gsub( '\"', '', out )
-        }
-    else if( .name == "originator" )
-        {
-        pattern = "^ORIGINATOR[ \t,]([^,]+).*$"
-        idx = which( grepl( pattern, .header ) )
-        
-        if( length(idx) != 1 )  return(NULL)
-        
-        out = sub( pattern, "\\1", .header[idx] )   # ;       print(val)
-        
-        out = gsub( '\"', '', out )
-        }
-    else if( .name == "file_descriptor" )
-        {
-        pattern = "^FILE_DESCRIPTOR[ \t,]([^,]+).*$"
-        idx = which( grepl( pattern, .header ) )
-        
-        if( length(idx) != 1 )  return(NULL)
-        
-        out = sub( pattern, "\\1", .header[idx] )   # ;       print(val)
-        
-        out = gsub( '\"', '', out )
-        }        
+    replacement = "\\1"
+    
+    if( .name == 'date' )   
+        .name   = "CREATED"
     else if( .name == "descriptor" )
         {
-        pattern = "^(DESCRIPTOR|TABLE_DESCRIPTOR)[ \t,]([^,]+).*$"
-        idx = which( grepl( pattern, .header ) )
-        
-        if( length(idx) != 1 )  return(NULL)
-        
-        out = sub( pattern, "\\2", .header[idx] )   # ;       print(val)
-        
-        out = gsub( '\"', '', out )
+        .name = "(DESCRIPTOR|TABLE_DESCRIPTOR)"
+        replacement = "\\2"
         }
-    else if( .name == "serial" )
+ 
+    keyword = toupper(.name)
+    
+    pattern = sprintf( '^[ \t]*%s[ \t]+"([^"]+)".*$', keyword )    
+    
+    idx = which( grepl( pattern, .header ) )
+    
+    if( length(idx) == 0 )  return(NULL)
+    
+    if( 1 < length(idx) )
         {
-        pattern = "^SERIAL[ \t,]([^,]+).*$"
-        idx = which( grepl( pattern, .header ) )
-        
-        if( length(idx) != 1 )  return(NULL)
-        
-        out = sub( pattern, "\\1", .header[idx] )   # ;       print(val)
+        log.string( WARN, "Found %d matches for '%s'; using the last one.", length(idx) )
+        idx = idx[ length(idx) ]
         }
-        
-    else if( .name == "white.point" )
-        {
-        pattern = "^WHITE_POINT[A-Za-z \t_,]+\"([^,]+)\".*$"
-        idx = which( grepl( pattern, .header, ignore.case=T ) )     #    print( idx )
-        
-        if( length(idx) != 1 )  return(NULL)
-        
-        out = sub( pattern, "\\1", .header[idx] )   # ;       print(out)
-        
-        out = as.numeric( strsplit(out, ' ')[[1]] )
-        }        
 
-    if( any(is.na(out))  ) out   = NULL
+    out = sub( pattern, replacement, .header[idx] )  
+
+    out = type.convert( out, as.is=TRUE )
+
+    #   if( any(is.na(out))  ) out   = NULL
     
     return( out )
     }

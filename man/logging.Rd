@@ -5,8 +5,8 @@
 
 \description{
 There is some flexibility in the \bold{colorSpec} logging level and format.
-There is no flexibility in the output, it all goes to the console using
-\code{cat} and \code{print}, but see \code{\link[base]{sink}}.
+Logging output goes to \code{stderr()}, just like the message stream;
+but see \code{\link[base]{sink}} (and the pitfalls of using it).
 
 }
 
@@ -14,7 +14,8 @@ There is no flexibility in the output, it all goes to the console using
 \code{loglevel}\cr
 The levels are: "FATAL", "ERROR", "WARN", "INFO", "DEBUG", and "TRACE" - the usual ones from \bold{Log4J}.
 The initial level is "WARN".\cr
-A log event with level "ERROR" stops execution if the option \code{stoponerror} is \code{TRUE}.\cr
+If the option \code{stoponerror} is \code{TRUE} (the default),
+a log event with level "ERROR" stops execution; otherwise, execution keeps going.\cr
 A "FATAL" log event (e.g. internal error), always stops execution.
 
 \code{logformat}\cr
@@ -41,7 +42,9 @@ cs.options( logformat="\%t{\%H:\%M:\%OS3} \%l \%n::\%f(). \%m" )
 }
 
 \seealso{
-\link{cs.options}, \link[base]{sink}
+\code{\link{cs.options}}, 
+\code{\link{sink}}, 
+\code{\link{stderr}}
 }
 
 

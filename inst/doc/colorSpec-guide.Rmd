@@ -12,7 +12,7 @@ csl: personal.csl
 # csl: institute-of-mathematical-statistics.csl
 # csl: transactions-on-mathematical-software.csl
 vignette: >
-  %\VignetteIndexEntry{colorSpec}
+  %\VignetteIndexEntry{colorSpec User Guide}
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
@@ -31,8 +31,35 @@ Many ideas are taken from packages
 **pavo** @pavo,
 **photobiology** @photobiology, and
 **zoo** @zoo.
-There is no support for 3D colors spaces other than XYZ and RGB; 
-see packages **colorspace** @colorspace and **colorscience** @colorscience for more 3D spaces.
+
+Some features:
+<ul>
+<li>a clear classification of the common color spectra into 4 types</il>
+<li>flexible organization for the spectra in memory, using an S3 class - **colorSpec**</li>
+<li>a product algebra for the **colorSpec** objects</li>
+<li>uniform handling of biological eyes, electronic cameras, and general action spectra</li>
+<li>a few advanced calculations, such as computing optimal colors (aka Macadam Limits)</li>
+<li>built-in essential tables, such as the CIE illuminants and color matching functions</li>
+<li>a package logging system with log levels taken from the popular **Log4J**</li>
+<li>support for reading a few spectrum file types, including CGATS</li>
+<li>bonus files containing some other interesting spectra</li>
+<li>minimal dependencies on other **R** packages</li>
+</ul>
+
+Some non-features:
+<ul>
+<li>
+There is no support for 3D colors spaces other than XYZ and RGB; see packages **colorspace** @colorspace and **colorscience** @colorscience for more 3D spaces.
+</li>
+<li>
+there are few non-linear operations.
+The only such operations are conversion of linear RGB to display RGB, conversion of absorbance to transmittance, and the reparameterized wavelength in **computeADL**.
+The electronic camera model is purely linear with no dark current offset or other deviations.
+</li>
+<li>there is little support for scientific units; for these see package **colorscience** @colorscience</li>
+<li>photons are parameterized by wavelength in nm; other wavelength units and alternative parameterizations, such as wavenumber and electronvolt, are not available</li>
+</ul>
+
 
 ```{r echo=FALSE, results='asis'}
     includetable  <-  function( path, height ) {
@@ -138,7 +165,7 @@ Note that the `action` response is really a grab-bag for responses that are neit
 Here are the valid types and their quantities:
 
 ```{r echo=FALSE, results='asis'}
-    includetable("tables/table-2.1.html", "600px" )
+    includetable("tables/table-2.1.html", "620px" )
 ```
 
 Note that `'photons'` is an acceptable synonym for `'photons/sec'`
@@ -429,7 +456,7 @@ Some of the files in `Control` format have associated `JPG` or `PNG` images of p
 ```
 <br>
 ```{r echo=FALSE, results='asis'}
-    includetable("tables/table-B.3.html", "400px" )
+    includetable("tables/table-B.3.html", "420px" )
 ```
 
 <br>

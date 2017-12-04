@@ -109,23 +109,44 @@ See the sample file \code{pos1-20x.scope}. \cr
 %A true Excel file (\code{.xls} or \code{.xlsx}).  The organization is the same as XYY.  
 %The package \code{xlsx} is required. \cr
 
+
 \code{CGATS}  \cr
-This is a complex format that is best understood by looking at some samples,
-such as \code{extdata/objects/Rosco.txt};
-see also \cite{CGATS.17}.
-The function \code{\link{readCGATS}} is first called to get all the tables,
+This is a complex format that is best understood by looking at some samples, such as\cr
+\code{extdata/objects/Rosco.txt};
+see also the \bold{References}.
+The function \code{\link{readCGATS}()} is first called to get all the tables,
 and then for each table the column names are examined.
-The column names that match the pattern \code{"^(nm|SPEC_|SPECTRAL_)[0-9.]+"}
-are considered to be spectral data,
-and other fields are considered \code{extradata}.
+There are 2 conventions for presenting the spectral data:
+\itemize{  
+\item In the standard convention the fields \code{SPECTRAL_DEC} or \code{SPECTRAL_PCT}
+have the spectral values.
+The former is the true value, and the latter is the true value x 100.
+Each value column is preceded a corresponding wavelength column,
+which has the field name \code{SPECTRAL_NM}.
+Note that these field names are highly duplicated.
+In principle, this convention allows each record in a CGATS table to have
+a different wavelength vector.
+However, this complication is rejected by \code{readSpectraCGATS()},
+which treats it as an error.
+\item In the non-standard convention the field names that match the pattern\cr
+\code{"^(nm|SPEC_|SPECTRAL_)[_A-Z]*([0-9.]+)$"}
+are considered to be spectral value data, and other fields are considered \code{extradata}.
+The wavelength is the numerical value of the 2nd parenthesized expression \code{([0-9.]+)}
+in nanometers.
+Note that every record in this CGATS table has the same wavelength vector.
+Although this convention is non-standard, it appears in files from many companies,
+including X-Rite.
+}
+If a data.frame has spectral data, it is converted to a \bold{colorSpec} object
+and placed in the returned list.
 The organization of the resulting \bold{colorSpec} object is \code{'df.row'}.
+If the data.frame of \code{extradata} contains a column 
+\code{SAMPLE_NAME}, \code{SAMPLE_ID}, \code{SampleID}, or \code{Name}, 
+(examined in that order), then that column is taken to be the \code{specnames}
+of the object.
 If a table has no spectral data, then it is ignored.
 If the CGATS file has no tables with spectral data, then it is an ERROR
 and the function returns NULL.
-If the data.frame of \code{extradata} contains a column 
-\code{SAMPLE_NAME} or \code{SampleID} (examined in that order),
-then that column is taken to be the \code{specnames}.
- \cr
   
 \code{Control} \cr
 This is a personal format used for digitizing images of plots from manufacturer
@@ -140,7 +161,6 @@ Extrapolation can be a problem, especially when the value is near 0.
 To force constant extrapolation, repeat the control point (knot) at the endpoint.
 See the sample file \code{Lumencor-SpectraX.txt}.
 The organization of the returned objects is \code{'vector'}.\cr
-  
 }
 
 \note{

@@ -7,7 +7,8 @@
 \title{Convert colorSpec object to readable text}
 
 \description{
-display a \bold{colorSpec} object as readable text
+display a \bold{colorSpec} object as readable text.
+Output goes to \code{stdout()}.
 }
 
 \usage{
@@ -33,12 +34,12 @@ Both functions return (invisibly) the character vector that was just printed.
 }
 
 \details{
-\code{print} shows a summary of the wavelength vector, and names of all spectra.
+\code{print()} prints a summary of the wavelength vector, and names of all spectra.
 For each spectrum it prints the range of values, \code{LambdaMax}, and
 \code{extradata} if any.\cr
-\code{summary} prints the same as \code{print},
+If \code{long} is \code{FALSE}, \code{summary()} prints the same as \code{print()},
 and if \code{long} is \code{TRUE} it also prints metadata and data about product terms (if any).
-The function \code{print} simply calls \code{summary} with \code{long=TRUE}.
+The function \code{print()} simply calls \code{summary()} with \code{long=FALSE}.
 
 }
 
@@ -51,9 +52,8 @@ xyz1931.1nm     # same thing, just calls print()
 \seealso{
 \code{\link{extradata}},
 \code{\link[base]{print}},
-\code{\link[base]{summary}}  
-in base.
-
+\code{\link[base]{summary}},
+\code{\link{stdout}}
 }
 
 \keyword{colorSpec}

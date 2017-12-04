@@ -500,7 +500,7 @@ readSpectraSpreadsheet <- function( path)
 
     
         
-#   .path       to a CGATS file, e.g. .sp or .cal or .txt, or the Rosco files
+#   .path       to a CGATS file, e.g. .sp or .cal .cgt or .txt, or the Rosco files
 #
 #   returns a *list* of colorSpec objects, each with organization 'df.row'.   
 #   WARNING:  does not return a single object.
@@ -512,100 +512,31 @@ readSpectraCGATS <-  function( path )
     if( is.null(theData) )  return(NULL)
     
     n = length(theData)     # n is the number of data.frames
-    
-    pattern = "^(nm|SPEC_|SPECTRAL_)[_A-Z]*([0-9.]+)$"
-    
+
     base = sub( "[.][a-zA-Z]+$", "", basename( path ) )
+    
+    preamble    = attr(theData,'preamble')
     
     #   attr_name = c( "Substrate", "RefractiveIndex", "Thickness" )
     
     #   iterate in reverse order, so we can drop the tables with non-spectral data
     for( i in n:1 )
         {
-        #   replace columns with spectral data by a single model.matrix
-        df = theData[[i]]
+        obj = colorSpecFromDF( theData[[i]], path, preamble, i )                
         
-        colspec = waveColumns( colnames(df), path, i )  #; print( colspec )
-        
-        if( is.null(colspec)  ||  length(colspec$wavelength)==0 )
+        if( is.null(obj) )
+            #   this is an error
+            return(NULL)
+            
+        if( ! is.colorSpec(obj) )
             {
             #   table i does not have spectral data, so delete it
             theData = theData[-i]
             next
             }
-        
-        mask        = colspec$mask
-        wavelength  = colspec$wavelength
-        
-        idx     = which( mask )                            
-        mat = as.matrix.data.frame( df[ ,idx, drop=F] )
-        
-        mat = t( mat )  
-        
 
-        rownames( mat ) = as.character( wavelength )   #; print( str(mat) )      # colnames(df)[idx]
-
-        #   specnames   = paste( base, as.character( 1:nrow(df)), sep='.' )     # just the defaults
-        
-        tableid = sprintf( "%s-%d", base, i )
-        
-        if( all(mask) )
-            {
-            #   the row has no good name column, so use the filename and rownumber
-            if( nrow(df) == 1 )
-                specnames   = tableid
-            else
-                specnames   = paste( tableid, as.character( 1:nrow(df)), sep='.' ) 
-            }
-        else
-            {
-            for( id in c("SAMPLE_NAME","SampleID","Name") )
-                {
-                if( id %in% colnames(df) )
-                    {
-                    specnames   = df[[ id ]]
-                    break
-                    }
-                }
-            }
-            
-            
-        colnames(mat)   = specnames
-        
-        theQuantity = guessSpectrumQuantity( specnames, attr(df,"header") )
-        
-        if( is.na(theQuantity) )
-            {
-            theQuantity = 'power'
-            log.string( WARN, "Cannot not guess quantity from from contents of '%s', so assigning quantity='%s'.",
-                                basename(path), theQuantity )
-            }
-            
-        part_right  = colorSpec( mat, wavelength, theQuantity, "df.row" )
-        
-        #   ColorMunki wavelengths in hires mode are equally spaced at 3.333 nm, but rounded to the nearest integer
-        #   check for this and fix it        
-        wavereg = regularizeWavelength(wavelength)
-        discrep = max( abs(wavereg - wavelength) )
-        if( 0 < discrep  &&  discrep < 0.5 )
-            {
-            step.wl     = wavereg[2] - wavereg[1]
-            log.string( WARN, "Perturbed wavelengths in '%s' to have equal increments of %g nm [%g to %g nm]", 
-                                path, step.wl, wavereg[1], wavereg[ length(wavereg) ] )
-            wavelength(part_right)  = wavereg                                
-            }
-
-        part_left   = df[ , ! mask, drop=F ]     # ;print( part_left )
-        
-        extradata(part_right)  = part_left
-        
-        theData[[i]]    = part_right
-        
-        metadata( theData[[i]] )    = list( path=path, 
-                                            header=attr(df,"header"), 
-                                            date=attr(df,"date"),
-                                            descriptor=attr(df,"descriptor"),                                             
-                                            originator=attr(df,"originator") )
+        #   overwrite previous data.frame with new colorSpec object
+        theData[[i]] = obj
         }
         
     if( length(theData) == 0 )
@@ -620,42 +551,246 @@ readSpectraCGATS <-  function( path )
     }
         
         
-#   cname       vector of column names
-#   path        to the file
-#   idxtable    index of the table in path
-#   a list with 2 items
-#       mask        logical vector of columns that correspond to a wavelength; the TRUE values (if present) are contiguous        
-#       wavelength  vector of wavelengths, possibly empty
-#
-waveColumns <- function( cname, path, idxtable )        
-    {
-    pattern = "^(nm|SPEC_|SPECTRAL_)[_A-Z]*([0-9.]+)$"
-    
-    out = list()
-    out$mask        = grepl( pattern, cname )  # ; print( idx )
-    out$wavelength  = numeric(0)   
-    
-    idx     = which( out$mask )
-    
-    contig = 0<length(idx)  &&  all( diff(idx) == 1 )
-    
-    if( ! contig )
-        {
-        log.string( WARN, "In file '%s', spectral columns in table %d are not existent or not contiguous.", path, idxtable )
-        #   log.object( WARN, idx )            
-        return(out)
-        }
         
-    wavelength.char = sub( pattern, "\\2", cname[idx] )      #; print( wavelength.char )
-    
-    out$wavelength      = as.double( wavelength.char )    #; print( wavelength )
-                
-    if( any( is.na(out$wavelength) ) )
-        {
-        log.string( ERROR, "In file '%s', cannot extract wavelengths from table %d.", path, idxtable )   
+        
+#   df          data.frame, from a table in a CGATS file
+#   path        the file
+#   preamble    from path.  might be NULL
+#   idxtable    index of the table in path.  1-based
+#
+#   returns a colorSpec object
+#   in case of ERROR, returns NULL
+#   if there is no spectral data, returns as.logical(NA)
+
+colorSpecFromDF <- function( df, path, preamble, idxtable )        
+    {
+    base = sub( "[.][a-zA-Z]+$", "", basename( path ) )
+        
+    colspec = spectralColumns( df, path, idxtable )  #; print( colspec )
+        
+    if( is.null(colspec) )
+        #   this is an error
         return(NULL)
+        
+    if( ! is.list(colspec) )
+        {
+        #   table i does not have spectral data, so return any non-trivial thing
+        return( as.logical(NA) )
+        }
+            
+    idx_val     = colspec$idx_val
+    idx_extra   = colspec$idx_extra
+    wavelength  = colspec$wavelength
+    
+    #   idx     = which( mask )                            
+    mat = as.matrix.data.frame( df[ ,idx_val, drop=F] ) / colspec$divisor
+    
+    mat = t( mat ) #;  print( dim(mat) ) 
+
+    rownames( mat ) = as.character( wavelength )   #; print( str(mat) )      # colnames(df)[mask]
+    
+    #   print( mat )        
+    
+    #   specnames   = paste( base, as.character( 1:nrow(df)), sep='.' )     # just the defaults
+    
+    tableid = sprintf( "%s-%d", base, idxtable )
+    
+    if( nrow(df) == 1 )
+        specnames   = tableid
+    else
+        {
+        #specnames   = paste( tableid, as.character( 1:nrow(df)), sep='.' )   
+        specnames   = sprintf( "%s.%d", tableid, 1:nrow(df) )
         }
 
+    if( 0 < length(idx_extra) )
+        {
+        candidate   = c("SAMPLE_NAME","SAMPLE_ID","SampleID","Name")
+        idx = which( candidate %in% colnames(df) )
+        if( 1 <= length(idx) )
+            specnames   = df[[ candidate[idx[1]] ]]
+        }
+        
+    #   print(specnames)       
+    
+    colnames(mat)   = specnames
+
+    theQuantity = guessSpectrumQuantity( specnames, c(preamble,attr(df,"header")) )
+    
+    if( is.na(theQuantity) )
+        {
+        theQuantity = 'power'
+        log.string( WARN, "Cannot not guess quantity from from contents of '%s', so assigning quantity='%s'.",
+                            basename(path), theQuantity )
+        }
+        
+    out = colorSpec( mat, wavelength, theQuantity, "df.row" )
+    
+    #   ColorMunki wavelengths in hires mode are equally spaced at 3.333 nm, but rounded to the nearest integer
+    #   check for this and fix it        
+    wavereg = regularizeWavelength(wavelength)
+    discrep = max( abs(wavereg - wavelength) )
+    if( 0 < discrep  &&  discrep < 0.5 )
+        {
+        step.wl     = wavereg[2] - wavereg[1]
+        log.string( WARN, "Perturbed wavelengths in '%s' to have equal increments of %g nm [%g to %g nm]", 
+                            path, step.wl, wavereg[1], wavereg[ length(wavereg) ] )
+        wavelength(out)  = wavereg                                
+        }
+
+    if( 0 < length(idx_extra) )
+        {
+        extra   = df[ , idx_extra, drop=F ]     # ;print( part_left )
+    
+        extradata(out)  = extra
+        }
+        
+    metadata( out )    = list(  header=attr(df,"header"), 
+                                date=attr(df,"date"),
+                                descriptor=attr(df,"descriptor") )    
+
+    return( out )
+    }
+    
+    
+    
+        
+        
+        
+        
+#   df          data.frame, from a table in a CGATS file
+#   path        to the file
+#   idxtable    index of the table in path
+#
+#   returns a list with items
+#       idx_val     columns that correspond to a spectral values (but not to wavelength values)  
+#       idx_extra   columns that correspond to extra data, maybe none
+#       wavelength  vector of wavelengths, the same length as idx_val
+#       divisor     for the values
+#   in case of ERROR, returns NULL
+#   if there is no spectral data, returns as.logical(NA)
+
+spectralColumns <- function( df, path, idxtable )        
+    {
+    #cat( "spectralColumns()\n" )
+    
+    out = list()    
+    
+    cname   = colnames(df)      #; print(cname)
+    
+    #   search for standard convention for spectral data
+    
+    mask_dec    = ("SPECTRAL_DEC" == cname)   # grepl( "^SPECTRAL_DEC", cname )
+    mask_pct    = ("SPECTRAL_PCT" == cname)   # grepl( "^SPECTRAL_PCT", cname )
+
+    if( any( mask_dec | mask_pct ) )
+        {
+        #   the standard convention
+        log.string( INFO, "In file '%s' and table %d, using standard convention for spectral data.", path, idxtable )            
+        #cat( "Standard convention\n" )
+                
+        idx_dec = which( mask_dec )
+        idx_pct = which( mask_pct )
+                        
+        #   pattern = "^SPECTRAL_NM"
+        mask_wl = ("SPECTRAL_NM" == cname)    # grepl( pattern, cname )
+        idx_wl  = which( mask_wl )
+        n       = length(idx_wl)        # number of wavelengths
+
+        if( n == 0 )
+            {
+            log.string( ERROR, "In file '%s' and table %d, there are %d spectral value fields, but there are no wavelengths.", 
+                            path, idxtable, length(idx_dec)+length(idx_pct) )
+            return(NULL)
+            }
+
+        divisor = 0
+        if( length(idx_dec)==n  &&  all( idx_dec == idx_wl+1 ) )
+            divisor = 1     # got a match
+        else if( length(idx_pct)==n  &&  all( idx_pct == idx_wl+1 ) )
+            divisor = 100   # got a match
+        
+        if( divisor == 0 )
+            {
+            log.string( ERROR, "In file '%s' and table %d, there are %d wavelength columns, but spectral value columns do not match up.", 
+                            path, idxtable, n )      
+            return(NULL)
+            }
+            
+        wavelength  = lapply( df[ , idx_wl ], unique )  #; print(wavelength)
+        waveunique  = sapply( wavelength, length )      #; print(wavelength)
+        idx_max     = which.max( waveunique )
+        if( 1 < waveunique[ idx_max ] )
+            {
+            #   not unique
+            log.object( ERROR, wavelength[[idx_max]] )
+            log.string( ERROR, "In file '%s', wavelength columns in table %d exist, but they are not unique.", 
+                            path, idxtable )      
+            return(NULL)
+            }
+            
+        out$idx_val     = idx_wl + 1 
+        out$idx_extra   = which( ! (mask_wl | mask_dec | mask_pct) )
+        out$wavelength  = unlist( wavelength, use.names=FALSE )    #; print( out$wavelength )
+        out$divisor     = divisor
+        
+        #   print( out )
+        }
+    else
+        {
+        #   try again with non-standard pattern
+ 
+        pattern = "^(nm|SPEC_|SPECTRAL_)[A-Z_]*([0-9.]+)$"
+        
+        mask_val    = grepl( pattern, cname )  # ; print( idx )
+        
+        idx_val     = which( mask_val )         # ; print(idx_wl)
+                
+        n   = length(idx_val)   # number of wavelengths
+        
+        if( n == 0 )
+            #   no spectral data found
+            return( as.logical(NA) )
+                            
+        log.string( INFO, "In file '%s' and table %d, using non-standard convention for spectral data.", path, idxtable )
+            
+        contig = all( diff(idx_val) == 1 )
+        
+        if( ! contig )
+            {
+            log.string( ERROR, "In file '%s' and table %d, there are %d spectral columns, but they are not contiguous.", 
+                            path, idxtable, n )
+            #   log.object( WARN, idx_val )            
+            return(NULL)
+            }
+            
+        wavelength      = sub( pattern, "\\2", cname[idx_val] )     #; print( wavelength )
+        
+        out$wavelength  = type.convert( wavelength, as.is=TRUE )    #; print( wavelength )
+            
+        out$idx_val     = idx_val
+        out$idx_extra   = which( ! mask_val )
+        out$divisor = 1
+        }
+        
+    #   verify that wavelength is valid
+    ok  = is.numeric(out$wavelength)  &&  all( is.finite(out$wavelength) )
+    if( ! ok )
+        {
+        log.string( ERROR, "In file '%s' and table %d, the %d wavelength values are not all numeric and finite.", 
+                            path, idxtable, length(wavelength) )   
+        return(NULL)
+        }
+        
+    #   verify that spectral values are valid
+    ok  = all( sapply( df[out$idx_val], function(y) { is.numeric(y)  &&  all( is.finite(y) ) } ) )
+    if( ! ok )
+        {
+        log.string( ERROR, "In file '%s' and table %d, the %dx%d spectral values are not all numeric and finite.",
+                            path, idxtable, nrow(df), length(idx_val) )
+        return(NULL)
+        }
+     
     return(out)    
     }
     

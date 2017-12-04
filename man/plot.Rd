@@ -25,7 +25,7 @@ and taking the \code{\link{product}} with \code{BT.709.RGB}.
 The resulting RGBs are normalized to have a maximum of 1.
 This RGB normalization is done \emph{before} processing the \code{subset} argument.\cr
 If \code{color='auto'} then a suitable set of colors is generated using
-\code{\link[grDevices]{colorRampPalette}}.\cr
+\code{\link{colorRampPalette}}.\cr
 Otherwise \code{color} is passed along to \code{\link{lines}} as the \code{col} argument, 
 e.g. \code{col='black'}.
 }
@@ -95,7 +95,8 @@ xyz1931.1nm     # same thing, just calls print()
 
 \seealso{
 \code{\link[base]{print}},
-\code{\link[base]{summary}}  
+\code{\link[base]{summary}},
+\code{\link{colorRampPalette}}
 in base.
 
 }

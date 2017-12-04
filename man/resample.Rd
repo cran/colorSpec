@@ -48,14 +48,14 @@ For method \code{'sprague'} the quintic polynomial in \cite{De Kerf} is used.
 Six weights are applied to nearby data values: 3 in front and 3 behind.
 The \code{'sprague'} method is only supported when \code{x} is regular.
 
-For method \code{'spline'} the function \code{\link[stats]{spline}}
+For method \code{'spline'} the function \code{\link{spline}}
 is called with \code{method='natural'}.
 Four weights are applied to nearby data values: 2 in front and 2 behind.
 The \code{'spline'} method is supported even when \code{x} is irregular.
 
-For method \code{'linear'} the function \code{\link[stats]{approx}} is called.
+For method \code{'linear'} the function \code{\link{approx}} is called.
 
-For method \code{'loess'} the function \code{\link[stats]{loess}} is called
+For method \code{'loess'} the function \code{\link{loess}} is called
 with the given \code{span} parameter.
 Smoothing is most useful for noisy data, e.g. raw data from a spectrometer.
 I have found that \code{span=0.02} works well for \code{.scope} files, 
@@ -82,9 +82,9 @@ equation (S).
 \code{\link{quantity}},
 \code{\link{wavelength}},
 \code{\link{is.regular}},
-\code{\link[stats]{spline}},
-\code{\link[stats]{approx}},
-\code{\link[stats]{loess}}
+\code{\link{spline}},
+\code{\link{approx}},
+\code{\link{loess}}
 }
 
 \examples{
