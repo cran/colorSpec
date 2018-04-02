@@ -6,10 +6,11 @@
 \alias{resample.colorSpec}
 
 \description{
-  interpolate or smooth to new wavelengths.  Simple extrapolation is also performed.
+  interpolate or smooth to new wavelengths.  
+  Simple extrapolation and clamping is also performed.
 }
 \usage{
-\S3method{resample}{colorSpec}( x, wavelength, method='auto', span=0.02 )
+\S3method{resample}{colorSpec}( x, wavelength, method='auto', span=0.02, extrapolation='const', clamp='auto' )
 
 }
 
@@ -23,14 +24,31 @@
     Also available is \code{'auto'} which means to use \code{'sprague'}
     if \code{x} is regular, and \code{'spline'} otherwise.
     This is the CIE recommendation.\cr
-    Smoothing methods available are \code{'loess'}.
+    An available smoothing method is \code{'loess'}.
     See \bold{Details}.
     }
 
-\item{span}{smoothing argument passed to \code{\link[stats]{loess}}
-            before interpolation, and not used by other methods.
+\item{span}{smoothing argument passed to \code{\link[stats]{loess}()}
+            during interpolation, and not used by other methods.
            The default value \code{span=0.02} is suitable for
            \code{.scope} spectra but may be too small in many other cases.}  
+           
+\item{extrapolation}{extrapolation methods available are
+    \code{'const'} and \code{'linear'}.
+    These can be abbreviated to the initial letter.
+    Also available is a numeric value, which is used for simple padding.
+    See \bold{Details}.\cr
+    Also available is a vector or list of length 2 that combines 2 of the above.
+    The first item is used on the low side (shorter wavelengths),
+    and the second item is used on the high side (longer wavelengths).
+    }
+
+\item{clamp}{clamp methods available are
+    \code{'auto'}, \code{TRUE}, and \code{FALSE}.
+    Also available is a numeric vector of length 2,
+    which defines the clamping interval.    
+    See \bold{Details}.
+    }
 }
 
 \value{
@@ -44,27 +62,53 @@ In case of ERROR, the function returns \code{NULL}.
 
 
 \details{
-For method \code{'sprague'} the quintic polynomial in \cite{De Kerf} is used.
-Six weights are applied to nearby data values: 3 in front and 3 behind.
+If method is \code{'sprague'}, the quintic polynomial in \cite{De Kerf} is used.
+Six weights are applied to nearby data values: 3 on each side.
 The \code{'sprague'} method is only supported when \code{x} is regular.
 
-For method \code{'spline'} the function \code{\link{spline}}
+If method is \code{'spline'}, the function \code{stats::\link{spline}()}
 is called with \code{method='natural'}.
-Four weights are applied to nearby data values: 2 in front and 2 behind.
+Four weights are applied to nearby data values: 2 on each side.
 The \code{'spline'} method is supported even when \code{x} is irregular.
 
-For method \code{'linear'} the function \code{\link{approx}} is called.
+If method is \code{'linear'}, the function \code{stats::\link{approx}()} is called.
+Two weights are applied to nearby data values: 1 on each side.
+The \code{'linear'} method is supported even when \code{x} is irregular.
 
-For method \code{'loess'} the function \code{\link{loess}} is called
+If method is \code{'loess'}, the function \code{stats::\link[stats]{loess}()} is called
 with the given \code{span} parameter.
 Smoothing is most useful for noisy data, e.g. raw data from a spectrometer.
 I have found that \code{span=0.02} works well for \code{.scope} files, 
 but this may be too small in other cases,
-when it triggers an error in \code{loess()}. 
+when it triggers an error in \code{stats::loess()}. 
+The \code{'loess'} method is supported even when \code{x} is irregular.
 
-For the non-linear methods,
-undershoot can sometimes create negative values, and some effort is made to clip
-these to 0, but only when appropriate.
+If extrapolation is \code{'const'},
+the extreme values at each end are simply extended.
+If extrapolation is \code{'linear'},
+the line defined by the 2 extreme values at each end is used for extrapolation.
+If the ultimate and penultimate wavelengths are equal,
+then this line is undefined and the function reverts to \code{'const'}.
+
+If clamp is \code{'auto'},
+output values are clamped to the physically realizable interval
+appropriate for \code{x}.
+This is the interval [0,1]  when
+\code{quantity(x)} is \code{'reflectance'} or \code{'transmittance'},
+and the interval [0,\eqn{\infty})  otherwise.
+Exception: If an input spectrum in \code{x} violates a limit,
+then clamping the output spectrum to this limit is \emph{NOT} enforced.
+This happens most frequenty for theoretical (or matrixed) cameras,
+such as \code{\link{BT.709.RGB}}.
+
+If clamp is \code{TRUE}, the result is the same as \code{'auto'},
+but with no exceptions.
+If clamp is \code{FALSE}, then no clamping is done.
+
+If clamp is a numerical interval, then clamping is done to that interval,
+with no exceptions.
+The two standard intervals mentioned above can be expressed in \bold{R}
+as \code{c(0,1)} and \code{c(0,Inf)} respectively.
 }
 
 
@@ -82,9 +126,10 @@ equation (S).
 \code{\link{quantity}},
 \code{\link{wavelength}},
 \code{\link{is.regular}},
+\code{\link{theoreticalRGB}},
 \code{\link{spline}},
 \code{\link{approx}},
-\code{\link{loess}}
+\code{\link[stats]{loess}}
 }
 
 \examples{

@@ -8,7 +8,7 @@
 #
 #   also relevant is:
 #
-#   Smoothing spectral power distribution of daylights
+#   Smoothing spectral energy distribution of daylights
 #   Zsolt Kosztyan and Janos Schanda
 #
 #   Color Research & Application

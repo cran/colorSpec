@@ -36,7 +36,7 @@ bandwidth correction kernel \code{coeff=c(1,-12,120,-12,1)/98}, see \bold{Detail
 a \bold{colorSpec} object with the same dimensions,
 \code{\link{wavelength}}, \code{\link{quantity}}, and \code{\link{organization}}.
 If \code{coeff} is invalid it is an ERROR and
-\code{convolvewith} returns \code{NULL}.
+\code{convolvewith()} returns \code{NULL}.
 }
 
 
@@ -44,7 +44,9 @@ If \code{coeff} is invalid it is an ERROR and
 The built-in kernels, \code{'SS3'} and  \code{'SS5'}, were derived
 by \cite{Stearns & Stearns} under specific hypotheses on the
 spectrometer profile, bandpass, and pitch; see \bold{References}.\cr
-Missing values at both ends are filled by copying from the nearest valid value.
+Missing values at both ends are filled by copying from the nearest valid value.\cr
+The function creates a function calling \code{stats::filter()}
+and passes that function to \code{applyspec()}.
 }
 
 \references{

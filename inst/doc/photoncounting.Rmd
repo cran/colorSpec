@@ -1,0 +1,111 @@
+---
+title: "Photon Counting"
+author: "Glenn Davis"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: false
+    fig_caption: true
+bibliography: bibliography.bib
+csl: personal.csl    
+vignette: >
+  %\VignetteIndexEntry{Photon Counting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+This **colorSpec** vignette is a response to the question:
+
+> Is there any program that given the lumen and the colour spectrum (relative
+> intensity at any wavelength) of a light source and it outputs the total amount
+> of photons per wavelength?
+
+that was asked on a stackexchange forum, see @174314.
+Featured functions in this vignette are: `actinometric()` and `photometric()`.
+
+```{r, echo=TRUE, message=FALSE}
+library( colorSpec )
+```
+
+<br>
+
+## Read Relative Radiant Power and Scale to Specified Luminous Flux
+
+Read the SPD for a domestic LED bulb from the
+**Lamp Spectral Power Distribution Database**, see @LSPDD.
+The unique ID is
+`LED_A19_dim_domestic-use_softwhite-color_CREE-brand_6W_120V_75Lum_2700K_bernard`.
+
+```{r echo=TRUE, fig.cap='Figure 1.  Energy Spectrum of a Domestic LED Bulb, manufactured by Cree', fig.align="center", fig.width=7, fig.height=4, dev='png' }
+wave = 275:899
+path = system.file( "extdata/sources/Cree-LED.txt", package="colorSpec" )
+bulb = readSpectra( path, wavelength=wave )
+par( omi=c(0,0,0,0), mai=c(0.6,0.8,0.1,0.1) )
+plot( bulb, main='' )
+```
+The energy unit is unknown.
+But it does not matter, because we are now going to scale
+so that the luminous flux of the SPD is 75 lumens,
+as specified by the manufacturer.
+
+```{r, echo=TRUE, message=FALSE}
+luminous.flux = photometric( bulb ) ; luminous.flux
+```
+The unit is lumen, but the first one - `photopic1924` - is the
+appropriate official standard.
+Scale spectrum to have 75 lumens.
+```{r, echo=TRUE, message=FALSE}
+bulb = multiply( bulb, 75/luminous.flux[1] ) ; bulb
+#   check that the luminous flux is now 75 lumens
+photometric( bulb )
+```
+From the **man** page for `photometric()` we know that the unit for `bulb` is
+$\textrm{watt} * \textrm{nm}^{-1}$.
+```{r fig.cap='Figure 2.  Energy Spectrum of a Domestic LED Bulb, manufactured by Cree', fig.align="center", dev='png', fig.width=7, fig.height=4,  fig.show='hold', message=FALSE}
+par( omi=c(0,0,0,0), mai=c(0.6,0.95,0.1,0.1) )
+ylab = expression( 'Radiant Power'  ~~~  '[watt * ' ~ nm^-1 ~ ']' )
+plot( bulb, main='', ylab=ylab )
+```
+
+<br><br>
+
+## Convert from an Energy-Based to a Photon-Based Spectrum
+
+The unit is currently energy-based (energy of photons, aka _radiometric_),
+but we need photon-based (number of photons, aka _actinometric_).
+From the **man** page for `actinometric()` we know that the output unit is
+$\mu \textrm{mole} * \textrm{sec}^{-1} * \textrm{nm}^{-1}$.
+```{r fig.cap='Figure 3.  Photon Flux of a Domestic LED Bulb, manufactured by Cree', fig.align="center", dev='png', fig.width=7, fig.height=4,  fig.show='hold', message=FALSE}
+bulb = actinometric( bulb )
+par( omi=c(0,0,0,0), mai=c(0.6,0.9,0.1,0.1) )
+ylab = expression( 'Photon Flux'  ~~~  '[' ~ mu ~ 'mole * ' ~ sec^-1 ~ nm^-1 ~ ']'  )
+plot( bulb, main='', ylab=ylab )
+```
+
+This plot looks similar but note that $\lambda_{max}$ has moved slightly higher.
+For the total number of photons/sec from this bulb, compute the integral
+over $\lambda$.
+```{r, echo=TRUE, message=FALSE}
+bulb
+```
+So the total photon flux of the bulb is
+$1.102559 ~ \mu \textrm{mole/sec}$.
+To convert this to exaphotons, multiply by 
+$0.602214 ~ \textrm{exaphotons/} (\mu \textrm{mole of photons} )$
+to get $0.663976 ~ \textrm{exaphotons/sec}$.
+
+## References
+
+<div id="refs"></div>
+
+<br><br>
+
+## Session Information
+
+<pre>
+```{r, echo=FALSE, results='asis'}
+sessionInfo()
+```
+</pre>

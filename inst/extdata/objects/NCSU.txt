@@ -1,5 +1,5 @@
 CGATS.17
-ORIGINATOR	"spectral data from http://www.cns.nyu.edu/pub/ltm/SSR/kodak/.  Original source is probably Mike Vrehl at North Carolina State University at ftp://ftp.eos.ncsu.edu/pub/spectra/"
+ORIGINATOR	"spectral data from http://www.cns.nyu.edu/pub/ltm/SSR/kodak/.  Original source is probably Mike Vrhel at North Carolina State University at ftp://ftp.eos.ncsu.edu/pub/spectra/"
 CREATED	"2017-04-16"
 DESCRIPTOR	"reflectance of 170 common objects"
 INSTRUMENTATION	"Unknown"

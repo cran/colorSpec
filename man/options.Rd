@@ -1,12 +1,30 @@
 \name{cs.options}
 \alias{cs.options}
-\alias{cs.getOptions}
-\alias{cs.setOptions}
 \title{Functions to set and retrieve colorSpec package options}
 
 \description{
-Allow the user to set and examine a variety of options for \bold{colorSpec}.
+\bold{colorSpec} has a few options.
+The options are stored in the \bold{R} global list and they are:
 
+\code{colorSpec.loglevel}, 
+\code{colorSpec.logformat}, and 
+\code{colorSpec.stoponerror}
+
+For details on what they do see \code{\link{logging}}.
+
+They can be set using the built-in function \code{\link{options}()}.
+When \R starts up,
+an option can be set using a call to \code{options()} in the file \bold{Rprofile.site}.
+If \bold{colorSpec} is later loaded, the value of the option will not be changed.
+If an option has not been assigned, then it is created with a default value.
+
+The function \code{cs.options()} makes setting the options a little easier
+in a few ways:
+\itemize{  
+\item it automatically prepends the string \code{'colorSpec.'}
+\item partial matching of the option name is enabled
+\item a warning is issued when the option value has the wrong type
+}
 }
 
 
@@ -17,37 +35,26 @@ cs.options( ... )
 \arguments{
 \item{...}{
 named arguments are set; 
-unnamed arguments are retrieved, and must be single character strings.
-See example.}
+unnamed arguments are ignored with a warning.
+See \bold{Examples}.}
 }
 
 \value{
-returns a list with all options mentioned.\cr
-If no arguments are given, then it returns a list of all options.
-}
-
-\section{Options used in logging}{
-
-\tabular{lll}{
-\bold{Name}         \tab \bold{Default Value}                   \tab \bold{Description} \cr
-\code{loglevel}     \tab \code{'WARN'}                          \tab controls the amount of logging information produced. \cr
-. \tab . \tab . \cr
-\code{logformat}    \tab \code{'\%t \%l \%n::\%f(). \%m'}  \tab the format of each log line. See \code{\link{logging}} page.\cr
-. \tab . \tab . \cr
-\code{stoponerror}  \tab \code{TRUE}                            \tab stop when a logging event has level ERROR; a logical. \cr
-}
-When setting \code{loglevel} an initial letter is sufficient.
-}
-
-
-\examples{
-#   set 2 options and retrieve the 3rd
-cs.options( loglevel="DEBUG", stoponerror=FALSE, "logformat" )
+returns a list with all the \bold{colorSpec} options.
 }
 
 
 \seealso{
-\link{logging}
+\code{\link{logging}},
+\code{\link{options}}
+}
+
+
+
+\examples{
+cs.options( loglevel="DEBUG", stop=FALSE )  # 'stop' partially matches 'stoponerror'
+cs.options( stop='TRUE' )                   # warns that value has the wrong type
+cs.options( stop=FALSE, "DEBUG" )           # warns that the 2nd argument has no name
 }
 
 

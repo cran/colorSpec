@@ -63,7 +63,7 @@ testCGATS <- function()
     if( length(junk) != 2 )
         return(FALSE)
         
-    #   the final call should generate an ERROR, so disable stop
+    #   the final call should generate an ERROR and return NULL, so disable stopping
     cs.options( stoponerror=FALSE )
     junk    = readSpectraCGATS(path) 
     if( ! is.null(junk) )

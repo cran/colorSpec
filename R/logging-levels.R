@@ -15,10 +15,15 @@ names(DEBUG) <- "DEBUG"
 TRACE <- 9L
 names(TRACE) <- "TRACE"
 
-logLevelFromString  <- function( .level )
+loglevelFromString  <- function( .level )
     {    
-    if( ! is.character(.level) )    return(FALSE)
-    
+    if( ! is.character(.level) )
+        {
+        mess = sprintf( "WARN  loglevelFromString() loglevel='%s' is not a string - ignored.", as.character(.level) )
+        cat( mess, '\n', file=stderr() )
+        return(NA_integer_)
+        }
+        
     #   convert to the integer
     w   = toupper( substr(.level,1,1) ) #; print(w)
     
@@ -34,11 +39,10 @@ logLevelFromString  <- function( .level )
         return(DEBUG)            
     else if( w == "T" )
         return(TRACE)
-    else
-        {
-        warning( sprintf( "logLevelFromString() loglevel='%s' invalid, and ignored.", .level ) )
-        return(FALSE)
-        }
+        
+    warning( sprintf( "loglevelFromString() loglevel='%s' invalid, and ignored.", .level ) )
+    
+    return(NA_integer_)
     }
 
     

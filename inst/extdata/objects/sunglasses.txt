@@ -1,0 +1,21 @@
+#
+#   Opticus Inc. / Sierra #3 Glass
+#   high altitude glacier/sport sunglasses; they are dark
+#
+#   this data came from Opticus Inc. in May 1998
+#   http://opticus.com/
+#
+
+wavelength	transmittance
+300	0
+350	0.001
+400	0.008
+450	0.021
+500	0.03
+550	0.068
+600	0.102
+650	0.118
+700	0.084
+750	0.018
+800	0.002
+850	0

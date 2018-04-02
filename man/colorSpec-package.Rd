@@ -5,7 +5,7 @@
 \title{Package colorSpec - Color Calculations with Emphasis on Spectral Data}
 
 \description{
-Package \pkg{colorSpec} is for working with color spectral data in \R.
+Package \pkg{colorSpec} is for working with spectral color data in \R.
 
 }
 
@@ -32,9 +32,10 @@ Package \pkg{colorSpec} is for working with color spectral data in \R.
 For these spaces see packages \pkg{colorspace}  and  \pkg{colorscience}.
 \item  there are few non-linear operations 
 \item  there is little support for scientific units; for these see package \pkg{colorscience}
-\item photons are parameterized by wavelength in nm; 
-other wavelength units and alternative parameterizations,
-such as wavenumber and electronvolt, are not available
+\item photons are parameterized by wavelength in nanometers; 
+other wavelength units (such as Angstrom and micron)
+and alternative parameterizations (such as wavenumber and electronvolt)
+are not available
 }
 
 Regarding the non-linear operations in 2, 
@@ -57,9 +58,7 @@ Glenn Davis <gdavis@gluonics.com>
 
 \code{\link{colorSpec}} for the S3 class provided by this package.
 
-\bold{colorSpec-guide.pdf} in the doc directory.  
-Go to the main index page and look for 
-\bold{User guides, package vignettes and other documentation.}
+\bold{colorSpec User Guide}
 }
 
 \keyword{package}

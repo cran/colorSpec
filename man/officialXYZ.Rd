@@ -7,7 +7,8 @@
 
 
 \description{
-In careful calcuations, it is sometime helpful to have the 'official' values of XYZ,
+In careful calcuations with standard illuminants,
+it is often helpful to have the 'official' values of XYZ,
 i.e. with the right number of decimal places.
 
 }

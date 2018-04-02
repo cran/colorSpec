@@ -1,7 +1,7 @@
 
-The RGB responsivity curves were digitized from an image at:
-http://www.dxomark.com/Reviews/RED-Epic-Dragon-review-First-camera-to-break-the-100-point-DxOMark-sensor-score-barrier/In-Depth-Analysis
-
+#   The RGB responsivity curves were digitized from an image at:
+#   http://www.dxomark.com/Reviews/RED-Epic-Dragon-review-First-camera-to-break-the-100-point-DxOMark-sensor-score-barrier/In-Depth-Analysis
+#   quantity    energy->electrical
 
 [Control]
 Xpx Ypx X Y

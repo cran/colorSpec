@@ -31,13 +31,17 @@ The final CRI is the average of these 8 CRI values.
   This attached list includes data for all special 14 color samples, although
   the last 6 do not affect the returned CRI.}
         
-  \item{tol}{for the CRI to be meaningful the chromaticities of the test and reference illuminants must be sufficiently close in the CIE 1960 chromaticity space.
+  \item{tol}{for the CRI to be meaningful the chromaticities of the test and reference illuminants must be sufficiently close in the CIE
+  1960 uniform chromaticity space.
   If the tolerance is exceeded, the function returns \code{NA}.
   The default \code{tol=5.4e-3} is the one recommended by the CIE, 
   but the argument allows the user to override it.}
 }
 
 \details{
+The CCT of \code{x} is computed by \code{computeCCT()} with \code{method='lm'};
+the package \bold{minpack.lm} is required.
+\cr
 If \code{adapt} is \code{TRUE} the 8 test \code{uv} points
 are chromatically adapted from the test illuminant to the reference illuminant
 using a special von Kries type transformation; see \cite{Oleari} and
@@ -50,51 +54,51 @@ and the test UVW values are computed relative to the test illuminant.
 }
 
 \value{
-\code{computeCCT} returns a single number <= 100.
+\code{computeCRI()} returns a single number \eqn{\le} 100.
 In case of ERROR it returns \code{NA}. 
-If \code{attach} is \code{TRUE} a large list is attached to the returned number.
+If \code{attach} is \code{TRUE} a large list
+of intermediate calculations is attached to the returned number.
 }
 
 \source{
 The test color reflectance spectra are taken from:\cr
-http://www.lrc.rpi.edu/programs/nlpip/lightinganswers/lightsources/scripts/NLPIP_LightSourceColor_Script.m
+\url{http://www.lrc.rpi.edu/programs/nlpip/lightinganswers/lightsources/scripts/NLPIP_LightSourceColor_Script.m}
 
 }
 
 \references{
 Oleari, Claudio, Gabriele Simone.
-Standard Colorimetry: Definitions, Algorithms and Software.
+\bold{Standard Colorimetry: Definitions, Algorithms and Software}.
 John Wiley. 2016.
 pp. 465-470.
 
 
 Günther Wyszecki and W. S. Stiles.
-Color Science: Concepts and Methods, Quantitative Data and Formulae, Second Edition.
+\bold{Color Science: Concepts and Methods, Quantitative Data and Formulae, Second Edition}.
 John Wiley & Sons, 1982.
 Table 1(3.11). p. 828.
 
 Wikipedia.
 \bold{Color rendering index}.
-http://en.wikipedia.org/wiki/Color_rendering_index
+\url{http://en.wikipedia.org/wiki/Color_rendering_index}
 
 Hunt, R. W. G. and M. R. Pointer.
-Measuring Colour.  4th edition.
+\bold{Measuring Colour}.  4th edition.
 John Wiley & Sons.
 2011.
 Appendix 7.
 }
 
 \seealso{
-  \code{\link{type}}, 
-  \code{\link{xyz1931}},  
-  \code{\link{computeCCT}}
+\code{\link{type}}, 
+\code{\link{xyz1931}},  
+\code{\link{computeCCT}}
 }
 
 \examples{
-computeCRI( subset(Fs.5nm,'F2') )       # returns 64.152
-computeCRI( subset(Fs.5nm,'F4') )       # returns 51.352
+computeCRI( subset(Fs.5nm,'F2') )       # returns 64.15751
+computeCRI( subset(Fs.5nm,'F4') )       # returns 51.36485
 }
 
 
 \keyword{light}
-

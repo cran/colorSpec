@@ -5,7 +5,7 @@
 #       TCD2712DG_081208_E.pdf  
 #       Toshiba-TCD2712DG-spectral.png
 #
-#   quantity    power->electrical
+#   quantity    energy->electrical
 
 [Control]
 Xpx	Ypx	X	Y

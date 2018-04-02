@@ -20,7 +20,8 @@
 }
 \usage{
 \S3method{wavelength}{colorSpec}(x)
-wavelength(x) <- value
+
+\S3method{wavelength}{colorSpec}(x) <- value
 
 \S3method{numWavelengths}{colorSpec}(x)
 
@@ -44,16 +45,18 @@ Otherwise, the wavelength vector is stored as \code{attr(x,'wavelength')}.
 }
 
 \value{
-  \code{wavelength} returns a numeric vector with the wavelength of the spectra, in nanometers.
-  
-  \code{numWavelengths(x)} is the same as \code{length(wavelength(x))} but much more efficient.
-  
-  \code{is.regular} returns TRUE or FALSE, depending on whether the step between consecutive
-  wavelengths is a constant. A truncation error of 1.e-6 nm is tolerated here.  
-  For example, the X-Rite ColorMunki spectrometer in hi-res mode has a step of 3.33333nm, 
-  and it is considered regular.
-  
-  \code{step.wl} returns the \emph{mean} step in nm, whether the wavelengths are regular or not.
+\code{wavelength()} returns a numeric vector with the wavelengths of the spectra, in nanometers.
+
+\code{numWavelengths(x)} is equal to \code{length(wavelength(x))} but much more efficient.
+
+\code{is.regular()} returns \code{TRUE} or \code{FALSE},
+depending on whether the step between consecutive wavelengths is a constant.
+A truncation error of 1.e-6 nm is tolerated here.  
+For example, the X-Rite ColorMunki spectrometer in hi-res mode has a step of 3.33333nm, 
+and it is considered regular.
+
+\code{step.wl()} returns the \emph{mean} step in nm,
+whether the wavelengths are regular or not.
 }
 
 \seealso{

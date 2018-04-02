@@ -4,7 +4,7 @@
 #
 #   source: http://www.cis.rit.edu/research/mcsl2/online/CIE/Fluorescents.htm
 #
-#   quantity power
+#   quantity energy
 
 wavelength	F1 	F2 	F3 	F4 	F5 	F6 	F7 	F8 	F9 	F10 	F11 	F12
 380 	1.87 	1.18 	0.82 	0.57 	1.87 	1.05 	2.56 	1.21 	0.9 	1.11 	0.91 	0.96

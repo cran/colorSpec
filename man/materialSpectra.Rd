@@ -19,30 +19,29 @@ lensAbsorbance( age=32, wavelength=400:700 )
 
 \arguments{
 \item{gray}{a vector of gray levels, in the interval [0,1].  
-        gray=1 represents the \emph{perfect reflecting diffuser}. }
+        \code{gray=1} represents the \emph{Perfect Reflecting Diffuser}. }
         
-\item{age}{a vector of ages in years; all ages must be >= 20. }    
+\item{age}{a vector of ages in years; all ages must be \eqn{\ge} 20. }    
         
 \item{wavelength}{a vector of wavelengths for the returned object}  
 }
     
 \value{
-\code{neutralMaterial} returns a
+\code{neutralMaterial()} returns a
 \bold{colorSpec} object with \code{\link{quantity}} equal to \code{'reflectance'}.
-The reflectance of each spectrum is constant.
-The number of spectra in the object is the number of gray levels = \code{length(gray)}.\cr
+The reflectance of each spectrum is constant and taken from \code{gray}.
+The number of spectra in the object is the number of gray levels = \code{length(gray)}.
 
-\code{lensAbsorbance} returns a
+\code{lensAbsorbance()} returns a
 \bold{colorSpec} object with \code{\link{quantity}} equal to \code{'absorbance'}.
 The absorbance model for the human lens is taken from \cite{Pokorny}.
-The number of spectra in the object is the number of ages = \code{length(age)}.\cr
-
+The number of spectra in the object is the number of ages = \code{length(age)}.
 }
 
 \references{
 Pokorny, Joel, Vivianne C. Smith, and Margaret Lutze.
 Aging of the Human Lens.
-Applied Optics.
+\bold{Applied Optics}.
 Vol. 26, No. 8.
 15 April 1987.
 Table I.  Page 1439.

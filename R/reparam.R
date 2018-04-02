@@ -130,9 +130,9 @@ plotReparam <- function( .obj, .mode='equalize', .full=F, .pnorm=1 )
     {
     par( mfcol= c(2,1) )
     
-    #   fake the color by changing quantity to power
+    #   fake the color by changing quantity to energy
     obj.copy  = .obj
-    quantity(obj.copy) = 'power'
+    quantity(obj.copy) = 'energy'
     mat.rgb = product( obj.copy, colorSpec::BT.709.RGB, wavelength='auto' )  #; print( mat.rgb )
     mat.rgb = mat.rgb / max(mat.rgb)                        #; print( mat.rgb )    
     mat.rgb = DisplayRGBfromLinearRGB( mat.rgb )            #; print( mat.rgb )
@@ -143,7 +143,7 @@ plotReparam <- function( .obj, .mode='equalize', .full=F, .pnorm=1 )
     dim(ysum)       = c(length(ysum),1)
     colnames(ysum)  = 'sum'
        
-    obj.plus    = bind( .obj, colorSpec(ysum,wavelength=wavelength(.obj), quantity=quantity(.obj) ) )
+    obj.plus    = bind( .obj, colorSpec( ysum, wavelength=wavelength(.obj), quantity=quantity(.obj) ) )
     
     color_vec   = c( color_vec, 'black' )
     

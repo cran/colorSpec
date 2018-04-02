@@ -27,7 +27,7 @@ the erythemal spectrum for human sunburn is one of them.
     
 \value{
   For \code{erythemalSpectrum()} \cr
-  A \bold{colorSpec} object with \code{\link{quantity}} equal to \code{'power->action'}.
+  A \bold{colorSpec} object with \code{\link{quantity}} equal to \code{'energy->action'}.
   The responsivity is 0 for \eqn{\lambda} > 400 nm, so this putting this spectrum in the category
   of human vision is a bit of a stretch.
     
@@ -35,10 +35,10 @@ the erythemal spectrum for human sunburn is one of them.
 
 \details{
 This erythemal spectrum is defined in 4 pieces: 
-\eqn{\lambda<=298 }, 
-\eqn{ 298<=\lambda<=328 },
-\eqn{ 328<=\lambda<=400 }, and 
-\eqn{ 400<\lambda}.  All the units are nm.
+\eqn{\lambda \le 298}, 
+\eqn{ 298 \le \lambda \le 328},
+\eqn{ 328 \le \lambda \le 400}, and 
+\eqn{ 400 < \lambda}.  The unit is nm.
 The spectrum is used in the definition of the international standard \bold{UV Index}.
 }
 
@@ -50,12 +50,14 @@ CIE Res. Note, 6(1), 17-22. (1987)
 }
 
 \source{
-http://en.wikipedia.org/wiki/Ultraviolet_index
+\url{http://en.wikipedia.org/wiki/Ultraviolet_index}
 }
 
 \seealso{
-\link{daylight},  \code{\link{quantity}},
-\link{materialSpectra}, \link{lightSpectra}
+\link{daylight},
+\code{\link{quantity}},
+\link{materialSpectra},
+\link{lightSpectra}
 }
 
 \keyword{light}

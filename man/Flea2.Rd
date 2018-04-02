@@ -14,7 +14,7 @@ Flea2 Camera FL2-14S3C from Point Grey
 }}
 
 \format{
-A \bold{colorSpec} object with \code{quantity} equal to \code{'power->electrical'} and 3 spectra:
+A \bold{colorSpec} object with \code{quantity} equal to \code{'energy->electrical'} and 3 spectra:
 \code{Red}, \code{Green}, and \code{Blue}.
 \cr
 }
@@ -26,13 +26,13 @@ plot in \bold{Flea2-spectral.png}.
 }
 
 \source{
-https://www.ptgrey.com/flea2-14-mp-color-firewire-1394b-sony-icx267-camera
+\url{http://www.ptgrey.com/support/downloads/10117}
 \cr
 }
 
 \seealso{
 \code{\link{quantity}},
-vignette blueflame
+vignette \bold{blueflame}
 }
 
 \examples{

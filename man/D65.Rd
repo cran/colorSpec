@@ -28,7 +28,7 @@ to make the values at 560nm equal to 1 instead of 100.
 }
 
 \source{
-http://www.cvrl.org
+\url{http://www.cvrl.org}
 
 }
 

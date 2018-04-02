@@ -3,7 +3,7 @@
 #
 #   7-channel light source
 #
-#   quantity    power
+#   quantity    energy
 
 [Control]
 Xpx	Ypx	X	Y

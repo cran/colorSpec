@@ -1,176 +1,176 @@
 
-#   g.options is a global variable for colorSpec that is "unlocked" in .onAttach()
-g.options <- list (loglevel = WARN,
-                  logformat = "%t{%H:%M:%OS3} %l %n::%f(). %m",                   
-                  stoponerror = TRUE
-                  )
+#   g.* are global variables for colorSpec that are "unlocked" in .onAttach()
+
+#   g.options is a list with private copies of the colorSpec.* options managed by the base package
+#   these copies are used because g.loglevel and g.word[] are derived variables,
+#   and we want to see whether the user has changed a colorSpec.* option
+g.options   <- list(loglevel = 'WARN',                                  #   must be character
+                    logformat = "%t{%H:%M:%OS3} %l %n::%f(). %m",       #   must be character
+                    stoponerror = TRUE                                  #   must be logical
+                    )
+
+#   g.loglevel  is an integer derived from g.options$loglevel which is a string
+#               it is managed in logging.R
+g.loglevel  <- 0L               # 0L is invalid
+     
+#   g.word[]    is an array derived from g.options$logformat, and managed in logging.R
+g.word      <- character(0)     # character(0) is invalid
+
+
 
 #   cs.options()
 #   retrieve and assign items in g.options
 #
 #   ...     items with a valid name are assigned
 #           items with no name must be character and if valid are returned returned
-
 cs.options  <-  function(...)
     {
+    myfun   = function() { .Options[ grepl( "^colorSpec[.]", names(.Options) ) ] }
+    
     theList = list(...)         #; print(theList)
     
-    n       = length(theList)
+    n   = length(theList)
+    
+    if( n==0 )  return( do.call(myfun,list()) )
+    
     namevec = names(theList)    #; print( namevec )
-    
-    if( n == 0 )    return( g.options )     # return them all
-    
+        
     if( is.null(namevec) )
         {
-        #   return a sublist of g.options
-        #print( "no names !  return sublist !" )
-        namevec = theList[ sapply( theList, is.character) ]
-        namevec = unlist( namevec )    #; print(out)
-        
-        if( length(namevec) == 0 )  return(NULL)
-        
-        out = g.options[ namevec ]
-        
-        return( out )
+        cat( sprintf( "WARN  cs.options() All of the %d arguments are unnamed, and ignored\n", n ), file=stderr() )
+        return( do.call(myfun,list()) )
         }
-    
-
-    #   split theList into a list with names and one without
+        
+    #   extract just the args with names and ignore the rest
     mask    = nzchar( namevec )
     
-    list.named  = theList[ mask ]   
-    list.noname = theList[ ! mask ]   
-    
-    #   iterate over the list of options to assign
-    m   = length(list.named)
-    if( 0 < m )
+    idx.unnamed    = which( ! mask )
+    if( 0 < length(idx.unnamed) )
         {
-        opts    = g.options     # make copy for modification
+        mess    = paste( idx.unnamed, sep=', ', collapse=' ' )
+        mess    = sprintf( "WARN  cs.options() Arguments indexed '%s' are unnamed, and ignored.", mess )
+        cat( mess, '\n', file=stderr() )
+        }
+    
+    theList = theList[ mask ]       #; print(theList)
+    namevec = names( theList )      #; print( namevec )
         
-        for( k in seq_len(m) )
-            {
-            theName     = names(list.named)[k]
-            theValue    = list.named[[k]]
-            
-            if( theName == 'loglevel' && is.character(theValue) )
-                {
-                #   convert to the integer
-                theValue = logLevelFromString( theValue )
-                
-                if( ! is.integer(theValue) )    next    # ignore unknown string                     
-                }            
-            
-            idx = which( theName == names(opts) )
-            
-            if( length(idx) == 1 )
-                {
-                # got a match !
-                opts[[idx]] = theValue
-                }
-            else
-                log.string( ERROR, "Unknown name '%s'.", theName )
+        
+    #   extract just the args with names that partially match the full names, and ignore the rest        
+    fullname    = names(g.options)
+    #fullname    = c( "loglevel", "logformat", "stoponerror" )
+    
+    idx     = pmatch( namevec, fullname )
+    
+    idx.na  = which( is.na(idx) )
+    
+    if( 0 < length(idx.na) )
+        {
+        mess    = paste( namevec[idx.na], collapse=' ' )
+        mess    = sprintf( "WARN  cs.options() Arguments named '%s' cannot be matched, and are ignored.", mess )
+        cat( mess, '\n', file=stderr() )
+        
+        if( length(idx.na) == length(idx) ) return( do.call(myfun,list())  )
+        }
+    
+    mask    = ! is.na(idx)
+    
+    #print( idx )    ;   print( mask )
+    
+    theList = theList[ mask ]  #    ; print(theList)
+    idx     = idx[ mask ]   # this must have positive length
+
+    names(theList)  = sprintf( "colorSpec.%s", fullname[idx] )    # prepend
+    
+    #print( theList )
+    
+    #   finally ready to assign global options
+    options( theList )
+    
+    checkBaseOptions()    
+    
+    updatePrivateOptions()
+    
+    return( do.call(myfun,list())  )
+    }
+    
+    
+#   updatePrivateOptions    copy values from public base package .Options to private copies in g.options
+#                           and update derived globals (g.word and g.loglevel) if necessary
+updatePrivateOptions <- function()
+    {
+    if( ! identical( g.options$loglevel, .Options$colorSpec.loglevel ) )
+        {
+        setLogLevel( .Options$colorSpec.loglevel )
+        }
+        
+    if( ! identical( g.options$logformat, .Options$colorSpec.logformat ) )
+        {
+        setLogFormat( .Options$colorSpec.logformat )
+        }
+        
+    if( is.logical(.Options$colorSpec.stoponerror) )
+        {
+        if( ! identical( g.options$stoponerror, .Options$colorSpec.stoponerror ) )
+            { 
+            assignPrivateOption( 'stoponerror', .Options$colorSpec.stoponerror )
             }
-            
-            
-        env = asNamespace('colorSpec')      # ; print( env )
-
-        assign( "g.options", opts, envir=env )  #; print( g.options )
-            
-        if( "logformat" %in% names(list.named) )
-            {
-            setLogFormat( g.options$logformat )        
-            #   print( g.word )
-            }                 
         }
-             
-    #   return all values mentioned in theList
-    out = names(list.named)
-    
-    if( 0 < length(list.noname) )
-        {
-        namevec = list.noname[ sapply(list.noname, is.character) ]
-        out = c( out, unlist( namevec ) )
-        }
-        
-    out = g.options[ out ]
-    
-    return( out )
-    }
-                  
-                  
-#############################  deadwood below     ############################
-                  
-##' Options for package colorSpec
-##' Functions to access and set colorSpec's options.
-##' 
-
-cs.getOptions <- function (...)
-    {
-    dots <- c(...)
-    if (length (dots) == 0L)
-        #   return the whole list
-        g.options
-    else if( length (dots) == 1L)
-        #   return single item 
-        g.options[dots][[1]]
     else
-        #   return sublist
-        g.options[dots]
+        {
+        mess = sprintf( "WARN  updatePrivateOptions() colorSpec.stoponerror='%s' is not logical - ignored.", 
+                            as.character(.Options$colorSpec.stoponerror) )
+        cat( mess, '\n', file=stderr() )
+        }
+    
+    return(TRUE)
     }
-
-
-
-cs.setOptions <- function(...)
+                  
+                  
+#   name        one of 'loglevel', 'logformat', 'stoponerror'                  
+#   value       an appropriate value
+assignPrivateOption <- function( name, value )
     {
-    new <- list (...) #; print(new)
-    names <- nzchar (names (new)) 
-
-    if (! all (names))
-        warning ("options without name are discarded: ", which (! names))
-
-    #   print( new[names] )
+    g.options[[ name ]]   <<- value
     
-    loglevel.prev   =   g.options$loglevel    
+    #   colorSpec::g.options$stoponerror =  .Options$colorSpec.stoponerror      does not work, does not understand the namespace 'colorSpec'
+
+    #   this one works, but takes 3 lines
+    #opts    = g.options
+    #opts[[ name ]]  = value
+    #assign( "g.options", opts, envir=asNamespace('colorSpec') )
     
-    opts <- modifyList (g.options, new [names])
+    #   test assignment - should be an assert()
+    if( ! identical( g.options[[name]], value ) )   cat( "ERROR assignPrivateOption() failed.\n", file=stderr() )
 
-    #if (sys.parent() == 0  &&  isNamespace("colorSpec")) 
-    #    env <- asNamespace("colorSpec")
-    #else
-    #    env <- parent.frame()
-     
-
-    #print( str(g.options[["loglevel"]]) )
-    
-    if( is.character(opts$loglevel) )
-        {
-        #   convert to the integer
-        level = logLevelFromString( opts$loglevel )
-        
-        if( is.integer(level) ) 
-            opts$loglevel   = level
-            #assign( "g.options", , envir=env )     # success
-            #g.options[["loglevel"]] <<- level
-        else
-            opts$loglevel   = loglevel.prev        
-            #assign( "g.options$loglevel", loglevel.prev, envir=env )     # revert to previous value        
-            #g.options[["loglevel"]] <<- loglevel.prev
-        }
-        
-    env = environment(cs.setOptions)    # ;  print( env )
-
-    env = asNamespace('colorSpec')      # ; print( env )
-    
-    # unlockBinding("g.options", env )
-        
-    assign( "g.options", opts, envir=env )  #; print( g.options )
-        
-    if( "logformat" %in% names(new) )
-        {
-        setLogFormat( g.options$logformat )        
-        #   print( g.word )
-        }
-
-    invisible(g.options)
+    #   cat( name, sprintf( '%s\n', as.character(g.options[[name]]) ) )
     }
+    
+    
+checkBaseOptions    <- function()
+    {
+    for( name in names(g.options) )
+        {
+        baseopt    = sprintf( "colorSpec.%s", name )
 
+        value   = getOption( baseopt )
+        
+        if( is.null(value) )
+            {
+            mess    = sprintf( "ERROR checkBaseOptions() Option '%s' is unassigned.", baseopt  )
+            cat( mess, '\n', file=stderr() )
+            next
+            }
+        
+        if( name == 'stoponerror' )
+            ok  = is.logical(value)
+        else
+            ok  = is.character(value)
+        
+        if( ! ok )
+            {
+            mess    = sprintf( "ERROR checkBaseOptions()  Value of option %s is '%s', which has the wrong type.", baseopt, as.character(value) )
+            cat( mess, '\n', file=stderr() )
+            }
+        }       
+    }

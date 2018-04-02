@@ -24,21 +24,23 @@ Output goes to \code{stdout()}.
 
 \item{object}{a colorSpec object}
 
-\item{long}{logical indicating whether to print metadata, calibration, and product terms}
+\item{long}{logical indicating whether to print \code{metadata}, \code{calibrate},
+\code{sequence}, and \code{emulate} data}
 
 \item{...}{further arguments ignored}
 
 }
 \value{
-Both functions return (invisibly) the character vector that was just printed.
+Both functions return (invisibly) the character vector that was just printed
+to \code{stdout()}.
 }
 
 \details{
-\code{print()} prints a summary of the wavelength vector, and names of all spectra.
+If \code{long=FALSE},
+\code{summary()} prints a summary of the wavelength vector, and names of all spectra.
 For each spectrum it prints the range of values, \code{LambdaMax}, and
-\code{extradata} if any.\cr
-If \code{long} is \code{FALSE}, \code{summary()} prints the same as \code{print()},
-and if \code{long} is \code{TRUE} it also prints metadata and data about product terms (if any).
+\code{extradata} if any.
+If \code{long=TRUE} it also prints data listed above (if any).\cr
 The function \code{print()} simply calls \code{summary()} with \code{long=FALSE}.
 
 }

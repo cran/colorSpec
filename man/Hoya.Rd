@@ -26,7 +26,7 @@ A \bold{colorSpec} object with \code{\link{quantity}} equal to \code{'transmitta
 }
 
 \source{
-http://www.hoyaoptics.com/
+\url{http://www.hoyaoptics.com/}
 }
 
 \seealso{

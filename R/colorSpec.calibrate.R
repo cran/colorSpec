@@ -151,6 +151,10 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
         return(x)
         }     
         
+    #   ensure that both are radiometric        
+    x           = radiometric( x, warn=TRUE )
+    stimulus    = radiometric( stimulus, warn=TRUE )
+        
     #   compute response from the original object x 
     response.src    = product( stimulus, x )
     
@@ -162,17 +166,26 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
         log.string( "Cannot continue, because 1 or more x response values is non-positive." )
         return(x)
         }
-    
-    mat = makeMappingMatrix( Ma, response.src, response ) 
-    
-    if( is.null(mat) )  return(x)
         
-    out = multiply( x, t(mat) )
+    if( m == 1 )
+        {
+        #   special case
+        mat = as.numeric( response/response.src )
+        out = multiply( x, mat )        
+        }
+    else
+        {
+        mat = makeMappingMatrix( Ma, response.src, response ) 
+        if( is.null(mat) )  return(x)
+        
+        out = multiply( x, t(mat) )        
+        }
     
     if( ! is.character(method) )    method=as.character(NA)
     
+
     #   add useful data to the attribute list.  This will be printed in summary().
-    attr( out, "calibration" )  = list( method=method, Ma=Ma, response.before=response.src, response.after=response, gain=mat )
+    attr( out, "calibrate" )  = list( method=method, Ma=Ma, response.before=response.src, response.after=response, gain=mat )
     
     return( out )
     }
@@ -191,7 +204,12 @@ unitMappingMatrix  <-  function( Ma, white )
         log.string( ERROR, "One component of Ma*white is <= 0" )
         return(NULL)
         }
-    
+      
+    #   this special test is not necessary, above code takes care of it
+    #if( length(lms) == 1 )
+    #    #   special case, all are scalars
+    #    return( Ma / lms )
+        
     return( diag( as.double(1/lms) ) %*% Ma )
     }
     

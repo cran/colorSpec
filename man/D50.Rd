@@ -21,7 +21,7 @@ and \code{\link{specnames}} equal to \code{'D50'}.
 
 \details{
 This spectrum is not read from a table from a CIE publication.
-It is computed using the function \code{\link{daylightSpectra}} by following
+It is computed using the function \code{\link{daylightSpectra}()} by following
 the special CIE recipe given in the \bold{References}.
 The temperature is set to (14388/14380) * 5000 = 5002.781 Kelvin.
 The coefficients of the daylight components \eqn{S_0, S_1}, and \eqn{S_2} are

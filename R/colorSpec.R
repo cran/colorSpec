@@ -3,12 +3,18 @@
 #           if data is a matrix that has column names, these are used as spectrum names
 #           if data is a vector then deparse(substitute(data)) is used as the spectrum name
 
-colorSpec  <-  function( data, wavelength, quantity="auto", organization="auto" )
+colorSpec  <-  function( data, wavelength, quantity='auto', organization='auto', specnames=NULL )
     {
     n = NROW(data)     # number of wavelengths
     
     #   log.object( INFO, .type )
 
+    if( ! is.numeric(data)  )
+        {
+        log.string( ERROR, "data has incorrect type '%s'.", typeof(data) )
+        return(NULL)
+        }    
+        
     if( ! is.numeric(wavelength)  )
         {
         log.string( ERROR, "wavelength has incorrect type '%s'.", typeof(wavelength) )
@@ -32,59 +38,67 @@ colorSpec  <-  function( data, wavelength, quantity="auto", organization="auto" 
         return(NULL)
         } 
 
-    specnames   = character(0)
+    #   specnames   = character(0)
     
     if( is.null( dim(data) ) )
         {
+        #   data is a plain vector
         spectra     = 1
 
-        specnames = deparse(substitute(data))
+        if( is.null(specnames) )
+            specnames = deparse(substitute(data))
         
         attr(data,'specname')  = NULL      # to prevent propagation below
         }
     else if( is.matrix(data) )
         {
-        spectra     = ncol(data)       
-        specnames   = colnames(data)   #; print( specnames )
+        #   data is a matrix
+        spectra     = ncol(data)      
+
+        if( is.null(specnames) )        
+            specnames   = colnames(data)   #; print( specnames )
         }
     else
         {
-        log.string( ERROR, "data is neither vector nor matrix." )
+        log.string( ERROR, "data is numeric, but neither vector nor matrix." )
         #   log.object( ERROR, data, type='str' )
         return(NULL)
         }
                 
-    if( 0 < spectra )
-        {
-        if( is.null(specnames) )
-            {
-            #   make up something simple
-            specnames   = sprintf( "S%d", 1:spectra )      
-            combo       = paste(specnames,collapse=',')
-            if( 80 < nchar(combo) ) combo = paste( substr(combo,1,76), '...', collapse='' )
-            log.string( WARN, "No names for %d spectra provided.  Using '%s'.", spectra, combo )
-            }
-        else if( 0 < sum(duplicated(specnames)) )
-            {
-            #   make up something simple
-            count   = sum(duplicated(specnames)) 
-            specnames  = sprintf( "S%d", 1:spectra )    
-            combo       = paste(specnames,collapse=',')
-            if( 80 < nchar(combo) ) combo = paste( substr(combo,1,76), '...', collapse='' )
-            log.string( WARN, "The %d names for the spectra have %d duplicates.  Using '%s'.", 
-                            spectra, count, combo )
-            }
-        }
-        
-        
+
+    #   check validity of specnames
+    dups    = sum(duplicated(specnames))
+    ok      = is.character(specnames)  &&  length(specnames)==spectra  &&  dups==0
     
+    if( ! ok )
+        {
+        if( 0 < spectra )
+            {
+            #   make up something simple, and issue a warning
+            specnames   = sprintf( "S%d", 1:spectra )    
+            combo       = paste(specnames,collapse=',')
+            if( 80 < nchar(combo) ) combo = paste( substr(combo,1,76), '...', collapse='' )
+            
+            if( 0 < dups )
+                log.string( WARN, "specnames are invalid (there are %d duplicates).  Using '%s' instead.", 
+                            dups, combo )
+            else
+                log.string( WARN, "specnames are invalid.  Using '%s' instead.", combo )
+            }
+        else
+            {
+            #   assign the only possibility for specnames, silently
+            specnames = character(0)
+            }            
+        }
+
     if( quantity == "auto" )
         {
         #   guess the quantity
         quantity = guessSpectrumQuantity( specnames, '' )
         if( is.na( quantity ) )
             {
-            log.string( ERROR, "Cannot guess spectrum quantity from the names." )
+            log.string( ERROR, "Cannot guess spectrum quantity from the specnames." )
             return(NULL)
             }    
         }
@@ -108,7 +122,7 @@ colorSpec  <-  function( data, wavelength, quantity="auto", organization="auto" 
         
     if( organization == "vector" )
         {
-        if( 1 < spectra )
+        if( spectra != 1 )
             {
             log.string( ERROR, "organization='%s' is invalid, because there are %d spectra in data\n", organization, spectra )
             return(NULL)
@@ -129,7 +143,7 @@ colorSpec  <-  function( data, wavelength, quantity="auto", organization="auto" 
         if( 0 < spectra )
             out = cbind( out, as.data.frame(data) )
             
-        row.names(out)  = NULL        # or row.names ?
+        row.names(out)  = NULL        # or rownames ?
         }
     else if( organization == "df.row" )
         {
@@ -142,19 +156,61 @@ colorSpec  <-  function( data, wavelength, quantity="auto", organization="auto" 
         
     class( out )    = c( "colorSpec", class(out) )
             
+    #   assign wavelength, quantity, and specnames
     wavelength( out )   = wavelength
-    
-
-    #   assign the specnames    
+    quantity( out )     = quantity           
     specnames( out )    = specnames
-    
-    quantity( out )     = quantity        
         
     attr( out, "metadata" ) = list()    #   initially empty
     
     return( out )
     }
     
+is.colorSpec <- function(x)
+    {
+    if( ! "colorSpec" %in% class(x) )   
+        {
+        log.string( DEBUG, "'%s' class '%s' is invalid.", deparse(substitute(x)), class(x) )
+        return(FALSE)
+        }
+
+    if( is.na(organization(x)) )
+        {
+        log.string( DEBUG, "'%s' organization '%s' is invalid.", deparse(substitute(x)), organization(x) )
+        return(FALSE)
+        }
+        
+    if( ! type(x) %in% c("light","responsivity.light","material","responsivity.material")  )
+        {
+        log.string( DEBUG, "'%s' type '%s' is invalid.", deparse(substitute(x)), type(x) )
+        return(FALSE)
+        }
+        
+    wave    = wavelength(x) 
+    if( ! is.double( wave ) )  
+        {
+        log.string( DEBUG, "'%s' wavelengths are not double-precision.", deparse(substitute(x)) )
+        return(FALSE)
+        }
+
+    if( ! isIncreasingSequence(wave) )
+        {
+        log.string( DEBUG, "'%s' wavelengths are not increasing.", deparse(substitute(x)) )
+        return(FALSE)
+        }        
+        
+    #qvalid  = validQuantities( type )
+    #if( ! quantity(x) %in% qvalid  )
+    #    return(FALSE)
+   
+    return(TRUE)
+    }
+        
+as.colorSpec.default <- function( ... )
+    {
+    log.string( WARN, "This function is designed to be called from other packages." )
+    return(NULL)
+    }
     
 isValidQuantity <- function( .quantity )
     {
@@ -198,16 +254,17 @@ guessSpectrumType  <-  function( .specnames, .header )
     return( as.character(NA) )
     }
     
+
 spectrumTypeFromQuantity <- function( .quantity )
     {
     #   first look for the responders
-    pattern = "^(power|photons)->(electrical|neural|action)$"
+    pattern = "^(power|energy|photons|photons/sec)->(electrical|neural|action)$"
     if( grepl( pattern, .quantity ) )   return( "responsivity.light" )
     
     pattern = "^material->(electrical|neural|action)$"
     if( grepl( pattern, .quantity ) )   return( "responsivity.material" )
     
-    pattern = "^(power|photons|photons/sec)$"
+    pattern = "^(power|energy|photons|photons/sec)$"
     if( grepl( pattern, .quantity ) )   return( "light" )
     
     pattern = "^(reflectance|transmittance|absorbance)$"
@@ -232,9 +289,9 @@ guessSpectrumQuantity <- function( .specnames, .header )
         if( isValidQuantity(value) )    return(value)   # got it !
         
         #   try a little harder with photons
-        #   it might be 'photon flux', 'photon-intensity', 'photon radiance' etc.
+        #   it might be 'photon count', 'photon flux', 'photon-intensity', 'photon radiance' etc.
         pattern = "photon[- ]+|photon$"
-        if( grepl( pattern, value ) )   return('photons/sec')
+        if( grepl( pattern, value ) )   return('photons')
         
         #   else just keep going
         #   return( tolower( out[idx[1]] ) )
@@ -250,14 +307,14 @@ guessSpectrumQuantity <- function( .specnames, .header )
     
     if( is.na(type)  ||  type == "light" )
         {
-        #   photon flux
+        #   photon count
         if( any( grepl( "photon", .specnames, ignore.case=T ) ) )   return( "photons" )
         
-        #   power
-        if( any( grepl( "power", .specnames, ignore.case=T ) ) )   return( "power" )
+        #   energy
+        if( any( grepl( "^(energy|power)", .specnames, ignore.case=T ) ) )   return( "energy" )
                 
-        #   photon count is rare, so assume "power"
-        return( "power" )
+        #   photon count is rare, so assume "energy"
+        return( "energy" )
         }
     else if( is.na(type)  || type == "responsivity.light" )
         {
@@ -266,19 +323,19 @@ guessSpectrumQuantity <- function( .specnames, .header )
         
         if( any( grepl( "photon", .header, ignore.case=T ) ) )              return( "photons->action" )
         
-        if( length(.specnames)==1  &&  grepl( "gray", .specnames, ignore.case=T ) )    return( 'power->electrical' )
+        if( length(.specnames)==1  &&  grepl( "gray", .specnames, ignore.case=T ) )    return( 'energy->electrical' )
         
         #   RGB is electrical
-        if( allDistinctMatches( c("^R","^G","^B"), .specnames, .ignore=T ) ) return( 'power->electrical' )
+        if( allDistinctMatches( c("^R","^G","^B"), .specnames, .ignore=T ) ) return( 'energy->electrical' )
         
         #   XYZ is neural
-        if( allDistinctMatches( c("^x","^y","^z"), .specnames, .ignore=T ) ) return( 'power->neural' )
+        if( allDistinctMatches( c("^x","^y","^z"), .specnames, .ignore=T ) ) return( 'energy->neural' )
                 
         #   LMS is neural                
-        if( allDistinctMatches( c("^L","^M","^S"), .specnames, .ignore=T ) ) return( 'power->neural' )
+        if( allDistinctMatches( c("^L","^M","^S"), .specnames, .ignore=T ) ) return( 'energy->neural' )
                                 
         #   V is neural - the definition of luminance               
-        if( allDistinctMatches( "^V", .specnames, .ignore=T ) ) return( 'power->neural' )
+        if( allDistinctMatches( "^V", .specnames, .ignore=T ) ) return( 'energy->neural' )
                                 
         return( 'power->action' )        # grab-bag
         }
@@ -326,9 +383,9 @@ validQuantities <- function( .type )
     qvalid  = as.character(NA) ; 
     
     if( .type == "light" )
-        qvalid  = c("power","photons")
+        qvalid  = c("energy","power","photons")
     else if( .type == "responsivity.light" )
-        qvalid  = c("power->electrical","power->neural","power->action","photons->electrical","photons->neural","photons->action")
+        qvalid  = c("energy->electrical","energy->neural","energy->action","power->electrical","power->neural","power->action","photons->electrical","photons->neural","photons->action")
     else if( .type == "material" )
         qvalid  = c("reflectance","transmittance","absorbance")
     else if( .type == "responsivity.material" )
@@ -410,12 +467,12 @@ organization.colorSpec <- function(x)
         return(x)
         }    
     
-    org = organization.colorSpec(x)   #; print(org)   #  the current organization
+    org = organization(x)   #; print(org)   #  the current organization
 
     if( org == value )
         return( x ) # nothing to do !
         
-    m   = numSpectra.colorSpec(x)  #; print(m)
+    m   = numSpectra(x)  #; print(m)
     
     if( value == "vector"  &&  m != 1 )
         {
@@ -425,12 +482,12 @@ organization.colorSpec <- function(x)
         }
             
     #   create a new object
-    out = colorSpec( as.matrix(x), wavelength.colorSpec(x), quantity.colorSpec(x), value )
+    out = colorSpec( as.matrix(x), wavelength(x), quantity=quantity(x), organization=value )
 
     if( ! is.null(out) )
         {
         #   assign special attributes
-        for( a in c('metadata','sequence','calibration') )
+        for( a in c('metadata','sequence','calibrate','emulate') )
             attr(out,a) = attr(x,a)
         }
         
@@ -484,7 +541,7 @@ coredata.colorSpec <- function( x, forcemat=FALSE )
     class( out ) = 'numeric'    # not a data.frame anymore
     
     #   erase all colorSpec attributes
-    for( a in c( "wavelength","step.wl","quantity","metadata","sequence","calibration","specname") )
+    for( a in c( "wavelength","step.wl","quantity","metadata","sequence","calibrate","specname",'emulate') )
         attr(out,a) = NULL    
         
     if( is.matrix(out) )
@@ -505,6 +562,38 @@ as.matrix.colorSpec <- function( x, ... )
     #   log.string( TRACE, "as.matrix.colorSpec()" )
     return( coredata(x,forcemat=TRUE) )
     }
+    
+    
+#   x               a colorSpec object
+#   organization    'col', 'row', or 'auto'
+
+as.data.frame.colorSpec  <-  function( x, row.names=NULL, optional=FALSE, organization='auto', ... )
+    {
+    if( organization == 'auto' )
+        {
+        organization    = ifelse( organization(x)=='df.row', 'row', 'col' )
+        }
+
+    out = x
+    
+    if( organization == 'col' )
+        organization(out) = 'df.col'        
+    else if( organization == 'row' )
+        organization(out) = 'df.row'
+    else
+        {
+        log.string( ERROR, "organization='%s' is invalid.", organization )
+        return(NULL)
+        }
+        
+    #   out is now a data.frame, but also a colorSpec.
+    #   make it a data.frame only !
+    class(out) = 'data.frame'
+
+    return( out )
+    }    
+    
+    
     
     
 #   only applies if organization is "df.row"    
@@ -539,40 +628,78 @@ extradata.colorSpec <- function( x )
     
 #   only applies if organization is "df.row"    
 #   return value:  a data.frame = the left part before the column "spectra"
-"extradata<-.colorSpec" <- function( x, value )
+"extradata<-.colorSpec" <- function( x, add=FALSE, value )
     {
     #   print( str(value) )
     #   cat( sprintf( "type='%s'\n", typeof(value) ) )
-    
-    if( is.null(value)  ||   ! is.data.frame(value) )
+    if( ! is.null(value)  &&  ! is.data.frame(value) )
         {    
-        log.string( ERROR, "RHS object '%s' is not a data.frame.", deparse(substitute(value)) )
+        log.string( ERROR, "RHS object '%s' is not a data.frame, and not NULL.", deparse(substitute(value))[1] )
         return(x)
+        }    
+    
+    if( is.null(value)  &&  add )
+        {
+        # no change to x, return silently
+        return(x)   
+        }
+        
+    if( is.data.frame(value)  &&  ncol(value)==0  )
+        {
+        # no data so no change to x, return silently
+        return(x)   
         }
     
-    if( ncol(value) == 0 )  return(x)   # no data no change
-
     org = organization(x)   #; print(org)
 
     if( org != "df.row" )
         {    
-        log.string( WARN, "organization = '%s' is invalid.  Please change to 'df.row' first.", org )
+        log.string( ERROR, "organization(x) = '%s' is invalid.  Please change to 'df.row' first.", org )
         return(x)
         }
-        
 
-    if( nrow(value) != nrow(x) )
-        {    
-        log.string( ERROR, "Row count mismatch. LHS %d != %d RHS.",  nrow(x), nrow(value) )
-        return(x)
+    if( is.data.frame(value) )
+        {
+        if( nrow(value) != nrow(x) )
+            {    
+            log.string( ERROR, "Row count mismatch. LHS %d != %d RHS.",  nrow(x), nrow(value) )
+            return(x)
+            }
+            
+        if( add )
+            {
+            #   check for duplicate column names
+            namevec = unlist( sapply( list(value,x), colnames ) )
+            idx     = which( duplicated(namevec) )
+            if( 0 < length(idx) ) 
+                {
+                log.string( ERROR, "Cannot add new extradata, because one of its column names already appears in the current extradata, e.g. '%s'.",
+                                namevec[idx[1]] )
+                return(x)
+                }       
+
+            #   stick the extradata in front of the spectrum, and preserve any existing extradata  
+            if( ncol(x) == 1 )
+                out = cbind( value, x )
+            else
+                out = cbind( x[1:(ncol(x)-1)], value, x[ncol(x)] )  # stick new extradata between current and spectrum
+            }
+        else
+            {
+            #   stick the extradata in front of the spectrum, and erase any existing extradata
+            out = cbind( value, x[ncol(x)] )
+            }
         }
-    
-    #   stick the metadata in front
-    out = cbind( value, x[ncol(x)] )
-    
+    else
+        {
+        #   value must be NULL, and add must be FALSE
+        #   discard all extradata, and just keep the spectrum
+        out = x[ncol(x)]
+        }
+
     class(out)  = class(x)
     
-    for( a in c('wavelength','step.wl','quantity','metadata','sequence','calibration') )
+    for( a in c('wavelength','step.wl','quantity','metadata','sequence','calibrate','emulate') )
         {
         attr( out, a ) = attr( x, a )
         }
@@ -780,7 +907,7 @@ metadata.colorSpec <- function( x, ... )
     }    
     
 
-"metadata<-.colorSpec" <- function( x, value )
+"metadata<-.colorSpec" <- function( x, add=FALSE, value )
     {
     #   log.object( DEBUG, value)
     
@@ -789,53 +916,20 @@ metadata.colorSpec <- function( x, ... )
     if( ! all (mask) )
         log.string( WARN, "options without name are discarded: %d", which(!mask) )
 
-    metadata    = attr( x, "metadata" ) #; log.object( DEBUG, metadata )
-    
-    attr(x,"metadata") <- modifyList( metadata, value[mask] )
-    
+    if( add )
+        {
+        metadata    = attr( x, "metadata" ) #; log.object( DEBUG, metadata )
+        attr(x,"metadata") <- modifyList( metadata, value[mask] )
+        }
+    else
+        {
+        attr(x,"metadata") <- value[mask]
+        }
+        
     return( x )
     }
     
-is.colorSpec <- function(x)
-    {
-    if( ! "colorSpec" %in% class(x) )   
-        {
-        log.string( DEBUG, "'%s' class '%s' is invalid.", deparse(substitute(x)), class(x) )
-        return(FALSE)
-        }
 
-    if( is.na(organization(x)) )
-        {
-        log.string( DEBUG, "'%s' organization '%s' is invalid.", deparse(substitute(x)), organization(x) )
-        return(FALSE)
-        }
-        
-    if( ! type(x) %in% c("light","responsivity.light","material","responsivity.material")  )
-        {
-        log.string( DEBUG, "'%s' type '%s' is invalid.", deparse(substitute(x)), type(x) )
-        return(FALSE)
-        }
-        
-    wave    = wavelength(x) 
-    if( ! is.double( wave ) )  
-        {
-        log.string( DEBUG, "'%s' wavelengths are not double-precision.", deparse(substitute(x)) )
-        return(FALSE)
-        }
-
-    if( ! isIncreasingSequence(wave) )
-        {
-        log.string( DEBUG, "'%s' wavelengths are not increasing.", deparse(substitute(x)) )
-        return(FALSE)
-        }        
-        
-    #qvalid  = validQuantities( type )
-    #if( ! quantity(x) %in% qvalid  )
-    #    return(FALSE)
-   
-    return(TRUE)
-    }
-    
     
 if( 0 )
 {    
@@ -942,7 +1036,7 @@ extradata <- function( x )
     {
     UseMethod("extradata")
     }    
-"extradata<-"  <- function( x, value )        
+"extradata<-"  <- function( x, add=FALSE, value )        
     {
     UseMethod("extradata<-")    
     }  
@@ -1006,9 +1100,13 @@ metadata <- function(x,...)
     UseMethod("metadata")
     }
     
-"metadata<-" <- function(x,value)
+"metadata<-" <- function(x,add=FALSE,value)
     {
     UseMethod("metadata<-")
     }
-        
+    
+as.colorSpec <- function(...)
+    {
+    UseMethod("as.colorSpec")
+    }
     

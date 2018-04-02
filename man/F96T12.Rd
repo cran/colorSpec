@@ -27,7 +27,7 @@ The unit is (\eqn{\mu}mole of photons)\eqn{ *sec^{-1}*m^{-2}*nm^{-1}}.
 
 \source{
 Pedro J. Aphalo.
-http://www.mv.helsinki.fi/aphalo/photobio/lamps.html
+\url{http://www.mv.helsinki.fi/aphalo/photobio/lamps.html}
 }
 
 \seealso{

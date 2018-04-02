@@ -45,8 +45,8 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
     
     if( type == "light" )
         {
-        if( quantity == "power" )
-            aka = "power of photons, which is radiometric"
+        if( is.radiometric(object) )
+            aka = "energy of photons, which is radiometric"
         else
             aka = "number of photons, which is actinometric"
             
@@ -61,11 +61,6 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
         }
     else if( type == "responsivity.light" )
         {        
-        if( quantity == "power" )
-            aka = "power of photons, or radiometric"
-        else
-            aka = "number of photons"
-            
         mess    = sprintf( "%s describes a responder to light with %d output channels, and the quantity is '%s'.", 
                             theName, spectra, quantity )
                             
@@ -128,11 +123,12 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
         mat = matrix( as.numeric(NA), spectra, 4 )  #; print( dim(mat) )
         
         colnames(mat)           = c( "Min", "Max", "LambdaMax", integral )
-        mat[ , "Min" ]          = base::apply( data, 2, min )
-        mat[ , "Max" ]          = base::apply( data, 2, max )
+        mat[ , "Min" ]          = apply( data, 2, min )
+        mat[ , "Max" ]          = apply( data, 2, max )
         #   print( mat )
-        mat[ , "LambdaMax" ]    = base::apply( data, 2, function(y) { ifelse( any(is.na(y)), NA_real_, mean(wavelength[y==max(y)]) ) } )
-        mat[ , integral ]       = base::apply( data, 2, sum ) *  step.wl 
+        mat[ , "LambdaMax" ]    = apply( data, 2, function(y) { ifelse( any(is.na(y)), NA_real_, mean(wavelength[y==max(y)]) ) } )
+        
+        mat[ , integral ]   = integral( object, method='rectangular' )
         #print( mat )            
         
         df  = cbind( Band=specnames(object), as.data.frame(mat) )
@@ -163,12 +159,13 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
         #   metadata
         out = c( out, charFromList("metadata:",metadata(object))  )  
 
-        #   calibration
-        out = c( out, charFromList("calibration:",attr(object,'calibration'))  )
-        
-        
+        #   calibrate
+        out = c( out, charFromList("calibrate:",attr(object,'calibrate'))  )
+           
+        #   ptransform
+        out = c( out, charFromList("ptransform:",attr(object,'ptransform'))  )
+              
         #   sequence
-        mess    = character(0)
         if( ! is.null( attr(object,"sequence") ) )
             {
             theSequence = attr(object,"sequence") 
@@ -183,12 +180,9 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
 
             desc    = paste( names, collapse=', ' ) #;  print( desc )
             mess    = sprintf( "Product Terms:  %s is a product of %d terms: %s.", theName, length(names), desc )
+            
+            out = c( out, '', mess, '' )            
             }
-        else
-            {
-            #   mess    = sprintf( "Product Terms:  %s is not a product of other colorSpec objects.", theName )
-            }
-        out = c( out, '', mess, '' )
         }
         
     cat( out, sep='\n' )
@@ -196,6 +190,32 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
     return( invisible(out) )
     }
     
+    
+#   x       colorSpec object
+#   method  'rectangular' or 'trapezoidal'
+    
+integral  <-  function( x, method='rectangular' )
+    {
+    wavelength  = wavelength(x)
+    n   = length(wavelength)
+    
+    #   do not bother to optimize for regular wavelength sequence
+    weight  = diff( wavelength, lag=2 ) / 2
+    
+    w.end   = c( wavelength[2] - wavelength[1], wavelength[n] - wavelength[n-1] )
+    if( tolower(method) == substr("trapezoidal",1,nchar(method)) )
+        w.end   = w.end / 2
+        
+    weight  = c( w.end[1], weight, w.end[2] )     
+    
+    mat = as.matrix( x )
+        
+    weight  = matrix( weight, nrow=nrow(mat), ncol=ncol(mat) )
+    
+    out = colSums( weight * mat )    
+    
+    return( out )
+    }
     
 #   .title  of .list    
 #   .list   a named list
@@ -205,14 +225,15 @@ charFromList <- function( .title, .list )
     {
     if( length(.list) == 0 )    return( character(0) )
     
-    out = c( sprintf( "--------------- %s start ------------------", .title ) )
+    out = ''
+    out = c( out, sprintf( "--------------- %s start ------------------", .title ) )
     
     for( k in 1:length(.list) )
         {
+        if( 1 < k ) out = c( out, '' )     
+                
         item    = .list[[k]]
         
-        out = c( out, '' )
-
         if( is.character(item) )
             {
             if( length(item) == 1 )
@@ -233,7 +254,7 @@ charFromList <- function( .title, .list )
         }    
         
     out = c( out, sprintf( "--------------- %s end ------------------", .title ) )
-           
+    
     return(out)
     }
     

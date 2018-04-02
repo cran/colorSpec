@@ -5,7 +5,7 @@
 #   Color Science, 2nd edition.
 #   Table II(3.3.4)  pp. 759.
 #
-Wavelength	Power
+Wavelength	Energy
 320	0.01
 325	0.20
 330	0.40

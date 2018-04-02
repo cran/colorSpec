@@ -1,6 +1,6 @@
 
 
-.onAttach <- function (libname, pkgname)
+.onAttach <- function( libname, pkgname )
     {
     #print( libname )
     #print( pkgname )
@@ -13,14 +13,40 @@
     mess    = paste( c( mess, info ), collapse='.  ' )   #; cat(mess)
     packageStartupMessage( mess )
 
-
     unlockBinding( "g.options", asNamespace('colorSpec') )      # asNamespace(pkgname) here generates a NOTE !
     unlockBinding( "g.word", asNamespace('colorSpec') )         # asNamespace(pkgname) here generates a NOTE !
+    unlockBinding( "g.loglevel", asNamespace('colorSpec') )     # asNamespace(pkgname) here generates a NOTE !
     
-    #   force initialization of variable g.word, which is in logging.R
-    cs.options( logformat=g.options$logformat )              
+    #   print( g.options )  
+    
+    #   initialize the colorSpec options managed by base package    
+    for( opt in names(g.options) )
+        {
+        fopt    = sprintf( "%s.%s", pkgname, opt )
 
-    #   unlockBinding("g.options[['loglevel']]", asNamespace("colorSpec")) ; cat( "unlocked g.options$loglevel\n" )
+        value   = getOption( fopt )
+        
+        if( is.null( value ) )
+            {
+            #   fopt is not set, so set it now from g.options
+            argv        = list( g.options[[ opt ]] )
+            names(argv) = fopt
+            options( argv ) 
+            }
+        else
+            {
+            #   option has been set in the base package, probably from Profile.site
+            assignPrivateOption( opt, value )
+            }
+        }
+        
+    #   force update of derived variables
+    setLogLevel( .Options$colorSpec.loglevel )      # updates g.loglevel, an integer
+    setLogFormat( .Options$colorSpec.logformat )    # updates g.word[], a character array
+        
+    checkBaseOptions()    
+    
+    #   the options are now in synch !
     }
     
     
@@ -61,49 +87,6 @@ package.file <-  function( .filename )
     return( system.file(.filename,package=pname) )
     }
     
-#   always returns a datframe with the right number of rows
-#   and preserves all data from the 2 parts
-#   nrow(out) = nrow(.df1) + nrow(.df2)    
-    
-rbind.super <- function( .df1, .df2 )   
-    {
-    #   2 trivial cases
-    if( 0==nrow(.df1) ) return(.df2)
-    if( 0==nrow(.df2) ) return(.df1)    
-    
-    if( 0<ncol(.df1)  &&  0<ncol(.df2) )
-        #   the typical case
-        return( merge( .df1, .df2, all=T ) )
-        
-    rnames1 = row.names( .df1 )
-    rnames2 = row.names( .df2 )
-    
-    if( is.null(rnames1) )  rnames1 = rep( NA_character_, nrow(.df1) )
-    if( is.null(rnames2) )  rnames2 = rep( NA_character_, nrow(.df2) )    
-    
-    if( 0==ncol(.df1)  &&  0==ncol(.df2) )
-        #   special case
-        return( data.frame( row.names=c(rnames1,rnames2) ) )
-        
-    #   now the 2 hard cases
-    if( 0==ncol(.df1)  &&  0<ncol(.df2) )
-        {
-        mat = matrix( NA, nrow(.df1), ncol(.df2) )
-        rownames(mat)   = rnames1
-        colnames(mat)   = colnames(.df2)
-        
-        return( rbind(mat,.df2) )
-        }
-    
-    if( 0<ncol(.df1)  &&  0==ncol(.df2) )
-        {
-        mat = matrix( NA, nrow(.df2), ncol(.df1) )
-        colnames(mat)   = colnames(.df1)        
-        rownames(mat)   = rnames2
-        
-        return( rbind(.df1,mat) )
-        }    
-    }
     
     
 listDepth <- function (x) 
@@ -337,4 +320,55 @@ CLAMP   <- function( .x, .range )
     }
     
     
+#   .x      a numeric vector whose sum is 1 - accurate to .digits digits
+#   .digits the number of fractional decimal digits to round.
+#
+#   returns .x but with components rounded to .digits digits
+#           and with sum still 1
+#           in case of error, returns NULL
+
+roundAffine  <- function( .x, .digits )
+    {
+    ok  = (1 <= .digits)  &&  (.digits <= 10 )  &&  (round(.digits) == .digits)
+    if( ! ok )
+        {
+        log.string( ERROR, ".digits=%g is invalid\n", .digits )
+        return(NULL)
+        }
+    
+    n   = 10^.digits
+    
+    isum    = round( n * sum(.x) )
+    
+    if( isum != n )
+        {
+        log.string( ERROR, "sum(.x) = %g is not accurate to %d fractional digits\n", 
+                                sum(.x), .digits )
+        return(NULL)
+        }
+    
+    out     = round( n * .x )
+    
+    delta   = sum(out) - n #;     print( delta ) ;
+    
+    if( delta == 0 )
+        #   easy case
+        return( out / n )
+        
+    if( length(.x) < abs(delta) )
+        {
+        log.string( ERROR, "abs(delta) = %d is too large.  This should not happen.", abs(delta) )
+        return(NULL)
+        }
+    
+    #   find the delta largest values of abs(.x)
+    perm    = order( abs(.x) , decreasing=TRUE )    #; print(perm)
+    
+    idx     = perm[ 1:abs(delta) ] #;   print( idx)
+    
+    out[ idx ] = out[ idx ] - sign(delta)
+    
+    return( out / n )
+    }
+
  

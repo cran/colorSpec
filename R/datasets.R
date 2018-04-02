@@ -40,13 +40,13 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     
     #   D50 with Standard UV
     correction  = 14388 / 14380     # note 5, page 69 in CIE:15:2004
-    D50.10nm    = daylightSpectra( correction*5000, components=daylight1964, wavelength=seq(300,830,by=10), roundMs=TRUE )
+    D50.10nm    = daylightSpectra( correction*5000, wavelength=seq(300,830,by=10), components=daylight1964, roundMs=TRUE )
     #wave        = seq(300,830,by=5)    
     #vec.5nm     = approx( wavelength(D50.10nm), coredata(D50.10nm), wave )$y
     D50.5nm     = resample( D50.10nm, seq(300,830,by=5) , method='linear')
     #   vec.5nm     = round( vec.5nm, 5 )
     D50.5nm     = round( D50.5nm, 5 )
-    #   D50.5nm     = colorSpec( vec.5nm, wave, 'power', 'vector' )
+    #   D50.5nm     = colorSpec( vec.5nm, wave, 'energy', 'vector' )
     specnames(D50.5nm)  = 'D50'
     desc                = "computed from the 1964 daylight components: S0, S1, and S2"   
     metadata(D50.5nm)   = list( description=desc )    
@@ -100,19 +100,17 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     savevec = c( savevec, "solar.irradiance" )
     
     atmosphere2003  = solar.irradiance[ ,3] / solar.irradiance[ ,1]
-    atmosphere2003  = colorSpec( atmosphere2003, wavelength(solar.irradiance), 'transmittance' )
-    specnames(atmosphere2003)  =  "AirMass.1.5"
+    atmosphere2003  = colorSpec( atmosphere2003, wavelength(solar.irradiance), quantity='transmittance', specnames="AirMass.1.5" )
     desc    = "from ASTM G163-03"
     desc    = c( desc, "Standard Tables for Reference Solar Spectral Irradiances: Direct Normal and Hemispherical on 37\u00B0 Tilted Surface" )     # degree symbol:  °
     desc    = c( desc, "transmittance of the atmosphere through Air Mass 1.5 is the quotient AM1.5/AM0" )    
     metadata(atmosphere2003)    = list( header=desc )
-    #   metadata(atmosphere)  = list( description=desc )  
     #   print( summary(solar.transmittance) )
     organization(atmosphere2003)  = mostEfficientOrganization(atmosphere2003)      
     savevec = c( savevec, "atmosphere2003" )
     
     
-    ##------------------        photons/sec  or  photon flux      --------------##
+    ##------------------        photons       --------------##
     path    = "../inst/extdata/sources/F96T12-GR8D.txt"
     F96T12  = readSpectra( path )
     specnames(F96T12) = "F96T12"
@@ -153,7 +151,16 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     lms2000.1nm = readSpectraXYY( "../inst/extdata/eyes/lms2000.1nm.csv" )
     organization(lms2000.1nm)  = mostEfficientOrganization(lms2000.1nm)        
     savevec = c( savevec, "lms2000.1nm" )
-
+    
+    #   luminsivity functions
+    #   the union of all the wavelength vectors is 360:830, which is the wavelength of photopic1924.
+    #   set extrap=0 to zero-pad the smaller ones    
+    pathvec = c( "../inst/extdata/eyes/photopic1924.1nm.csv", "../inst/extdata/eyes/scotopic1951.1nm.csv",
+                "../inst/extdata/eyes/photopic1978.1nm.csv", "../inst/extdata/eyes/photopic2008.1nm.csv" )
+    luminsivity.1nm = readSpectra( pathvec, wave=360:830, extrap=0 )
+    specnames(luminsivity.1nm)  = sub( "^([A-z0-9]+).*", '\\1', specnames(luminsivity.1nm) )
+    #   print( specnames(luminsivity.1nm) )
+    savevec = c( savevec, "luminsivity.1nm" )
     
     
     ##-------------------------     animal eyes     -----------------------------##    
@@ -176,16 +183,10 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     savevec = c( savevec, "Flea2.RGB" )
     
     # ideal BT.709 camera with negative lobes impossible to actually build.  D65 maps to RGB=(1,1,1)
-    mat3x3  = matrix( c(3.2404542, -1.5371385, -0.4985314,  -0.9692660,  1.8760108,  0.0415560,   0.0556434, -0.2040259,  1.0572252 ), 3, 3, byrow=F )
-    BT.709.RGB  = multiply( xyz1931.1nm, mat3x3 )
-    specnames(BT.709.RGB)   = c( 'r', 'g', 'b' )
-    quantity(BT.709.RGB)    = "power->electrical"
-    #   BT.709.RGB  = colorSpec( mat, wavelength(xyz1931.1nm), "power->electrical" )
-    #   normalize so D65 creates response RGB=(1,1,1)
-    D65 = resample( D65.1nm, wavelength(BT.709.RGB) )
-    #rgb = product( D65, BT.709.RGB )    # ; print(rgb)
-    #BT.709.RGB  = multiply( BT.709.RGB, 1 / as.double(rgb) )
-    BT.709.RGB  = calibrate( BT.709.RGB, stimulus=D65, response=1, method='scaling' )
+    P = matrix( c(0.64,0.33,NA,  0.3,0.6,NA, 0.15,0.06,NA ), 3, 3, byrow=T )
+    rownames(P) = c('R','G','B')    
+    BT.709.RGB  = ptransform( xyz1931.1nm, P, D65.1nm )  
+    quantity(BT.709.RGB)    = "energy->electrical"    
     desc    = "This is a theoretical RGB camera"
     desc    = c( desc, "They acquire RGB components for display using BT.709 primaries, which are the same as sRGB primaries." )
     desc    = c( desc, "This theoretical camera satisfies the Maxwell-Ives condition, but has negative lobes." )    
@@ -193,28 +194,22 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     desc    = c( desc, "Poynton, Charles" )
     desc    = c( desc, "Digital Video and HD - Algorithms and Interfaces." )
     desc    = c( desc, "Second Edition. 2012." )
-    metadata(BT.709.RGB)    = list( header=desc )    
-    metadata(BT.709.RGB)    = list( path=NULL )         # erase it    
+    metadata(BT.709.RGB,add=TRUE)   = list( header=desc )    
+    metadata(BT.709.RGB,add=TRUE)   = list( path=NULL )         # erase path   
     organization(BT.709.RGB)  = mostEfficientOrganization(BT.709.RGB)         
     savevec = c( savevec, "BT.709.RGB" )
     
     # ideal Adobe.RGB camera with negative lobes impossible to actually build.  D65 maps to RGB=(1,1,1)
-    mat3x3  = matrix( c( 2.0413690, -0.5649464, -0.3446944, -0.9692660,  1.8760108,  0.0415560,  0.0134474, -0.1183897, 1.0154096 ), 3, 3, byrow=F )  
-    Adobe.RGB  = multiply( xyz1931.1nm, mat3x3 )
-    specnames(Adobe.RGB)   = c( 'r', 'g', 'b' )
-    quantity(Adobe.RGB)    = "power->electrical"    
-    #mat = coredata(xyz1931.1nm) %*% mat3x3
-    #colnames(mat)   = c( 'R', 'G', 'B' )
-    #   Adobe.RGB   = colorSpec( mat, wavelength(xyz1931.1nm), "power->electrical" )
-    D65 = resample( D65.1nm, wavelength(Adobe.RGB) )
-    #   rgb = product( D65, Adobe.RGB ) #; print(rgb)
-    #   Adobe.RGB  = multiply( Adobe.RGB, 1 / as.double(rgb) )
-    Adobe.RGB  = calibrate( Adobe.RGB, stimulus=D65, response=1, method='scaling' )    
+    # it's the same as BT.709.RGB, except for the matrix P
+    P = matrix( c(0.64,0.33,NA,  0.21,0.71,NA, 0.15,0.06,NA ), 3, 3, byrow=T )
+    rownames(P) = c('R','G','B')    
+    Adobe.RGB  = ptransform( xyz1931.1nm, P, D65.1nm )  
+    quantity(Adobe.RGB)    = "energy->electrical"        
     desc    = "This is a theoretical RGB camera"
     desc    = c( desc, "They acquire RGB components for display using Adobe RGB primaries." )
     desc    = c( desc, "This theoretical camera satisfies the Maxwell-Ives condition, but has negative lobes." )
-    metadata(Adobe.RGB) = list( header=desc )
-    metadata(Adobe.RGB) = list( path=NULL )         # erase it       
+    metadata(Adobe.RGB,add=TRUE)    = list( header=desc )
+    metadata(Adobe.RGB,add=TRUE)    = list( path=NULL )         # erase path      
     organization(Adobe.RGB)  = mostEfficientOrganization(Adobe.RGB)         
     savevec = c( savevec, "Adobe.RGB" )
     
@@ -250,6 +245,8 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     }
     
     
+#   an advantage of the private data in "sysdata.rda" is that these
+#   do not have to be documented, and therefore exposed    
 savePrivateDatasets  <- function( .path="sysdata.rda" )
     {
     savevec = character(0)

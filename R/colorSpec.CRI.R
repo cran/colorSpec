@@ -1,6 +1,4 @@
 
-    
-        
 #   x      a colorSpec object with type 'light'   
 #
 #   returns CRI in interval (-Inf,100], or NA 
@@ -27,7 +25,7 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
         return( out )
         }
     
-    CCT = computeCCT(x)     #;  print(CCT)
+    CCT = computeCCT( x, method='lm' )     #;  print(CCT)
     
     if( is.na(CCT) )    return(out) # error message already issued
     

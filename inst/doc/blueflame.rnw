@@ -99,12 +99,11 @@ I thought it would be interesting to
 separate the light from hydrocarbons and the light from diatomic carbon
 and to display both colors accurately.
 
-
-
 <<packs, echo=TRUE, message=FALSE>>=
 library( colorSpec )
 @
-
+Featured functions in this vignette are: \code{chop()}, \code{bind()},
+and \code{plotPatchesRGB()}.
 
 %\section*{Lucid output?}
 

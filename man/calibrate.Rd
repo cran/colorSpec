@@ -7,7 +7,9 @@
 \title{make a linear modification to a colorSpec responder}
 
 \description{
-make a linear modification to a \bold{colorSpec} responder so a specific single spectrum (the stimulus) creates a given specific response.\cr
+make a linear modification to a \bold{colorSpec} responder with M spectra
+so a specific single spectrum (the stimulus) creates a given specific response.
+It is generalized \emph{white balance}.\cr
 The options are complicated, but in all cases the returned object is
 \code{multiply(x,mat)} where  \code{mat} is an internally calculated MxM matrix.
 Stated another way, the spectra in the output are linear combinations of spectra in
@@ -22,8 +24,7 @@ In case of ERROR, a message is logged and the original \code{x} is returned.
 
 \arguments{
   \item{x}{a \bold{colorSpec} responder with M spectra.  
-            The \code{type} must be \code{'responsivity.light'} or \code{'responsivity.material'}.
-            The wavelength sequence of \code{x} must be regular.}
+            The \code{type} must be \code{'responsivity.light'} or \code{'responsivity.material'}.}
   
   \item{stimulus}{a \bold{colorSpec} object with a single spectrum, with \code{type}
   \code{'light'} or \code{'material'} to match \code{x}.  
@@ -55,13 +56,14 @@ In case of ERROR, a message is logged and the original \code{x} is returned.
    Note that \code{mat} is not the same as the the  MxM \emph{adaption matrix}.
    To inspect \code{mat} execute \code{\link{summary}} on the returned object.
    If \code{method} is \code{'scaling'} then \code{mat} is diagonal and the
-   diagonal entries are the M gain factors needed to achieve the calibration.
+   diagonal entries are the M gain factors needed to achieve the calibration.\cr
+   Useful data is attached as attribute \code{"calibrate"}.
 }
 
 
 \details{
   If \code{stimulus} is \code{NULL}, it is set to
-   \code{\link{illuminantE}} or \code{\link{neutralMaterial}} to match \code{x}.
+   \code{\link{illuminantE}()} or \code{\link{neutralMaterial}()} to match \code{x}.
   
   If \code{response} is \code{NULL} and the response of \code{x} is \code{electrical} or \code{action},
   then \code{response} is set to an M-vector of all 1s.
@@ -69,16 +71,20 @@ In case of ERROR, a message is logged and the original \code{x} is returned.
   then this is an ERROR and the user is prompted to supply a specific \code{response}.\cr
  
   If \code{method} is \code{NULL} and M=3 and the response of \code{x} is \code{neural},
-  then \code{method} is set to  the 3x3 Bradford matrix.\cr
+  then the neural response is assumed to be human,
+  and the \code{method} is set to  the 3x3 Bradford matrix.\cr
   Otherwise \code{method} is set to  the MxM identity matrix,
-  which scales each responsivity spectrum in \code{x} independently. 
+  which scales each responsivity spectrum in \code{x} independently.
+  In cameras this is usally called \emph{white balance},
+  and so \code{calibrate()} can be considered a generalization of white balance.
 }
 
 \note{
 Chromatic adaption transforms, such as \code{'Bradford'},
-do not belong in the realm of spectra.
+do not belong in the realm of spectra;
+this is not really a spectral calculation.
 For more about this subject see the explanation in \cite{Digital Color Management}.
-This transform option is provided in \code{calibrate} because it is possible and convenient.
+This adaption option is provided in \code{calibrate} because it is possible and convenient.
 }
 
 \references{
@@ -101,17 +107,15 @@ Chapter 15 - Myths and Misconceptions.
 }
 
 \examples{
-# make an art gallery illuminated by illuminant A
+# make an art gallery illuminated by illuminant A, and with tristimulus XYZ as output
 gallery = product( A.1nm, 'artwork', xyz1931.1nm, wave='auto')      
 # chromatically adapt the output XYZs to D50 white point, using Bradford matrix
 gallery.D50 = calibrate( gallery, response=officialXYZ('D50') )
-gallery.D50
 
-# make a flatbead scanner from illuminant F11 and a Flea2 camera
+# make an RGB flatbead scanner from illuminant F11 and a Flea2 camera
 scanner = product( subset(Fs.5nm,'F11'), 'paper', Flea2.RGB, wave='auto')  
-# adjust RGB gain factors so the perfect reflecting diffuser yields RGB=(1,1,1)
+# adjust RGB gain factors (white balance) so the perfect reflecting diffuser yields RGB=(1,1,1)
 scanner = calibrate( scanner )
-scanner
 
 # same flatbead scanner, but this time with some "white headroom"
 scanner = product( subset(Fs.5nm,'F11'), 'paper', Flea2.RGB, wave='auto' )  

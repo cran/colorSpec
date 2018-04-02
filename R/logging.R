@@ -1,51 +1,6 @@
 
 
 
-g.word      = character(0)
-
-
-setLogFormat <- function( .fmt )
-    {
-    #   print( "Entering setLogFormat()" )
-    
-    pattern = "%[a-zA-Z](\\{.+\\})?"
-    
-    res = gregexpr( pattern, .fmt )[[1]]    #; print( res )
-    
-    if( res[1] < 0 )
-        {
-        g.word  = .fmt[1]
-        return(TRUE)
-        }
-    
-    len = attr( res, "match.length" )
-    
-    code    = integer( nchar(.fmt) )
-    
-    for( k in 1:length(res) )
-        {
-        code[ res[k]:(res[k]+len[k]-1) ] = k
-        }
-    #print( code )
-    
-    rle = rle(code) #; print( rle )
-    
-    n   = length(rle[[1]])
-
-    start   = c( 1, cumsum( rle$lengths ) + 1 )[1:n]        #;   print(start)
-    stop    = start + rle$lengths-1                         #; print(stop)
-    
-    g.word  <<- character( n )  # get the size right, shrink it !
-    for( k in 1:n )
-        g.word[k]   <<- substr( .fmt, start[k], stop[k] )
-        
-    #   log.object( WARN, g.word )
-    
-    return(invisible(TRUE))    
-    }
-    
-    
-
     
 log.string <- function( level, msg, ... )
     {    
@@ -53,16 +8,20 @@ log.string <- function( level, msg, ... )
     
     if( ! is.integer(level) )
         {
-        cat( "ERROR  log.string(). level is not an integer.\n", file=conn )
+        warning( "log.string(). level is not an integer."  )
         return( invisible(FALSE) )
         }
+        
+    updatePrivateOptions()
     
-    if( g.options$loglevel < level )
+    #   compare with g.loglevel
+    if( g.loglevel < level )
         #   do nothing
         return( invisible(FALSE) )
     
-    msg = sprintf( msg, ... )
+    msg = sprintf( msg[1], ... )    # should this really be msg[1] ?
     
+    #   cat( 'length(msg)=', length(msg), '\n', file=conn )
     #   print( g.word )
         
     idx = which( grepl("^%",g.word) )   #; print( idx )
@@ -121,7 +80,7 @@ log.string <- function( level, msg, ... )
  
    
     if( g.options$stoponerror  &&  level <= ERROR )
-        stop( mess, '\n', "Stopping, because option stoponerror==TRUE", call.=FALSE )
+        stop( mess, '\n', "Stopping, because option colorSpec.stoponerror==TRUE", call.=FALSE )
 
     cat( mess, '\n', file=conn ) ;   flush(conn)
 
@@ -134,11 +93,13 @@ log.object <- function( level, obj, type='whole', addname=TRUE )
     
     if( ! is.integer(level) )
         {
-        cat( "ERROR  log.object(). level is not an integer.\n", file=conn )
+        warning( "log.object(). level is not an integer."  )
         return( invisible(FALSE) )
         }
         
-    if( g.options$loglevel < level )
+    updatePrivateOptions()        
+        
+    if( g.loglevel < level )
         #   do nothing
         return( invisible(FALSE) )
         
@@ -169,6 +130,76 @@ log.object <- function( level, obj, type='whole', addname=TRUE )
     flush.console()
         
     return( invisible(TRUE) )
+    }
+    
+setLogFormat <- function( .fmt )
+    {
+    #   print( "Entering setLogFormat()" )
+    
+    if( ! is.character(.fmt) )
+        {
+        warning( sprintf( "setLogFormat() logformat='%s' is not a string - ignored.", as.character(.fmt) ) )
+        return(NA_integer_)
+        }    
+    
+    pattern = "%[a-zA-Z](\\{.+\\})?"
+    
+    res = gregexpr( pattern, .fmt )[[1]]    #; print( res )
+    
+    if( res[1] < 0 )
+        {
+        g.word  = .fmt[1]
+        return(TRUE)
+        }
+    
+    len = attr( res, "match.length" )
+    
+    code    = integer( nchar(.fmt) )
+    
+    for( k in 1:length(res) )
+        {
+        code[ res[k]:(res[k]+len[k]-1) ] = k
+        }
+    #print( code )
+    
+    rle = rle(code) #; print( rle )
+    
+    n   = length(rle[[1]])
+
+    start   = c( 1, cumsum( rle$lengths ) + 1 )[1:n]        #;   print(start)
+    stop    = start + rle$lengths-1                         #; print(stop)
+    
+    g.word  <<- character( n )  # get the size right, shrink it !
+    for( k in 1:n )
+        g.word[k]   <<- substr( .fmt, start[k], stop[k] )
+        
+    #   log.object( WARN, g.word )
+    
+    #   now record it in g.options
+    assignPrivateOption( 'logformat', .fmt )
+    
+    return(invisible(TRUE))    
+    }
+    
+        
+#   .level  a string, partial matches OK        
+setLogLevel <- function( .level )
+    {
+    #   convert string to integer
+    lev = loglevelFromString( .level )
+        
+    if( is.na(lev) )    return(FALSE)
+    
+    # record the integer
+    #   assign( "g.loglevel", lev, envir=asNamespace('colorSpec') )
+    g.loglevel <<-  lev
+    
+    #   cat( 'g.loglevel=', g.loglevel, '\n' )
+    
+    #   now record the string in g.options
+    assignPrivateOption( 'loglevel', .level )
+
+    return(TRUE)
     }
         
         

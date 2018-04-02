@@ -53,11 +53,16 @@ There is no support for 3D colors spaces other than XYZ and RGB; see packages **
 </li>
 <li>
 there are few non-linear operations.
-The only such operations are conversion of linear RGB to display RGB, conversion of absorbance to transmittance, and the reparameterized wavelength in **computeADL**.
+The only such operations are conversion of linear RGB to display RGB, conversion of absorbance to transmittance, and the reparameterized wavelength in `computeADL()`.
 The electronic camera model is purely linear with no dark current offset or other deviations.
 </li>
-<li>there is little support for scientific units; for these see package **colorscience** @colorscience</li>
-<li>photons are parameterized by wavelength in nm; other wavelength units and alternative parameterizations, such as wavenumber and electronvolt, are not available</li>
+<li>there is little support for scientific units; for these see packages
+**photobiology** @photobiology
+and **colorscience** @colorscience</li>
+<li>photons are parameterized by wavelength in nanometers (nm);
+other wavelength units (such as Ångstrom and micron)
+and alternative parameterizations (such as wavenumber and electronvolt)
+are not available.</li>
 </ul>
 
 
@@ -142,9 +147,9 @@ Such a material does not exist, like many concepts in physics, but it is a very 
 # Spectrum Quantities
 
 Unfortunately there are two common metrics for quantifying  spectra with `type='light'` -
-_power of photons_ and _number of photons/sec_.
-The former – _radiometric_ - is the oldest, being used in the 19^th^ century. 
-The latter – _actinometric_ - was not used until the 20th century 
+_energy of photons_ and _number of photons_.
+The former - _radiometric_ - is the oldest, being used in the 19^th^ century. 
+The latter - _actinometric_ - was not used until the 20th century 
 (after the modern concept of photons was proposed in 1905). 
 So colorimetry uses radiometric quantities by convention and actinometric ones are converted to
 radiometric automatically for calculations. 
@@ -156,20 +161,74 @@ Similarly, `'responsivity.light'` can be radiometric (e.g. the CIE color matchin
 or actinometric (e.g. the quantum efficiency of a CMOS sensor). 
 These actinometric spectra are also converted to radiometric on the fly.
 
-For responsivity we distinguish between 3 types of response: _electrical_, _neural_, and _action_. 
-In **colorSpec** this 3-way distinction is only used in two places: 
-in the y label of the spectrum `plot()`, and to determine default adaption methods in `calibrate()`. 
+For responsivity, we distinguish between 3 types of response:
+_electrical_, _neural_, and _action_. 
+In **colorSpec** this 3-way distinction is only used in a few places: 
+<ul>
+<li>for the y label of the spectrum in `plot()`</li>
+<li>to determine the default adaption method in `calibrate()`</li>
+<li>for the conversion equations in `radiometric()` and `actinometric()`</li>
+</ul>
 Note that the `action` response is really a grab-bag for responses that are neither 
 `electrical` (a modern solid-state photosensor) nor `neural` (a biological eye).
 
 Here are the valid types and their quantities:
-
 ```{r echo=FALSE, results='asis'}
-    includetable("tables/table-2.1.html", "620px" )
+    includetable("tables/table-2.1.html", "640px" )
 ```
 
-Note that `'photons'` is an acceptable synonym for `'photons/sec'`
-(although `'photons'` is really a measure of energy).
+The **colorSpec** quantities are typically not the same as the SI quantities; they are more general.
+
+First consider light sources (`type='light'`).
+
+The **colorSpec** `quantity='energy'` includes all 5 of these _power_-based SI quantities:
+radiant power (radiant flux), irradiance, radiant exitance, radiant intensity, and radiance.
+And it also includes these _energy_-based quantities:
+radiant energy, radiant exposure, and the time integrals of radiant exitance, radiant intensity, and radiance.
+Thus `quantity='energy'` includes 10 true physical SI quantities,
+which all include energy
+and optionally include area, solid angle, and time.
+
+Similary, the **colorSpec** `quantity='photons'` includes all 5 of these SI quantities:
+photon flux, photon irradiance, photon exitance, photon intensity, and photon radiance.
+It also includes these 5 quantities integrated over time.
+
+Versions of **colorSpec** before 0.7-1 used `power` in place of `energy`.
+But now we have switched to `energy`;
+see <a href="#appendix-e---energy-vs-power">Appendix E</a> for the reasons why.
+`power` and `power->*` are still supported, but deprecated,
+and will eventually be phased out.
+
+For `type='light' and type='responsivity.light'`,
+each radiometric quantity has a corresponding actinometric quantity.
+The following table shows the correspondences:
+
+```{r echo=FALSE, results='asis'}
+    includetable("tables/table-2.2.html", "240px" )
+```
+
+The **colorSpec** functions `radiometric()`  and `actinometric()` convert
+back and forth between the two metrics.
+For `energy` and `energy->electrical` and `energy->action`
+the functions actually do assume the example units.
+For `energy->electrical` the example units in the table are in common use
+for electronic cameras.
+Note that for `energy->action`, the action we have in mind is photosynthesis.
+A quick internet search shows that the maximum theoretical photosynthesis response
+is between 1/16 and 1/8 of an $\text{O}_2$ molecule per photon.
+For `energy->neural` see the functions man pages for more discussion.
+<br>
+Since these are spectra parameterized by nm,
+the example units should all add $\text{nm}^{-1}$ at the end,
+but this is suppressed for simplicity.
+
+<br>
+Now consider materials (`type='material'`).
+The situation here is simpler.
+The **colorSpec** `quantity='reflectance'`,  `'transmittance'`, and `'absorbance'` correspond directly to the SI quantities.
+All reflecting materials are Lambertian and opaque, 
+and all transmitting materials have only direct transmission with no scatter.
+
 
 <br>
 
@@ -177,38 +236,51 @@ Note that `'photons'` is an acceptable synonym for `'photons/sec'`
 
 The user constructs a `colorSpec` object `x` using the function `colorSpec()`:
 ```
-x <- colorSpec( data, wavelength, quantity='auto', organization='auto' )
+x <- colorSpec( data, wavelength, quantity='auto', organization='auto', specnames=NULL )
 ```
 The arguments are:
 
 `data`  
 a vector or matrix of the spectrum values. 
 In case `data` is a vector, `x` has a single spectrum and the number of points in that 
-spectrum is the length of the vector. 
+spectrum is the length of `data`. 
 In case `data` is a matrix, the spectra are stored in the columns, 
 so the number of points in each spectrum is the number of rows in `data`. 
 It is OK for the matrix to have only 0 or 1 column. 
-The column names (if any) are taken as the spectrum names. 
-If no column names are given, then dummy names `'S1'`, `'S2'`, ... are used, and a warning is issued.
-Names can also be assigned after construction too; see `specnames()`.
-Compare `colorSpec()` with the function `ts()` in package **stats**.
 
 `wavelength`  
 a numeric vector of wavelengths for all the spectra in `x`. 
-The length of this vector must be equal to `NROW(data)`. 
+The length of this vector must be equal to `NROW(data)`,
+and the unit must be nanometers.
+The sequence must be increasing.
+The `wavelength` of `x` can be changed after construction.
 
 `quantity`   
 a character string giving the quantity of all spectra;
 see Table 2.1 for a list of valid values. 
-In case `quantity='auto'`, a guess is made from the column names. 
+In case `quantity='auto'`, a guess is made from the `specnames`. 
 The `quantity` of `x` can be changed later.
 
 `organization`  
-a character string giving the desired organization of the returned colorSpec object. 
-In case `organization='auto'`, the organization is `'vector'` or `'matrix'` depending on `data`.
-The `organization` of `x`  can be changed later;
-see the next section for discussion of all 4 possible organizations.
+a character string giving the desired organization of the returned colorSpec object. In case `organization='auto'`, the organization is `'vector'` or `'matrix'` depending on `data`.
+The `organization` of `x`  can be changed _after_ construction.
+See the next section for discussion of all 4 possible organizations.
 
+`specnames`   
+a character vector with length equal to the number of spectra in `data`,
+and with no duplicates.
+If `specnames=NULL` and `data` is a vector,
+then `specnames` is set to `deparse(substitute(data))`.
+If `specnames=NULL` and `data` is a matrix,
+then `specnames` is set to `colnames(data)`.
+If `specnames` is _still_ not a character vector with the right length,
+or if there are duplicate names, then `specnames` is set to
+`'S1', 'S2', ...` with a warning message.
+Names can be changed after construction.
+
+Compare `colorSpec()` with the function `stats::ts()`.
+<br>
+<br>
 <br>
 
 # colorSpec object organization
@@ -270,9 +342,9 @@ The class of the object is `c('colorSpec', 'data.frame')`.
 
 The attribute list is kept as small as possible. Here it is:
 ```{r echo=FALSE, results='asis'}
-    includetable("tables/table-5.1.html", "400px" )
+    includetable("tables/table-5.1.html", "430px" )
 ```
-These are considered internals, and user should never have to access these directly.
+The user should never have to modify these using the function `attr()`.
 
 
 <br>
@@ -286,7 +358,7 @@ see the **colorSpec** reference guide for details.
 The file formats are:
 
 `XYY`  
-There is a line matching `'^(wave|wl)'` (not case sensitive) followed by the the names of the spectra.
+There is a line matching `'^(wave|wv?l)'` (not case sensitive) followed by the the names of the spectra.
 This is the column header line. 
 All lines above this one are taken to be metadata.
 This is probably the most common file format; see the sample file `ciexyz31_1.csv`.
@@ -304,7 +376,7 @@ See the sample file `E131102.txt`.
 `scope`  
 This is a file format used by Ocean Optics spectrometer software.
 There is a line `>>>>>Begin Processed Spectral Data<<<<<`.
-The following lines contain wavelength and power separated by a tab.
+The following lines contain wavelength and energy separated by a tab.
 There is only 1 spectrum per file.
 The organization of the returned object is `'vector'`.
 See the sample file `pos1-20x.scope`.
@@ -393,9 +465,6 @@ the `product()` function saves the terms with the product object,
 but the `plot()` function ignores them. 
 It may be useful to have an option to plot the individual terms too.
 
-`resample()`  
-extrapolation is inconsistent and poorly documented, it should be improved
-
 
 # References
 
@@ -448,7 +517,7 @@ Alternatively, one can run `summary()` on the imported object.
 Some of the files in `Control` format have associated `JPG` or `PNG` images of plots.
 
 ```{r echo=FALSE, results='asis'}
-    includetable("tables/table-B.1.html", "350px" )
+    includetable("tables/table-B.1.html", "480px" )
 ```
 <br>
 ```{r echo=FALSE, results='asis'}
@@ -456,7 +525,7 @@ Some of the files in `Control` format have associated `JPG` or `PNG` images of p
 ```
 <br>
 ```{r echo=FALSE, results='asis'}
-    includetable("tables/table-B.3.html", "420px" )
+    includetable("tables/table-B.3.html", "460px" )
 ```
 
 <br>
@@ -511,6 +580,75 @@ See the help page for `colorSpec::product()` for details.
     includeplain("proofs.txt")
 ```
 
+
+<br>
+
+# Appendix E - Energy vs Power
+
+
+Consider these subtle differences in the way light sources
+and responders (detectors) are appropriately measured:
+
+<ul>
+<li>
+*Power* is an appropriate way to measure constant light sources,
+such as the lighting in an office, or a standard illuminant.
+But *energy* is appropriate for variable sources, such as a pulsed light source.
+</li>
+<li>
+The response to *power* is an appropriate way to measure non-integrating responders,
+such as a
+biological eye  (`'power->neural'`),
+a photovoltaic cell (`'power->electrical'`),
+or photosynthesis (`'power->action'`).
+All of these respond (almost) instantaneously.
+<br>
+The response to *energy* is an appropriate way to measure integrating responders,
+such as an electronic camera (`'energy->electrical'`),
+or erythemal exposure (`'energy->action'`).
+For these responders there is a well-defined integration time.
+</li>
+</ul>
+
+Since color science emphasizes constant light sources and biological eyes,
+*power* has always seemed more appropriate to me than *energy*.
+But starting with **colorSpec** version 0.7-1
+I decided to switched to `energy` for these reasons:
+
+<ul>
+<li>
+Energy is more fundamental than power.
+Power is defined from energy by the messy process of differentiation.
+The conversion between energy of photons and number of photons is straightforward,
+without a messy integration time.
+The terms *energy-based* and *photon-based* are well-established
+in vision science, and in software packages like **photobiology** @photobiology.
+</li>
+<li>
+In flash-based photography (`energy->electrical`)
+what matters to the color of the photograph
+is the integral of the spectrum (the energy) of the flash bulb
+over the exposure interval of the camera.
+This is a case when the light spectrum is not constant;
+it can vary over that interval.
+Similarly, in photosynthesis (`energy->action`) what matters
+to the plant is the integral of daylight from sunrise to sunset.
+Think of the daytime as a very long pulse.
+For an example, see the file `solar.exposure.txt` in
+<a href="#appendix-b---bonus-spectral-data">Appendix B</a>.
+</li>
+</ul>
+<br>
+I also considered allowing *both* `energy` and `power`,
+and *both* `photons` and `photons/time`.
+But this would force the user to decide whether a light source
+is constant or variable,
+and whether a responder/detector is integrating or non-integrating.
+So things quickly got complicated.
+These common radiant SI quantities
+- radiant power, irradiance, radiant exitance, radiant intensity, radiance -
+differ only in area and steradian.
+Time is now grouped with these 2 geometric units.
 
 <br><br>
 

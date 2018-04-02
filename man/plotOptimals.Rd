@@ -8,8 +8,8 @@
 
 \description{
 Consider a \bold{colorSpec} object \code{x} with \code{type} 
-equal to \code{responsivity.material} and 3 responsivity spectra.
-The function \code{plotOptimals3D} 
+equal to \code{'responsivity.material'} and 3 responsivity spectra.
+The function \code{plotOptimals3D()} 
 makes a wireframe plot of the \emph{object-color solid} for \code{x}.
 The 3D drawing package \pkg{rgl} is required.
 \cr
@@ -23,7 +23,7 @@ A color on the boundary of the \emph{object-color solid} is called an \emph{opti
 The special points \bold{W} (the response to the perfect reflecting diffuser)
 and \bold{0} are on the boundary of this set.
 The interior of the line segment of neutrals joining \bold{0} to \bold{W} is in the interior of the set.
-For more see discussion \code{\link{probeOptimalColors}}.
+For more discussion see \code{\link{probeOptimalColors}()}.
 
 }
 
@@ -34,7 +34,8 @@ For more see discussion \code{\link{probeOptimalColors}}.
 }
 
 \arguments{
-  \item{x}{a \bold{colorSpec} object with \code{type} equal to \code{responsivity.material} and 3 spectra }
+  \item{x}{a \bold{colorSpec} object with \code{type} equal to
+  \code{'responsivity.material'} and 3 spectra }
   
   \item{size}{an integer 2-vector with the number of meridians and parallels to plot}
                
@@ -91,9 +92,9 @@ to the output response space is not injective.
 \section{Future Work}{
 For an object \code{x} with 2 spectra,
 it would not take much work to write a new function
-\code{plotOptimals2D} that plots the 1-transition colors for \code{x}.
+\code{plotOptimals2D()} that plots the 1-transition colors for \code{x}.
 These are the short-pass and long-pass colors,
-also known as \emph{edge colors} or \emph{Kantenfarben}.
+also known as \emph{edge colors} or \emph{Kantenfarben}.\cr
 With a lot more work it would be possible to
 plot the true optimals for \code{x}, with any number of transitions between 0 and 1.
 
@@ -114,7 +115,7 @@ Logvinenko, A. D.
 An object-color space. 
 Journal of Vision.
 9(11):5, 1-23, (2009).
-http://journalofvision.org/9/11/5/.
+\url{http://journalofvision.org/9/11/5/}.
 doi:10.1167/9.11.5.
 
 West, G. and M. H. Brill.

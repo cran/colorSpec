@@ -19,7 +19,7 @@ Theoretical RGB Cameras - BT.709.RGB and Adobe.RGB
 }
 
 \format{
-Both are \bold{colorSpec} objects with \code{\link{quantity}} equal to \code{'power->electrical'} and 3 spectra:
+Both are \bold{colorSpec} objects with \code{\link{quantity}} equal to \code{'energy->electrical'} and 3 spectra:
 \code{r}, \code{g}, and \code{b}.
 The wavelengths are 360 to 830 nm at 1 nm intervals.
 \cr
@@ -41,7 +41,7 @@ and so the Green responsivity spectra are identical for both cameras.
 
 \references{
 Poynton, Charles.
-Digital Video and HD - Algorithms and Interfaces.
+\bold{Digital Video and HD - Algorithms and Interfaces}.
 Morgan Kaufmann.
 Second Edition. 2012.
 Figure 26.5 on page 302.
@@ -49,8 +49,26 @@ Figure 26.5 on page 302.
 
 
 \seealso{
-\code{\link{quantity}}, \code{\link{D65.1nm}}, \code{\link{xyz1931.1nm}},
+\code{\link{quantity}},
+\code{\link{D65.1nm}},
+\code{\link{xyz1931.1nm}},
+\code{\link{ptransform}},
 vignette blueflame
 }
+
+\examples{
+#######    BT.709.RGB is created using the following recipe  ########
+P = matrix( c(0.64,0.33,NA,  0.3,0.6,NA, 0.15,0.06,NA ), 3, 3, byrow=TRUE )
+rownames(P) = c('R','G','B')    
+BT.709.RGB  = ptransform( xyz1931.1nm, P, D65.1nm )  
+quantity(BT.709.RGB) = "energy->electrical"
+
+#######    Adobe.RGB recipe is the same, except for the matrix P  ########
+P = matrix( c(0.64,0.33,NA,  0.21,0.71,NA, 0.15,0.06,NA ), 3, 3, byrow=TRUE )
+rownames(P) = c('R','G','B')    
+Adobe.RGB  = ptransform( xyz1931.1nm, P, D65.1nm )  
+quantity(Adobe.RGB) = "energy->electrical"
+}
+
 
 \keyword{datasets}

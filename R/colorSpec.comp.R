@@ -1,58 +1,70 @@
 
 
 #   temperature     a vector of N temperatures, in Kelvin
-#   normalize       logical to normalize to 1 at 560nm
 #   wavelength      at which to sample, in nm
+#   normalize       logical to normalize to 1 at 560nm
+
 #
 #   returns colorSpec object with N spectra
 #
-#   see W&S pp. 12-13 and Figure 1(1.1.2)
+#   if normalize is FALSE, then the output units are W*M^{-2}*nm^{-1}
+#   see W&S pp. 12-13 and Figure 1(1.2.2)
 
-planckSpectra <-  function( temperature, normalize=TRUE, wavelength=300:830 )
+planckSpectra <-  function( temperature, wavelength=300:830, normalize=TRUE, c2=1.4388e7 )
     {
-    h   = 6.626176e-34      # Planck constant
-    c   = 299792458         # speed of light
-    k   = 1.380662e-23      # Boltzmann constant
+    h   = 6.62607004e-34    # Planck's Contant in, J*s or W*s^2
+    c   = 2.99792458e17     # speed of light, in nm/s
+    k   = 1.38064852e-23    # Boltzmann constant, in J/K
     
-    c1  = 2*pi*h*c^2        #; print( c1 )
-    c2  = h*c/k             #; print( c2 )
-
-    waveM   = wavelength * 1.e-9   #   convert from nm to m
-        
-    lambda0 = 560e-9
+    if( ! normalize )
+        {
+        c1  = 2*pi*h*c^2 * 1.e18    # the 1.e18 converts from W*nm^{-2}*nm^{-1} to W*M^{-2}*nm^{-1}    1.e18 nm^2 / M^2
+        #   print( c1 )
+        }
     
-    pow0    = c1 * lambda0 ^ -5 
+    if( pmatch( c2, 'calculate', nomatch=FALSE ) )
+        c2  = h*c/k
 
-    pow1    = c1 * waveM ^ -5 
+    if( !(is.numeric(c2)  &&  length(c2)==1) )
+        {
+        log.string( ERROR, "c2 = '%s' is invalid.", as.character(c2) )
+        return(NULL)
+        }
         
-    mat = matrix( 0, length(waveM), length(temperature) )
+    #   print( c2 )
+
+    #   waveM   = wavelength * 1.e-9   #   convert from nm to m
+        
+    lambda0 = 560   # e-9
+    
+    pow0    = lambda0 ^ -5 
+    pow1    = wavelength ^ -5 
+        
+    mat = matrix( 0, length(wavelength), length(temperature) )
     
     for( j in 1:length(temperature) )
         {
         T       = temperature[j]
         
-        Power   = pow1 / ( exp( c2 / (waveM * T ) )  -  1 )
+        Power   = pow1 / ( exp( c2 / (wavelength * T) ) - 1 )
     
         if( normalize )
             {
             #   normalize to 1 at 560 nm
-            pow00   = pow0 / ( exp( c2 / (lambda0 * T ) )  -  1 )
+            pow00   = pow0 / ( exp( c2 / (lambda0 * T) )  -  1 )
             Power = Power / pow00
             }
+        else
+            # scale by c1 
+            Power = c1 * Power        
             
         mat[ ,j]    = Power 
         }
         
-    if( ! normalize )
-        # convert from 1/M to 1/nm
-        mat = 1.e-9 * mat
-        
     colnames(mat)   = sprintf( "P%g", round(temperature)  )    
     
-    out = colorSpec( mat, wavelength, "power", "matrix" )
+    out = colorSpec( mat, wavelength, quantity="energy", organization="matrix" )
 
-    #   if( normalize ) out = normalize( out, 560 )
-    
     metadata(out)   = list( description="Planck black-body power density" )
     
     return( out )
@@ -75,7 +87,7 @@ erythemalSpectrum <- function( wavelength=250:400 )
     out[ mask.M ]   = 10 ^ (0.094*(298 - wavelength[mask.M] ) )
     out[ mask.L ]   = 10 ^ (0.015*(139 - wavelength[mask.L] ) )
     
-    out = colorSpec( out, wavelength, "power->action" )
+    out = colorSpec( out, wavelength, quantity="energy->action" )
     
     specnames( out )    = "erythemal"
     
@@ -85,23 +97,23 @@ erythemalSpectrum <- function( wavelength=250:400 )
     }
     
     
-illuminantE <- function( power=1, wavelength=380:780 )
+illuminantE <- function( energy=1, wavelength=380:780 )
     {    
     n   = length(wavelength)
     
-    theNames = sprintf( "E%g", power )
+    theNames = sprintf( "E%g", energy )
     
-    if( length(power) == 1 )
-        core    = rep(power,n)
+    if( length(energy) == 1 )
+        core    = rep(energy,n)
     else
         {
-        core            = matrix( power, n, length(power), byrow=T )
+        core            = matrix( energy, n, length(energy), byrow=T )
         colnames(core)  = theNames
         }
         
-    out = colorSpec( core, wavelength, "power" )
+    out = colorSpec( core, wavelength, quantity="energy" )
     
-    if( length(power) == 1 )    specnames( out ) = theNames
+    if( length(energy) == 1 )    specnames( out ) = theNames
     
     metadata( out ) = list( description="Equal Energy White" )
         
@@ -116,7 +128,7 @@ neutralMaterial <- function( gray=1, wavelength=380:780 )
     
     colnames(core)  = sprintf( "Neutral%g", gray )
 
-    out = colorSpec( core, wavelength, "reflectance" )
+    out = colorSpec( core, wavelength, quantity="reflectance" )
     
     if( length(gray) == 1 )   organization( out ) = 'vector'
            
@@ -153,7 +165,7 @@ lensAbsorbance  <-  function( age=32, wavelength=400:700 )
         
     colnames( out ) = sprintf( "age%g", age )
         
-    out = colorSpec( out, wavelength(lens), quantity(lens) )
+    out = colorSpec( out, wavelength(lens), quantity=quantity(lens) )
     
     out = resample( out, wavelength )
     

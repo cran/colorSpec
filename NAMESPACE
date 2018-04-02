@@ -8,6 +8,7 @@ S3method(organization,colorSpec)
 S3method("organization<-",colorSpec)
 S3method(coredata,colorSpec)
 S3method(as.matrix,colorSpec)
+S3method(as.data.frame,colorSpec)
 S3method(extradata,colorSpec)
 S3method("extradata<-",colorSpec)
 S3method(wavelength,colorSpec)
@@ -20,7 +21,6 @@ S3method("specnames<-",colorSpec)
 S3method(metadata,colorSpec)
 S3method("metadata<-",colorSpec)
 S3method(is.regular,colorSpec)
-#   S3method(isValid,colorSpec)
 S3method(step.wl,colorSpec)
 S3method(bind,colorSpec)
 S3method(resample,colorSpec)
@@ -40,13 +40,19 @@ S3method(calibrate,colorSpec)
 S3method(computeCCT,colorSpec)
 S3method(computeCRI,colorSpec)
 S3method(radiometric,colorSpec)
+S3method(is.radiometric,colorSpec)
+S3method(actinometric,colorSpec)
+S3method(is.actinometric,colorSpec)
 S3method(photometric,colorSpec)
 S3method(probeOptimalColors,colorSpec)
 S3method(plotOptimals3D,colorSpec)
 S3method(computeADL,colorSpec)
 S3method(interpolate,colorSpec)
-    
-    
+S3method(ptransform,colorSpec)
+S3method(emulate,colorSpec)      
+
+S3method(as.colorSpec,default)     
+
 export(numSpectra, 
     numWavelengths, 
     organization, 
@@ -65,6 +71,7 @@ export(numSpectra,
     "metadata<-",
     is.regular,
     is.colorSpec,
+    as.colorSpec,
 #   isValid,
     step.wl,
     product,
@@ -80,11 +87,16 @@ export(numSpectra,
     computeCCT,
     computeCRI,    
     radiometric,
+    is.radiometric,    
+    actinometric,
+    is.actinometric,    
     photometric,
     probeOptimalColors,
     plotOptimals3D,
     computeADL,
-    interpolate    
+    interpolate,
+    ptransform,
+    emulate
     )
     
 #   functions that are already generic, for S3 classes    
@@ -92,6 +104,7 @@ export(
     subset.colorSpec,
     mean.colorSpec,
     as.matrix.colorSpec,
+    as.data.frame.colorSpec,    
     print.colorSpec,
     summary.colorSpec,
     plot.colorSpec
@@ -121,12 +134,14 @@ export(
     lensAbsorbance,
     planckSpectra,
     daylightSpectra,
-    illuminantE   
+    illuminantE,
+    atmosTransmittance
     )
     
 export(
     #   daylightLocus,
-    CCTfromXYZ
+    CCTfromXYZ,
+    CCTfromuv
     )
     
 export(DisplayRGBfromLinearRGB)
@@ -134,16 +149,16 @@ export(officialXYZ)
 export(RGBfromXYZ)
 
 export(cs.options)
-#   export(log.string,log.object)
 
-importFrom(MASS,ginv)
-importFrom("grDevices", "colorRampPalette", "rgb")
-importFrom("graphics", "abline", "grid", "legend", "lines",
-             "lines.default", "par", "plot", "plot.default", "plot.new",
-             "plot.window", "points", "points.default", "polygon",
-             "rect", "text", "title", axTicks, strwidth, strheight )
-importFrom("stats", "approx", "coef", "lm", "loess", "predict",
-             "runif", "spline", "splinefun")
-importFrom("utils", "capture.output", "flush.console", "modifyList",
-             "object.size", "read.table", "write.table", "str", "type.convert")
+importFrom( MASS, ginv )
+importFrom( minpack.lm, nls.lm )
+importFrom( grDevices, colorRampPalette, rgb )
+importFrom( graphics, abline, grid, legend, lines,
+             lines.default, par, plot, plot.default, plot.new,
+             plot.window, points, points.default, polygon,
+             rect, text, title, axTicks, strwidth, strheight )
+importFrom( stats ,  approx, coef, lm, loess, predict,
+             runif, spline, splinefun, rnorm )
+importFrom( utils, capture.output, flush.console, modifyList,
+             object.size, read.table, write.table, str, type.convert )
              

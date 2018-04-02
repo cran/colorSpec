@@ -12,8 +12,8 @@
 }
 \usage{
 \S3method{metadata}{colorSpec}(x, ...)
-metadata(x) <- value
 
+\S3method{metadata}{colorSpec}(x, add=FALSE ) <- value
 }
 
 \arguments{
@@ -21,28 +21,38 @@ metadata(x) <- value
   
   \item{...}{optional names of metadata to return}
   
-  \item{value}{a named \code{list} that is appended to the existing list of metadata.
-  Unnamed items are ignored.  If a name already exists, its value is updated.
-  }
+  \item{value}{a named \code{list}.  
+  If \code{add} is \code{FALSE}, \code{value} replaces any existing \code{metadata}.   
+  If \code{add} is \code{TRUE},  \code{value} is appended to the existing list of metadata.
+  If a name already exists, its value is updated using \code{\link{modifyList}()}.
+  Unnamed items in  \code{value} are ignored.}
+  
+  \item{add}{if \code{add=FALSE}, any existing metadata is discarded.
+  If \code{add=TRUE} then existing metadata is preserved, using \code{modifyList()}.
+}
 }
 
 \details{
 The metadata list is stored as \code{attr(x,'metadata')}.
-Initially this list is empty.
-\cr
-The assignment operator looks like it replaces the internal metadata list of \code{x},
-but it actually appends to it.
+After construction this list is empty.
 }
 
 \value{
-\code{metadata()} with no argument returns the complete named list of metadata.
+\code{metadata(x)} with no additional arguments returns the complete named list of metadata.
 If arguments are present, then only those \code{metadata} items are returned.
 
 }
 
+\note{
+Do not confuse \code{extradata} and \code{metadata}.\cr
+\code{metadata} is unstructured data that is attached to the entire \bold{colorSpec} object.
+\code{extradata} is structured data, with a row of data for each spectrum in the object.
+}
+
 
 \seealso{
-  \code{\link{colorSpec}}; \code{\link{extradata}}
+\code{\link{extradata}},
+\code{\link{modifyList}}
 }
 
 \examples{

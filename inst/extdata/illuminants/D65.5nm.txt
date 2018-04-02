@@ -7,7 +7,7 @@
 #   ASTM E 308-01
 #   Table 3. pages 3-4.
 
-Wavelength	Power
+Wavelength	Energy
 380	49.98
 385	52.31
 390	54.65

@@ -1,7 +1,7 @@
 #
 #   http://hyperphysics.phy-astr.gsu.edu/hbase/vision/solirrad.html
 #
-#   This is a plot of the standard NASA data for the spectral irradiance of the solar disk in Watts/m2mm. 
+#   This is a plot of the standard NASA data for the spectral irradiance of the solar disk in watts * m*-2 * nm^-1. 
 #   The upper curve is formed by joining the data points for data outside the atmosphere. 
 #   The lower curve is attributed to the Earth's surface under the condition described as "air mass 2". 
 #   This designation corresponds to an angle of 60° between the zenith and the Sun. 
@@ -16,7 +16,7 @@
 #   Solar energy outside the earth's atmosphere, 
 #   Solar Energy 14, 109 (1973).
 
-Wavelength  Power
+Wavelength  Energy
 300	0
 310	1
 320	50

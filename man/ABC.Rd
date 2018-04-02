@@ -19,7 +19,7 @@ Standard Illuminants A, B, and C (1931)
 }
 
 \format{
-Each is a \bold{colorSpec} object organized as a vector, with \code{\link{quantity}} equal to \code{"power".}
+Each is a \bold{colorSpec} object organized as a vector, with \code{\link{quantity}} equal to \code{"energy".}
 
 }
 
@@ -28,7 +28,7 @@ All of these have been divided by 100, to make the values at 560nm near 1 instea
 }
 
 \source{
-http://www.cvrl.org
+\url{http://www.cvrl.org}
 
 }
 

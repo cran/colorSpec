@@ -31,7 +31,7 @@ inventory <- function()
                                 organization=sapply( theList, organization ),
                                 type=sapply( theList, type ),                                           
                                 quantity=sapply( theList, quantity ),         
-                                calibration=sapply( theList, function( x )  { ! is.null( attr(x,"calibration") ) } ),
+                                calibrate=sapply( theList, function( x )  { ! is.null( attr(x,"calibrate") ) } ),                                
                                 stringsAsFactors=F )
                                 
     #out     = subset( out, class == 'colorSpec' )

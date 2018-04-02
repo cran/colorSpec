@@ -39,7 +39,7 @@ Table 1
 }
 
 \source{
-http://www.cvrl.org
+\url{http://www.cvrl.org}
 }
 
 \seealso{

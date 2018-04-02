@@ -5,7 +5,7 @@
 #   pp. 213-230
 #   Figure 6
 #
-#   quantity    power
+#   quantity    energy
 
 [Control]
 Xpx Ypx X Y

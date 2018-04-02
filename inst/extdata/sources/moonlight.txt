@@ -6,12 +6,12 @@
 #   DATE:       April 14, 2014 at 23:16pm  [2014-04-14_23:16]
 #   LATITUDE:   51.42359906
 #   LONGITUDE:  5.40894538
-#   QUANTITY:   power
+#   QUANTITY:   energy
 #   UNITS:      Watts / (sr * m^2 * nm)
 #   ORIGINAL FILENAME: 004_measurementsMoonSpectrum_OliNo.org_.csv
 #   URL:        http://www.olino.org/us/articles/2015/10/05/spectrum-of-moon-light
 
-wavelength	power
+wavelength	energy
 250	1.47E-05
 251	1.26E-05
 252	1.51E-05

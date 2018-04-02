@@ -22,23 +22,25 @@ A \bold{colorSpec} object organized as a matrix with 3 columns:
 
 
 \source{
-http://www.cvrl.org/cones.htm
+\url{http://www.cvrl.org/cones.htm}
 }
 
 \references{
 Stockman, A., Sharpe, L. T., & Fach, C. C. (1999). 
 The spectral sensitivity of the human short-wavelength cones. 
-Vision Research, 39, 2901-2927.
+\bold{Vision Research}.
+39, 2901-2927.
 
 Stockman, A., & Sharpe, L. T. (2000). 
 Spectral sensitivities of the middle- and long-wavelength sensitive cones 
 derived from measurements in observers of known genotype. 
-Vision Research, 40, 1711-1737.
+\bold{Vision Research}.
+40, 1711-1737.
 
 }
 
 \seealso{
-\code{\link{lms1971}} 
+\link{lms1971}
 }
 
 \examples{

@@ -1,13 +1,17 @@
 
 
-#   x           object of class colorSpec
-#   wavelength  the *new* wavelengths
-#   method      'auto',  'sprague', 'spline', 'loess', or 'linear'
-#   span        smoothing factor passed to loess().  0 means no smoothing
+#   x               object of class colorSpec
+#   wavelength      the *new* wavelengths
+#   method          'auto',  'sprague', 'spline', 'loess', or 'linear'
+#   span            smoothing factor passed to loess().  0 means no smoothing
+#   extrapolation   method for extrapolation:
+#                   'const'
+#                   'linear'
+#                   a numeric value
 #
-#   returns     a  colorSpec object with the same organization
+#   returns     a  colorSpec object with the *new* wavelength vector, and the same organization
 
-resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02 )
+resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02, extrapolation='const', clamp='auto' )
     {
     #   partial matching
     table   = c('auto','sprague','spline','loess','linear')
@@ -53,30 +57,74 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02 )
         return(NULL)
         }
         
+        
+    #   process extrapolation
+    if( length(extrapolation) == 2 )
+        {
+        extrapolation = as.list(extrapolation)
+        extrapolation[[1]]    = validateExtrapolation( extrapolation[[1]] )
+        extrapolation[[2]]    = validateExtrapolation( extrapolation[[2]] )
+        }
+    else if( length(extrapolation) == 1 )
+        {
+        extrapolation = validateExtrapolation( extrapolation )
+        extrapolation = list( extrapolation, extrapolation )
+        }
+    else
+        {
+        log.string( ERROR, "extrapolation = '%s' is invalid.", paste(as.character(extrapolation),collapse=' ') )
+        return(NULL)       
+        }
+
+    if( is.na(extrapolation[[1]])  ||  is.na(extrapolation[[2]]) )
+        return(NULL)
+      
+        
+    #   process argument clamp
+    valid   = FALSE
+    if( length(clamp) == 1 )
+        valid = (clamp == 'auto') || is.logical(clamp)
+    else if( length(clamp) == 2 )
+        valid = is.numeric(clamp) &&  clamp[1]<clamp[2]
+
+    if( ! valid )
+        {
+        log.string( ERROR, "clamp = '%s' is invalid.", paste(as.character(clamp),collapse=' ') )
+        return(NULL)       
+        }    
+    
+
+            
+    if( 0 )
+    {
     #   count the number of extrapolated
     extrap  = (wavelength < wave[1])  |  (wave[length(wave)] < wavelength)
     if( 0 < sum(extrap) )
         {
-        log.string( TRACE, "For object %s, wavelength extrapolation occurred at %d points (outside [%g,%g] nm).",
-                            deparse(substitute(x)), sum(extrap), wave[1], wave[length(wave)] )
+        log.string( TRACE, "For object '%s', wavelength extrapolation occurred at %d points (outside [%g,%g] nm).",
+                            deparse(substitute(x))[1], sum(extrap), wave[1], wave[length(wave)] )
         }
-        
+    }
+
+
+    
+    log.string( TRACE, "For object '%s', resampling using '%s' method.", 
+                            deparse(substitute(x))[1], method )     
+    
     mat.in  = as.matrix( x )
     
-    theType = type(x)
-    
+
     if( method == 'sprague' )
         {
         #   convolution weights are complicated to compute
-        #   so best to apply to all columns in mat.in at the same time
-
+        #   so its is faster to apply to all columns in mat.in at the same time
         mat.out = interpSprague( mat.in, wave[1], step.wl(x), wavelength )
         
         if( is.null(mat.out) )  return(NULL)
         }
     else
         {
-        time.start  = as.double( Sys.time() )
+        #   time.start  = as.double( Sys.time() )
         
         mat.out = matrix( NA_real_, length(wavelength), ncol(mat.in) )
     
@@ -91,21 +139,66 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02 )
             
         #   print( c( "resampleXY().  elapsed: ", as.double(Sys.time()) - time.start) )        
         }
-        
-    #   check for negative undershoot in mat.out[ , ]
-    for( k in 1:ncol(mat.out) )
+               
+    if( wavelength[1] < wave[1] )
         {
-        if( is.na( mat.out[1,k]) )  next    #   resampleXY() failed
-            
-        y = mat.in[ , k]        
+        #   must extrapolate on the low side
+        idx = which( wavelength < wave[1] )
         
-        if( all( -1.e-8 * max(y) <= y ) )
-            #   clip to 0
-            mat.out[ ,k]   = pmax( mat.out[ ,k], 0 )
+        log.string( TRACE, "For object %s, extrapolating %d points on the low side of [%g,%g] nm.",
+                            deparse(substitute(x)), length(idx), wave[1], wave[length(wave)] )        
+        
+        mat.out[idx, ]  = extrapolate.mat( wave, mat.in, wavelength[idx], extrapolation[[1]],  'lo' )
+        }
+        
+    if( wave[length(wave)] < wavelength[length(wavelength)] )
+        {
+        #   must extrapolate on the high side
+        idx = which( wave[length(wave)] < wavelength )
+        
+        log.string( TRACE, "For object %s, extrapolating %d points on the high side of [%g,%g] nm.",
+                            deparse(substitute(x)), length(idx), wave[1], wave[length(wave)] )           
+        
+        mat.out[idx, ]  = extrapolate.mat( wave, mat.in, wavelength[idx], extrapolation[[2]],  'hi' )
+        }
+        
 
-        #if( theType == 'material' )
-        #    #   prevent overshoot
-        #    data.out[ ,k]   = pmin( data.out[ ,k], 1 )            
+    if( is.numeric(clamp) )
+        ylim = clamp
+    else
+        {
+        theQuantity = quantity(x)
+        
+        if( theQuantity == 'reflectance'  ||  theQuantity == 'transmittance' )
+            ylim    = c( 0, 1 )
+        else
+            ylim    = c( 0, Inf )
+        }
+
+                    
+    if( clamp[1] != FALSE )
+        {
+        if( clamp[1] == 'auto' )
+            {        
+            #   check every spectrum
+            for( k in 1:ncol(mat.out) )
+                {
+                if( is.na( mat.out[1,k]) )  next    #   resampleXY() failed
+                    
+                y = mat.in[ , k]        
+                            
+                #   check low limit
+                if( all( ylim[1] <= y ) )
+                    mat.out[ ,k]   = pmax( mat.out[ ,k], ylim[1] )
+
+                #   check high limit
+                if( all( y <= ylim[2] ) )
+                    mat.out[ ,k]   = pmin( mat.out[ ,k], ylim[2] )
+                }
+            }
+        else
+            #   clamp the entire matrix, without checking
+            mat.out = pmin( pmax(mat.out,ylim[1],na.rm=TRUE), ylim[2], na.rm=TRUE )
         }
         
         
@@ -116,7 +209,7 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02 )
     if( org == "df.row" )
         {
         #   preserve the initial columns, and change the final one
-        #   an easy overwrite in this case
+        #   an easy and fast overwrite in this case
         mat.out             = t( mat.out )   
         class( mat.out )    = "model.matrix"
         out = x
@@ -127,67 +220,146 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02 )
     else
         {
         #   create a new object
-        out = colorSpec( mat.out, wavelength, quantity(x), org )
+        out = colorSpec( mat.out, wavelength, quantity=quantity(x), organization=org )
         }
         
     attr( out, "metadata" )  = attr( x, "metadata" )
-    metadata(out)   = list( resampled=TRUE )
+    metadata(out,add=TRUE)   = list( resampled=TRUE )
     
     if( method=='loess'  &&  0 < span )
-        metadata(out)   = list( span=span )
+        metadata(out,add=TRUE)   = list( span=span )
     
     return( out )
     }
     
     
-#   .x      vector of current wavelengths, length n
-#   .y      current values,  n x q matrix
-#   .xnew   new wavelengths, length n'
-#   .span   smoothing parameter
+
+    
+#   .x          vector of current wavelengths, length n
+#   .y          vector of current values, length n
+#   .xnew       new wavelengths, increasing order, length n'
+#   .span       smoothing parameter passed to loess()
 #
-#   value   new matrix,  n' x q
+#   value   new vector,  length n' 
 
 resampleXY <- function( .x, .y, .xnew, .method, .span )
     {
-    #   if( any( is.na(.y) ) )  return( rep(NA_real_,length(.xnew)) )
-    
     if( .method == 'spline' )
         {
         #   use simple spline
         out = spline( .x, .y, xout=.xnew, method="natural" )$y
-        
-        if( .x[1] == .x[2]  &&  .y[1] == .y[2] )
-            #   duplicated knot => custom extrapolation - a constant
-            out[ .xnew < .x[1] ] = .y[1]
-            
-        n   = length(.x)
-        
-        if( .x[n-1] == .x[n]  &&  .y[n-1] == .y[n] )
-            #   duplicated knot => custom extrapolation - a constant
-            out[ .x[n] < .xnew ] = .y[n]
         }
     else if( .method == 'loess' )
         {
         #   use loess smoother:
         #df = data.frame( X=.x, Y=.y )
-        xy.lo = try( loess( .y ~ .x, span=.span ) )     #, family="symmetric" )
+        xy.obj = try( loess( .y ~ .x, span=.span ) )     #, family="symmetric" )
         
-        if( class(xy.lo) == "try-error" )        
+        if( class(xy.obj) == "try-error" )        
             {
             log.string( WARN, "loess smoothing with span=%g failed !  Probably span is too small.  Returning all NA.", .span )
             return( rep(NA_real_,length(.xnew)) )       #return( resampleXY( .x, .y, .xnew, .span=0 ) )
             }
         
-        out = predict( xy.lo, .xnew )
+        out = predict( xy.obj, .xnew )      # extrapolation will generate NAs, but these will be overwritten in extrapolate.mat()
         }
     else if( .method == 'linear' )
         {
-        out = approx( .x, .y, .xnew )$y
+        out = approx( .x, .y, .xnew )$y     # extrapolation will generate NAs, but these will be overwritten in extrapolate.mat()
         }
         
     return( out )
     }
+    
+    
+    
+    
+#   .x          vector of current wavelengths, length p
+#   .y          p x m matrix of current values
+#   .xlo        new wavelengths, increasing order, and all less than .x[1], length n
+#   .extrap     extrapolation on low side.  Already valid
+#   .side       'lo' or 'hi'
+#
+#   value   new matrix,  nnew x m
+
+extrapolate.mat <- function( .x, .y, .xnew, .extrap, .side )   
+    {
+    n.new   = length(.xnew)
+    
+    if( .side == 'lo' )
+        {
+        n1  = 1
+        n2  = 2
+        }
+    else
+        {
+        n1  = length(.x)
+        n2  = n1 - 1
+        }
+    
+    #log.string( TRACE, "extrapolating %d values on the %s side, with extrapolation='%s'", 
+    #                        n.new, .side, as.character(.extrap) )
+    
+    m   = ncol(.y)
+
+    if( is.numeric(.extrap) )
+        {
+        out = matrix( .extrap, nrow=n.new, ncol=m )
+        return( out )
+        }
         
+    out = matrix( .y[n1, ], nrow=n.new, ncol=m, byrow=T )    
+    
+    if( .extrap == 'const' )
+        return(out)
+        
+    if( .extrap == 'linear' )   # ||  .extrap == 'linear+clamp'  )
+        {
+        # linear extrapolation
+        if( .x[n1] == .x[n2] )
+            #   duplicated knot => custom extrapolation - same as 'const'
+            return(out)     
+
+        m   = (.y[n2, ] - .y[n1, ]) / (.x[n2] - .x[n1])
+        out = (.xnew - .x[n1]) %o%  m   +   out
+        
+        #if( .extrap == 'linear+clamp' )
+        #    #   must clamp
+        #    out = pmin( pmax( out, .ylim[1] ), .ylim[2] )
+        }
+    else
+        {
+        log.string( ERROR, "%s extrapolation='%s' is invalid", .side, as.character(.extrap) )
+        #   cat( mess, '\n' )
+        out = matrix( NA_real_, nrow=n.new, ncol=m )
+        }    
+
+    return( out )
+    }
+
+    
+#   .extrap     primitive type of length 1    
+validateExtrapolation <- function( .extrap )
+    {
+    if( is.numeric(.extrap) && is.finite(.extrap) )
+        # this is OK as is
+        return(.extrap)
+        
+    if( is.character(.extrap) )
+        {
+        #if( grepl( "^l[A-Za-z]*[+]c", .extrap, ignore.case=TRUE ) )
+        #    return( "linear+clamp" )
+        if( grepl( "^l", .extrap, ignore.case=TRUE ) )
+            return( "linear" )
+        else if( grepl( "^c", .extrap, ignore.case=TRUE ) )
+            return( "const" )
+        }
+        
+    log.string( ERROR, "extrapolation = '%s' is invalid.", as.character(.extrap) )
+        
+    return(NA)        
+    }
+    
                 
         
 #   .list       a list of colorSpec objects, with names        
@@ -239,7 +411,7 @@ areSpectraBindable <- function( .list )
     namevec = unlist( sapply( .list, specnames.colorSpec ) )
     if( any(duplicated(namevec)) ) 
         {
-        log.string( ERROR, "The list of %d spectra are not bindable, because the specnames are not all distinct.", n )
+        log.string( ERROR, "The list of %d spectra are not bindable, because the specnames have duplicates.", n )
         return(FALSE)
         }
         
@@ -253,7 +425,7 @@ areSpectraBindable <- function( .list )
 #   returns new colorSpec with spectra combined
 #           organization is the most complex from the inputs
 #           metadata is taken from the 1st spectrum
-bind.colorSpec  <-  function( ... ) #, .removedups=FALSE )
+bind.colorSpec  <-  function( ... )  
     {
     theList =  list( ... ) 
     
@@ -281,15 +453,16 @@ bind.colorSpec  <-  function( ... ) #, .removedups=FALSE )
     }
     
     
-#   .list   of colorSpec objects, with names    
+#   .list   named list of colorSpec objects    
+#
+#   returns a single colorSpec object
+
 bindSpectra <- function( .list )
     {
+    if( length(.list) == 1 )    return( .list[[1]] )  # nothing to do !   
+    
     if( ! areSpectraBindable(.list) ) return(NULL)    
      
-    n   = length( .list )
-    
-    if( n == 1 )    return( .list[[1]] )  # nothing to do !   
-
     #   find the output organization
     orgvec  = sapply( .list, organization.colorSpec )
     
@@ -300,28 +473,13 @@ bindSpectra <- function( .list )
     if( org == "vector" )   
         org = "matrix"  # the bind must have more than 1 spectrum in it !
         
-
-    mat = coredata( .list[[1]], forcemat=T )
+    list.mat    = lapply( .list, as.matrix )    #   make list of matrices, all have the same number of rows
+    mat         = do.call( cbind, list.mat )    #   bind all those matrices into one
     
-    specnames   = specnames( .list[[1]] )
-    extradata   = extradata( .list[[1]] )
-
-    for( k in 2:n )
-        {
-        mat = cbind( mat, coredata( .list[[k]] ) )
-        
-        specnames   = c( specnames, specnames( .list[[k]] ) )
-        
-        if( org == 'df.row' )
-            extradata   = rbind.super( extradata, extradata( .list[[k]] ) )
-        }
-    
-    colnames(mat)   = specnames
-    
-    out     = colorSpec( mat, wavelength( .list[[1]] ), quantity( .list[[1]] ), organization=org )
+    out     = colorSpec( mat, wavelength( .list[[1]] ), quantity=quantity( .list[[1]] ), organization=org )
         
     if( org == 'df.row' )        
-        extradata(out)  = extradata
+        extradata(out)  = do.call( rbind.super.list, lapply( .list, extradata ) )
         
     metadata(out)   = metadata( .list[[1]] )
     
@@ -401,12 +559,12 @@ subset.colorSpec  <-  function( x, subset, ... )
 
     #   colnames(mat)   = specnames(x)[subset]  previous line does this
     
-    out = colorSpec( mat, wavelength(x), quantity(x), org )
+    out = colorSpec( mat, wavelength(x), quantity=quantity(x), organization=org )
 
     extradata(out)  = extradata(x)[ subset, , drop=F]   # the actual subsetting happens here, and is in synch with the one in mat[,]
-    metadata(out)   = metadata(x)
-            
-    metadata(out)   = list( subsetted=TRUE )
+    
+    metadata(out)           = metadata(x)        
+    metadata(out,add=TRUE)  = list( subsetted=TRUE )
     
     return( out )
     }
@@ -415,7 +573,7 @@ subset.colorSpec  <-  function( x, subset, ... )
 
     
 #   x   colorSpec object
-#   returns mean of all spectra with 'vector' organization
+#   returns mean of all spectra, with 'vector' organization
 mean.colorSpec <-  function( x, ...  )
     {
     spectra     = numSpectra( x )
@@ -429,12 +587,12 @@ mean.colorSpec <-  function( x, ...  )
     vec = rowMeans( mat )
 
 
-    out = colorSpec( vec, wavelength, quantity(x), 'vector' )
+    out = colorSpec( vec, wavelength, quantity=quantity(x), organization='vector' )
     
-    specnames(out)  = sprintf( "mean.%s", deparse(substitute(x) ) )
+    specnames(out)  = sprintf( "mean.%s", deparse(substitute(x))[1] )
         
-    metadata(out)   = metadata(x)
-    metadata(out)   = list( samples=sprintf( "mean of %d spectra", spectra ) )
+    metadata(out)           = metadata(x)
+    metadata(out,add=TRUE)  = list( samples=sprintf( "mean of %d spectra", spectra ) )
     
     return( out )
     }
@@ -573,7 +731,7 @@ chop.colorSpec <- function( x, interval, adj=0.5 )
         colnames( out )[ pair ] = c( sprintf("%s.lo",specnames[j]), sprintf("%s.hi",specnames[j]) )
         }
     
-    out = colorSpec( out, wave, quantity(x) )
+    out = colorSpec( out, wave, quantity=quantity(x) )
     
     return( out )
     }
@@ -622,6 +780,7 @@ multiply.colorSpec   <-  function( x, s )
         {
         #   simple scalar multiplication
         out = x        
+        s   = as.numeric(s)
         
         if( org == 'vector'  ||  org == 'matrix' )
             out = s * out
@@ -644,27 +803,27 @@ multiply.colorSpec   <-  function( x, s )
 
     if( ncol(mat) == spectra )
         {
-        #   mat is square, so avoid unpacking and repacking when possible
+        #   mat is square, so it is possible to avoid unpacking and repacking
         out = x
     
         if( org == 'matrix' )
             {
             out = out %*% mat
             colnames(out)   = specnames(x)
-            out = colorSpec( out, wavelength(x), quantity(x), "matrix" )
+            out = colorSpec( out, wavelength(x), quantity=quantity(x), organization="matrix" )
             }
         else if( org == 'df.col' )
             out[ 2:ncol(out) ]  = as.matrix.data.frame( out[ 2:ncol(out) ] ) %*% mat
         else if( org == 'df.row' )        
-            out[[ ncol(out) ]]    = t(mat) %*% out[[ ncol(out) ]]
+            out[[ ncol(out) ]]    = crossprod( mat, out[[ ncol(out) ]] )
         }
     else
         {
         #   mat is not square, so the number of spectra in the output is different
         #   must unpack and repack
-        core    = coredata( x, forcemat=T ) %*% mat
+        data    = as.matrix( x ) %*% mat
         
-        out     = colorSpec( core, wavelength(x), quantity(x), org )
+        out     = colorSpec( data, wavelength(x), quantity=quantity(x), organization=org )
         }
         
     return(  out  )
@@ -685,12 +844,12 @@ applyspec.colorSpec <- function( x, FUN, ... )
         return(NULL)
         }
     
-    out = colorSpec( out, wavelength(x), quantity(x), organization(x) )
+    out = colorSpec( out, wavelength(x), quantity=quantity(x), organization=organization(x) )
 
     if( organization(out) == "df.row" )
         extradata(out)  = extradata(x)    
         
-    for( a in c('metadata','sequence','calibration') )
+    for( a in c('metadata','sequence','calibrate','emulate') )
         attr(out,a) = attr(x,a)    
     
     return(out)
@@ -757,7 +916,7 @@ convolvewith.colorSpec <- function( x, coeff )
 #--------       UseMethod() calls           --------------#            
         
         
-resample <- function(  x, wavelength, method='auto', span=0.02 )
+resample <- function(  x, wavelength, method='auto', span=0.02, extrapolation='const', clamp='auto' )
     {
     UseMethod("resample")
     }

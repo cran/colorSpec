@@ -27,11 +27,12 @@ There is a ray based at \bold{G} and passing through \bold{R}
 that intersects the boundary of the 
 \emph{object-color solid} at an \emph{optimal color} \bold{B} on the boundary
 with Logvinenko coordinates \eqn{(\delta,\omega)}.
-If these 2 coordinates are combined with \eqn{\alpha} where
+If these 2 coordinates are combined with \eqn{\alpha}, where
 \bold{R} = \eqn{(1-\alpha)}\bold{G} + \eqn{\alpha}\bold{B}, 
-it yields the Logvinenko coordinates \eqn{(\alpha,\delta,\omega)} of \bold{R}.
+it yields the \emph{Logvinenko coordinates}
+\eqn{(\alpha,\delta,\omega)} of \bold{R}.
 These coordinates are also denoted by ADL; see \bold{References}.
-A response is in the \emph{object-color solid} iff \eqn{\alpha<=1}.
+A response is in the \emph{object-color solid} iff \eqn{\alpha \le 1}.
 A response is  \emph{optimal} iff \eqn{\alpha=1}.
 
 The coordinates of \bold{0} are \eqn{(\alpha,\delta,\omega)}=(1,0,0).
@@ -49,17 +50,18 @@ The coordinates of \bold{G} are undefined.
   \item{x}{a \bold{colorSpec} object with \code{type} equal to \code{responsivity.material} and 3 spectra }
   
   \item{response}{ a vector of 3 numbers, or a matrix with 3 columns, that define 1 or more responses.
-              A vector of 3 numbers is changed to a matrix with 1 row.}              
+A 3-vector is re-shaped to a 1x3 matrix.}              
 }
     
 \value{
-\code{computeADL} returns a \code{data.frame} with a row for each response.
+\code{computeADL()} returns a \code{data.frame} with a row for each response.
 The columns in the data frame are:
   \item{response}{the input response vector}
   \item{ADL}{the computed ADL coordinates of the response vector}  
   \item{omega}{the reparameterized \eqn{\lambda} in the interval [0,1];  see \bold{References}}
-  \item{lambda}{lambda.1 and lambda.2 at the 2 transitions, in nm. lambda.1 < lambda.2 => bandpass,
-                and lambda.1 > lambda.2 => bandstop.}
+  \item{lambda}{lambda.1 and lambda.2 at the 2 transitions, in nm.
+  lambda.1 < lambda.2  => bandpass,
+  and lambda.1 > lambda.2 => bandstop.}
 
   If an individual ray could not be traced, the row contains \code{NA} in appropriate columns.\cr
   In case of global error, the function returns \code{NULL}.
@@ -68,7 +70,7 @@ The columns in the data frame are:
 
 \details{
 For each response, a ray is computed and the ray tracing is
-done by \code{\link{probeOptimalColors}}.
+done by \code{\link{probeOptimalColors}()}.
 
 }
 
@@ -99,9 +101,9 @@ computeADL( D50.eye, c(30,50,70) )
 \references{
 Logvinenko, A. D.
 An object-color space. 
-Journal of Vision.
+\bold{Journal of Vision}.
 9(11):5, 1-23, (2009).
-http://journalofvision.org/9/11/5/.
+\url{http://journalofvision.org/9/11/5/}.
 doi:10.1167/9.11.5.
 
 Godau, Christoph and Brian Funt.

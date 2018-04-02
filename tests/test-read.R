@@ -75,22 +75,24 @@ checkQuantity <- function()
         }
         
     testdata    = c(
-        "illuminants/D65.1nm.txt",      "power",
-        "illuminants/C.txt",            "power",     
-        "illuminants/daylight1964.txt", "power",     
-        "sources/BlueFlame.txt",        "power",     
-        "sources/pos1-20x.scope",       "power",     
+        "illuminants/D65.1nm.txt",      "energy",
+        "illuminants/C.txt",            "energy",     
+        "illuminants/daylight1964.txt", "energy",     
+        "sources/BlueFlame.txt",        "energy",     
+        "sources/pos1-20x.scope",       "energy",     
           
         
-        "eyes/ciexyz31_1.csv",          "power->neural",
-        "eyes/ciexyz64_1.csv",          "power->neural",
-        "eyes/xyz2012.csv",             "power->neural",
+        "eyes/ciexyz31_1.csv",          "energy->neural",
+        "eyes/ciexyz64_1.csv",          "energy->neural",
+        "eyes/xyz2012.csv",             "energy->neural",
                 
 #       "../inst/extdata/cameras/Flea2-spectral.txt",   "power->electrical",  
-        "cameras/orthicon-5820-A.txt",  "power->electrical",  
+        "cameras/orthicon-5820-A.txt",  "energy->electrical",  
+#       "cameras/Red-Epic-Dragon.txt",  "energy->electrical",       cannot bind, unless resampled
         "cameras/Zyla_sCMOS.txt",       "photons->electrical",
         
         "action/BeanPhotosynthesis.txt",        "photons->action",
+        "action/moths.txt",                     "energy->action",
         
         "objects/Hoya.txt",                     "transmittance",
         "objects/Rosco.txt",                    "transmittance",        
@@ -114,7 +116,7 @@ checkQuantity <- function()
         mess    = sprintf( "--------------  %s  ------------------\n", basename(path) )
         cat(mess)
         
-        junk    = readSpectra(path)
+        junk    = readSpectra( path )
         
         if( is.null(junk) ) 
             {
@@ -142,26 +144,27 @@ checkQuantity <- function()
     cat(mess)    
     junk    = readSpectra( path, 400:700, span=0.20 )
     
-    if( quantity(junk) == "power->electrical" )
+    if( quantity(junk) == "energy->electrical" )
         {
         #   print( summary(junk) )
         }
     else
         {
-        mess    = sprintf( "%s.   '%s' != '%s'\n", path, "power->electrical", quantity(junk) )
+        mess    = sprintf( "%s.   '%s' != '%s'\n", path, "energy->electrical", quantity(junk) )
         cat(mess)
         ok  = FALSE
         }
     }
 
     
+    #   one of next calls should fail and return NULL, so disable stopping    
     cs.options( stoponerror=FALSE )
     
     for( path in c("test-combo1.txt","test-combo2.txt") )
         {
         mess    = sprintf( "--------------  %s  ------------------\n", basename(path) )
         cat(mess)    
-        junk    = readSpectra( path )   # this should fail
+        junk    = readSpectra( path )   # this SHOULD FAIL
         if( ! is.null(junk) )   return(FALSE)
         
         junk    = readSpectra( path, 400:700 )   # this should succeed
@@ -169,8 +172,6 @@ checkQuantity <- function()
         }
     
     print( warnings() )
-        
-
             
     return( ok )
     }

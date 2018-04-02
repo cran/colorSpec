@@ -9,7 +9,7 @@
 #   Table I(3.3.4)  pp. 754-758.
 #
 
-wavelength power
+wavelength energy
 360 6.14462
 361 6.29955
 362 6.45725

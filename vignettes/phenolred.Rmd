@@ -1,5 +1,5 @@
 ---
-title: "Phenol Red : pH Indicator"
+title: "Phenol Red - pH Indicator"
 author: "Glenn Davis"
 date: "`r Sys.Date()`"
 output: 
@@ -9,7 +9,7 @@ output:
 bibliography: bibliography.bib
 csl: personal.csl    
 vignette: >
-  %\VignetteIndexEntry{Phenol Red : pH Indicator}
+  %\VignetteIndexEntry{Phenol Red - pH Indicator}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -19,6 +19,8 @@ in swimming pool test kits, see e.g. @K-1000.
 The goal of this **colorSpec** vignette is to reproduce the colors seen in such
 a test kit, for typical values of pool pH.
 Calculations like this one might make a good project for a college freshman chemistry class.
+Featured functions in this vignette are: `interpolate()`, `calibrate()`,
+and `plotPatchesRGB()`.
 
 ```{r, echo=TRUE, message=FALSE}
 library( colorSpec )
@@ -30,7 +32,7 @@ library( colorSpec )
 
 The absorbance data for phenol red has already been digitized from @Rovati:
 
-```{r fig.width=7, fig.height=4,  fig.show='hold'}
+```{r fig.width=7, fig.height=4,  fig.show='hold', dev='png' }
 path = system.file( "extdata/stains/PhenolRed-Fig7.txt", package="colorSpec" )
 wave = 350:650
 phenolred = readSpectra( path, wavelength=wave )
@@ -48,7 +50,7 @@ but these curves can still be used as 'relative absorbance'.
 
 We investigate how absorbance depends on pH for a few selected wavelengths.
 
-```{r, echo=TRUE, message=TRUE, fig.width=7, fig.height=5,  fig.show='hold'}
+```{r, echo=TRUE, message=TRUE, fig.width=7, fig.height=5,  fig.show='hold' , dev='png' }
 wavesel = c( 365, 430, 477, 520, 560, 590 )  # 365 and 477 are 'isosbestic points'
 mat = apply( as.matrix(wavesel), 1, function( lambda ) { as.numeric(lambda == wave) } )
 colnames( mat ) = sprintf( "%g nm", wavesel )
@@ -92,26 +94,36 @@ plot( phenolpool, main="Absorbance Spectra of Phenol Red at Swimming Pool pH Val
 ```
 
 The rest of this section is best viewed on a display calibrated for sRGB, see @wiki:sRGB.
-```{r, echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'}
+```{r, echo=TRUE,  message=TRUE }
 # create an uncalibrated 'material responder'
 testkit = product( D65.1nm, 'solution', BT.709.RGB, wave=wave )
-# now calibrate, but lower the background a little, to allow more 'headroom' for indicator colors
-bglin = 0.96
+# now calibrate so that fully transparent pure water has response RGB=c(1,1,1)
+testkit = calibrate( testkit, response=1 )
+RGB = product( phenolpool, testkit )
+RGB
+```
+Unfortunately, in some cases the red value is greater than 1 (G and B are OK).
+The color is outside the sRGB gamut.
+Start over and recalibrate.
+```{r, echo=TRUE,  message=TRUE }
+testkit = product( D65.1nm, 'solution', BT.709.RGB, wave=wave )
+# recalibrate, but lower the background a little, to allow more 'headroom' for indicator colors
+bglin = 0.96  #  graylevel for the background, linear
 testkit = calibrate( testkit, response=bglin )
 RGB = product( phenolpool, testkit )
+RGB
+```
+All values have been multiplied by `bglin`, and are now OK.
+Draw the RGB patches on a white background multiplied by the same amount.
+```{r, echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'}
 class(RGB) = 'model.matrix'
 df.RGB = data.frame( RGB=RGB, LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
 par( omi=c(0,0,0,0), mai=c(0.3,0,0.3,0) )
-bg = rgb( DisplayRGBfromLinearRGB( t(rep(bglin,3)) ) )
-plotPatchesRGB( df.RGB, labels=F, background=bg )
+plotPatchesRGB( df.RGB, labels=F, background=bglin )
 text( (1:nrow(RGB)) + 0.5, 2, sprintf("%.1f",pHvec), adj=c(0.5,1.2), xpd=NA )
 title( main='Calculated Colors for pH from 6.8 to 8.2' )
 ```
-
-The background graylevel `bg` is slightly less than 255 so that the
-red channel in the colors is not saturated.
-If the background were 'peak white' (255,255,255),
-then some of the colors would be outside the sRGB gamut.
+The background color is that of pure water, and is not the full RGB=(255,255,255).
 
 In the first figure above,
 the phenol red concentration and optical path length are unknown.
@@ -125,7 +137,7 @@ RGB = product( phenolpool, testkit )
 class(RGB) = 'model.matrix'
 df.RGB = data.frame( RGB=RGB, LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
 par( omi=c(0,0,0,0), mai=c(0.3,0,0.3,0) )
-plotPatchesRGB( df.RGB, background=bg, labels=F )
+plotPatchesRGB( df.RGB, background=bglin, labels=F )
 text( (1:nrow(RGB)) + 0.5, 2, sprintf("%.1f",pHvec), adj=c(0.5,1.2), xpd=NA )
 main = sprintf( 'Calculated Colors for pH from 6.8 to 8.2 (absorbance multiplier=%g)', tweak )
 title( main=main )

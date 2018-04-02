@@ -303,12 +303,12 @@ readSpectraControl <- function( path)
         quant   = guessSpectrumQuantity( cname, header )            
         if( is.na(quant) )
             {
-            quant = 'power'
-            log.string( WARN, "Cannot not guess quantity from from contents of '%s', so assigning quantity='%s'.",
+            quant = 'energy'
+            log.string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
                                 basename(path), quant )
             }      
             
-        spec    = colorSpec( y, x_new, quant )   
+        spec    = colorSpec( y, x_new, quantity=quant )   
         
         specnames( spec )   = cname
         metadata( spec )    = list( path=path, header=header )
@@ -322,7 +322,7 @@ readSpectraControl <- function( path)
     }
 
 
-readSpectraXYY <- function( path)
+readSpectraXYY <- function( path )
     {
     if( ! file.exists( path) )
         {
@@ -335,7 +335,7 @@ readSpectraXYY <- function( path)
     
     if( length(header) == 0 ) return(NULL)
     
-    pattern = "(^wave)|(^wl)"
+    pattern = "^(wave|wv?l)"
     idx = which( grepl( pattern, header , ignore.case=T ) )
     
     if( length(idx) == 0 ) 
@@ -386,17 +386,17 @@ readSpectraXYY <- function( path)
     theQuantity = guessSpectrumQuantity( colnames(data), header )
     if( is.na(theQuantity) )
         {
-        theQuantity = 'power'
-        log.string( WARN, "Cannot not guess quantity from from contents of '%s', so assigning quantity='%s'.",
+        theQuantity = 'energy'
+        log.string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
                                 basename(path), theQuantity )
         }
             
-    out = colorSpec( data, df[[1]], theQuantity, organization='df.col' )
+    out = colorSpec( data, df[[1]], quantity=theQuantity, organization='df.col' )
             
     metadata( out ) = list( path=path)            
             
     if( 0 < length(header) )
-        metadata( out ) = list(header=header)
+        metadata( out, add=TRUE ) = list(header=header)
 
     return(out)
     }
@@ -405,7 +405,7 @@ readSpectraXYY <- function( path)
 #   Spreadsheet here means one of:
 #       the Wolf Faust files:  E131102.txt  etc.    
 
-readSpectraSpreadsheet <- function( path)
+readSpectraSpreadsheet <- function( path )
     {
     if( ! file.exists( path) )
         {
@@ -477,11 +477,11 @@ readSpectraSpreadsheet <- function( path)
     if( is.na(quantity) )
         {
         quantity = 'reflectance'
-        log.string( WARN, "Cannot not guess quantity from from contents of '%s', so assigning quantity='%s'.",
+        log.string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
                                 basename(path), quantity )
         }
     
-    out         = colorSpec( data, wavelength, quantity, organization="df.row" )
+    out         = colorSpec( data, wavelength, quantity=quantity, organization="df.row" )
     
     metadata( out ) = list( path=path, header=header )    
     
@@ -619,12 +619,12 @@ colorSpecFromDF <- function( df, path, preamble, idxtable )
     
     if( is.na(theQuantity) )
         {
-        theQuantity = 'power'
-        log.string( WARN, "Cannot not guess quantity from from contents of '%s', so assigning quantity='%s'.",
+        theQuantity = 'energy'
+        log.string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
                             basename(path), theQuantity )
         }
         
-    out = colorSpec( mat, wavelength, theQuantity, "df.row" )
+    out = colorSpec( mat, wavelength, quantity=theQuantity, organization="df.row" )
     
     #   ColorMunki wavelengths in hires mode are equally spaced at 3.333 nm, but rounded to the nearest integer
     #   check for this and fix it        
@@ -796,7 +796,7 @@ spectralColumns <- function( df, path, idxtable )
     
 
 #   read Ocean Optics format
-#   we already know this is a light source of with quantity power
+#   we already know this is a light source of with quantity 'energy'
 #
 #   TODO:   extract integration time from header and organize as df.row
 readSpectrumScope  <- function( path)
@@ -824,7 +824,7 @@ readSpectrumScope  <- function( path)
 
     y   = theData[ 2,  ]
 
-    out = colorSpec( y, wavelength=theData[1, ], quantity="power", organization="vector" )
+    out = colorSpec( y, wavelength=theData[1, ], quantity="energy", organization="vector" )
     
     #   there is only 1 spectrum here, so use the path as the name
     specnames(out)  = stripExtension( basename(path) )
@@ -913,7 +913,7 @@ spectralFileType <- function( .path )
             }
         }
     
-    pattern = c(  "^NUMBER_OF_FIELDS|^KEYWORD" ,  "^\\[Control\\]", "^WAVE|^WL", "^>+Begin", "^ID\tName", "^Time"  )
+    pattern = c(  "^NUMBER_OF_FIELDS|^KEYWORD" ,  "^\\[Control\\]", "^(wave|wv?l)", "^>+Begin", "^ID\tName", "^Time"  )
     
     type    = c( "CGATS", "Control", "XYY", "scope", "spreadsheet", "spreadsheet" )
     
@@ -1041,9 +1041,9 @@ readSpectraExcel <- function( path, worksheet=NULL )
     wave    = as.numeric( mat[ ,1] )
     mat     = as.matrix( mat[ ,2:ncol(mat)] )
     
-    colnames(mat)   = sprintf( "%s%02d.Power", iname, 1:spectra )
+    colnames(mat)   = sprintf( "%s%02d.Energy", iname, 1:spectra )
     
-    out = colorSpec( mat, wave, 'power' )
+    out = colorSpec( mat, wave, quantity='energy' )
 
     metadata(out) = list( path=path)
     

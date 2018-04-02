@@ -21,9 +21,11 @@
 }
 
 \details{
-If the \code{\link{quantity}} of \code{x} is not \code{'absorbance'} then \code{x} is returned unchanged.
+If the \code{\link{quantity}(x)} is not \code{'absorbance'}
+then \code{x} is returned unchanged.
 
-If the \code{\link{quantity}} is \code{'absorbance'} then absorbance is converted to transmittance using
+If the \code{\link{quantity}(x)} is \code{'absorbance'}
+then absorbance is converted to transmittance using
 \deqn{ transmittance = 10^{-absorbance} }
 Surprisingly, there does not seem to be a similar logarithmic version of reflectance.
 Plots with log(responsivity) is somewhat common, but does not seem to have a separate name.

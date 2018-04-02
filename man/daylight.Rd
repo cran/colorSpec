@@ -25,9 +25,9 @@ Each is a \bold{colorSpec} object organized as a matrix with 3 columns
 }
 
 \source{
-http://www.cie.co.at/publ/abst/datatables15_2004/CIE_sel_colorimetric_tables.xls
+\code{http://www.cie.co.at/publ/abst/datatables15_2004/CIE_sel_colorimetric_tables.xls}
 
-http://vision.vein.hu/~schanda/CIE\%20TC1-74/
+\code{http://vision.vein.hu/~schanda/CIE\%20TC1-74/}
 }
 
 \references{

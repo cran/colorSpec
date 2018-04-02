@@ -89,6 +89,14 @@ establish the 1931 standard observer (there were 17 of them).
 But it \emph{is} known that the average age of the observers used to create the 
 CIE 1964 standard observer is 32 years, see \cite{Pokorny}.
 So we'll take 32 years for the CIE 1931 standard observer as well.
+Featured functions in this vignette are: 
+\code{linearize()},
+\code{lensAbsorbance()},
+\code{RGBfromXYZ()},
+\code{extradata()},
+\code{applyspec()},
+\code{calibrate()},
+and \code{PlotPatchesRGB()}.
 
 Start the \textbf{R} session and load the \textbf{colorSpec} package,
 

@@ -7,7 +7,8 @@
 \alias{probeOptimalColors.colorSpec}
 
 \description{
-Consider a \bold{colorSpec} object \code{x} with \code{type} equal to \code{responsivity.material}.
+Consider a \bold{colorSpec} object \code{x} with \code{type} 
+equal to \code{'responsivity.material'}.
 The set of all possible material reflectance functions (or transmittance functions) 
 is convex, closed, and bounded (in any reasonable function space),
 and this implies that the set of all possible output responses 
@@ -27,18 +28,20 @@ The purpose of the function \code{probeOptimalColors()} is to compute that inter
 The function only works as stated if:
 \enumerate{
 \item the number of spectra in \code{x} is 3 (e.g. RGB or XYZ)
-\item the chromaticity diagram of \code{x} is convex and well-ordered (no reversals)
+\item the chromaticity diagram of \code{x} is convex and well-ordered (injective with no reversals)
 }
 The 1st condition makes the situation simple enough to deal with.
 The 2nd condition implies that a reflectance function is optimal iff it
 takes the values 0 or 1, and has 0, 1, or 2 transitions;
 see \cite{Logvinenko} or \cite{West} for the proof of this.
-The proof in \cite{Schrödinger} is flawed.
+The proof in \cite{Schrödinger} is flawed because he ignored condition 2.
 This 2-transition condition also simplifies the situation.
-As an example, the CIE chromaticity diagrams (both 1931 and 1964) are convex.
+Fortunately, the CIE chromaticity diagrams (both 1931 and 1964) are convex
+and injective.
 For counter-examples see the \bold{References}.
-If a color defined by a reflectance function with  0, 1, or 2 transitions
-is called a \emph{Schrödinger color} then it would be accurate to say that
+If we define a \emph{Schrödinger object color} to be a color
+defined by a reflectance function with  0, 1, or 2 transitions,
+then it would be accurate to state that
 \code{probeOptimalColors()} computes \emph{Schrödinger object colors}.
 }
 
@@ -49,7 +52,8 @@ is called a \emph{Schrödinger color} then it would be accurate to say that
 }
 
 \arguments{
-  \item{x}{a \bold{colorSpec} object with \code{type} equal to \code{responsivity.material} and 3 spectra }
+  \item{x}{a \bold{colorSpec} object with \code{type}
+  equal to \code{'responsivity.material'} and 3 spectra}
   
   \item{gray}{vector of numbers in the open interval (0,1) that define neutral grays on the
               line segment from black to white; this neutral gray point is the basepoint of a probe ray}
@@ -63,7 +67,7 @@ is called a \emph{Schrödinger color} then it would be accurate to say that
 }
     
 \value{
-\code{probeOptimalColors} returns a \code{data.frame} with a row for each traced ray.
+\code{probeOptimalColors()} returns a \code{data.frame} with a row for each traced ray.
 There are \code{length(gray)} * \code{ncol(direction)} rays.
 The columns in the output are:
   \item{gray}{the graylevel defining the \eqn{basepoint} of the ray. \eqn{basepoint = gray*W} }
@@ -75,7 +79,7 @@ The columns in the output are:
   \item{dol}{\code{delta} and \code{omega} - the Logvinenko parameters \eqn{(\delta,\omega)} for optimal colors, plus \code{lambda} in nm. 
   \eqn{\omega} is the reparameterization of \eqn{\lambda} ;  see \bold{References}}
                 
-And if aux is TRUE, these auxiliary columns related to performance:                
+And if aux is \code{TRUE}, these auxiliary columns related to performance:   
   \item{time_grid}{time to find initial estimate point on boundary, in seconds}
   \item{iters}{number of interations of Newton's Method to find the ray intersection}
   \item{btracks}{total # of backtracks in "damped" Newton's method}
@@ -115,18 +119,19 @@ There may be numerical iteration failures near these 2 points.
 \references{
 Logvinenko, A. D.
 An object-color space. 
-Journal of Vision.
+\bold{Journal of Vision}.
 9(11):5, 1-23, (2009).
-http://journalofvision.org/9/11/5/.
+\url{http://journalofvision.org/9/11/5/}.
 doi:10.1167/9.11.5.
 
 Schrödinger, E. (1920). 
 Theorie der Pigmente von grösster Leuchtkraft. 
-Annalen der Physik, 62, 603-622.
+\bold{Annalen der Physik}.
+62, 603-622.
 
 West, G. and M. H. Brill.
 Conditions under which Schrödinger object colors are optimal.
-Journal of the Optical Society of America.
+\bold{Journal of the Optical Society of America}.
 73. pp. 1223-1225. 1983.
 }
 

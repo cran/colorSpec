@@ -8,7 +8,8 @@
 The CGATS text format supports a preamble followed by N tables, where N \eqn{\ge} 1.
 Each table can have a separate header.
 A table may or may not contain spectral data, see \bold{Note}.
-The function converts each table to a data.frame with attributes; see Details.
+The function converts each table to a \code{data.frame} with attributes;
+see \bold{Details}.
 }
 
 \usage{
@@ -21,20 +22,21 @@ readCGATS( path, collapsesingle=FALSE )
   \item{path}{the path name of a single file, in CGATS format}
 
   \item{collapsesingle}{If \code{path} has only one table (N=1) and \code{collapsesingle} is \code{TRUE},
-  then return the single data.frame (instead of a list with 1 data.frame).
+  then return the single \code{data.frame} (instead of a list with 1 \code{data.frame}).
   If \code{path} has multiple tables (N \eqn{\ge} 2), then \code{collapsesingle} is ignored.
   }
 }
 
     
 \value{
-  \code{readCGATS} returns a list of data.frames - 
-  one data.frame for each table found in \code{path}.
-  The list and each individual data.frame have attributes, see \bold{Details}.
+  \code{readCGATS()} returns a list of \code{data.frame}s - 
+  one \code{data.frame} for each table found in \code{path}.
+  The list and each individual \code{data.frame} have attributes, see \bold{Details}.
 
   If \code{path} has only a single table (the majority of files have only 1) 
   and \code{collapsesingle} is \code{TRUE}, then the attributes of the list
-  are copied to those of the data.frame, and the data.frame is then returned.
+  are copied to those of the \code{data.frame},
+  and the \code{data.frame} is then returned.
   The name of the table is lost.
   
   If there is an error in any table, then the function returns \code{NULL}.
@@ -57,7 +59,7 @@ readCGATS( path, collapsesingle=FALSE )
   If the keyword \code{TABLE_NAME} is present in the table header, then its value is used.
   Otherwise the names are \code{"TABLE_1"}, \code{"TABLE_2"}, ...
   
-  Each data.frame in the list is assigned attributes: \code{"header"}, 
+  Each \code{data.frame} in the list is assigned attributes: \code{"header"}, 
   and (if present) \code{"descriptor"}.
   The length of \code{"header"} is (typically) greater than 1, and \code{"descriptor"} has length 1.
   Each line of the table header is a keyword-value pair.
@@ -70,11 +72,11 @@ readCGATS( path, collapsesingle=FALSE )
   \item  In the standard convention, fields are separated by contiguous spaces or tabs, and character strings (which may have embedded spaces or even tabs) 
   are enclosed by double-quotes.
   This is is the convention in the CGATS standard.
-  The function \code{\link{scan}()} is used here.
+  The function \code{\link[base]{scan}()} is used here.
   \item In the non-standard convention, fields are separated by a \emph{single} tab,
   and character strings (which may have embedded spaces but not tabs) are \emph{not} enclosed by double-quotes.
   This convention is often easier to work with in spreadsheet software.
-  The function \code{\link{strsplit}()} is used here.
+  The function \code{\link[base]{strsplit}()} is used here.
   }
   The function \code{readCGATS()} selects the separation convention 
   by examining the line after \code{BEGIN_DATA_FORMAT}.
@@ -103,22 +105,23 @@ For conversion of spectral data to \bold{colorSpec} objects, see \code{\link{rea
 
 ANSI/CGATS.17. 
 Graphic technology - Exchange format for colour and process control data using XML or ASCII text.
-https://webstore.ansi.org/
+\url{https://webstore.ansi.org/}
 2009.
 
 ISO/28178. Graphic technology - Exchange format for colour and process control data using XML or ASCII text.
-https://www.iso.org/standard/44527.html.
+\url{https://www.iso.org/standard/44527.html}.
 2009.
 
-CGATS.17 Text File Format.   http://www.colorwiki.com/wiki/CGATS.17_Text_File_Format.
+CGATS.17 Text File Format.
+\url{http://www.colorwiki.com/wiki/CGATS.17_Text_File_Format}.
 }
 
 
 \seealso{
 \code{\link{readSpectraCGATS}},
-\code{\link{scan}},
-\code{\link{strsplit}},
-\code{\link{names}}
+\code{\link[base]{scan}},
+\code{\link[base]{strsplit}},
+\code{\link[base]{names}}
 }
 
 \examples{

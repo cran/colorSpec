@@ -4,7 +4,7 @@
 #   Journal of Comparative Physiology A.
 #   January 1992, Volume 170, Issue 1, pp 23-40
 #
-#   quantity    power->neural
+#   quantity    energy->neural
 
 [Control]
 Xpx Ypx X Y

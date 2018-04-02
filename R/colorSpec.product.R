@@ -2,15 +2,16 @@
 #   ...     colorSpec objects that can be naturally multiplied
 #           there are 5 different types of sequences
 #
-#   wavelength      'identical'     means check that all objects have the same wavelength (default)
+#   wavelength      'identical'     then all objects have the same wavelength (default)
 #                   'auto'          resample all of them to a suitable computed new sequence
 #                   numeric vector, new wavelengths to resample to
 #
+#   integration     'rectangular'  (the default), or 'trapezoidal'
 #
 #   return:     a new colorSpec object,
 #               or a matrix with a column for each output channel and a row for each input spectrum
 
-product.colorSpec <- function( ... )            #,  wavelength='identical', white.response='auto' )
+product.colorSpec <- function( ... )            #,  wavelength='identical' , integration='rectangular'
     {
     theList =  list(...) 
     
@@ -23,6 +24,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical', whit
         
     #   assign defaults
     wavelength      = 'identical'
+    integration     = 'rectangular'
 
     #   get the LHS names
     theNames    = names( theList )
@@ -35,21 +37,38 @@ product.colorSpec <- function( ... )            #,  wavelength='identical', whit
         #   and so the complement are named arguments, which we want to pass to resample()
         mask.named  = ! mask.noname
         
-        sig = pmatch( theNames, c("wavelength") )     
+        sig = pmatch( theNames, c("wavelength","integration") )     
         
         idx = which( sig == 1 )
         if( length(idx) == 1 )
             {
             wavelength      = theList[[idx]]
-            mask.named[idx] = FALSE
+            mask.named[idx] = FALSE   
             }
-        
+            
+        idx = which( sig == 2 )
+        if( length(idx) == 1 )
+            {
+            integration     = theList[[idx]]
+            mask.named[idx] = FALSE
+            
+            option  =  c("rectangular","trapezoidal")
+            idx = pmatch( integration, option )
+            if( is.na(idx) )
+                {
+                log.string( ERROR, "integration='%s' is invalid.", as.character(integration) )
+                return(NULL)
+                }            
+            integration = option[idx]
+            }
+
         #   print( mask.named )
         
-        #   all named args except wavelength !
-        resample.argv   = theList[ mask.named ]     #; print( argv_for_resample )
+        #   all named args, except wavelength !
+        resample.argv   = theList[ mask.named ]     #; print( resample.argv )  # wavelength is not here, it is passed to resample() separately
             
         log.object( TRACE, wavelength )
+        log.object( TRACE, integration )        
         }
     else
         {
@@ -157,6 +176,9 @@ product.colorSpec <- function( ... )            #,  wavelength='identical', whit
             }       
         seq.beg = res$begin
         seq.end = res$end
+        
+        if( res$ambiguous )
+            log.string( WARN, "The returned matrix is ambiguous; because it depends on the splitting. Inspect the matrix carefully." )
         }
         
     
@@ -214,11 +236,11 @@ product.colorSpec <- function( ... )            #,  wavelength='identical', whit
         }        
         
         
-    if( ! isRegularSequence(wavelength) )
-        {
-        log.string( ERROR, "Cannot form product, because resampling wavelength sequence is not regular." )
-        return(NULL)
-        }        
+    #if( ! isRegularSequence(wavelength) )
+    #    {
+    #    log.string( ERROR, "Cannot form product, because resampling wavelength sequence is not regular." )
+    #    return(NULL)
+    #    }        
         
     if( do.resample )
         {
@@ -282,12 +304,62 @@ product.colorSpec <- function( ... )            #,  wavelength='identical', whit
         {
         #   output is *not* a colorSpec
         #   output is a matrix - a product of a left part and a right part
-        
+
         mat.left    = simpleProduct( theList[ seq.beg ] )
         mat.right   = simpleProduct( theList[ seq.end ] )
+
+        p = length(wavelength)
         
-        out = step.wl * t(mat.left) %*% mat.right  #; print( str(out) )
-        
+        if( isRegularSequence(wavelength) )
+            {
+            log.string( INFO, "Wavelength sequence is regular. step=%g. integration='%s'", step.wl, integration )
+            
+            #   this is the easy case, the step size can be brought outside            
+            if( integration == 'trapezoidal' )
+                {
+                #   scale first and last rows of mat.left.  Do not bother to find which matrix is smaller
+                mat.left[c(1,p), ]   = 0.5 * mat.left[c(1,p), ]
+                }
+                
+            out = step.wl * crossprod( mat.left, mat.right )  #; print( str(out) )
+            }
+        else
+            {
+            log.string( INFO, "Wavelength sequence is irregular.  integration='%s'",  integration )
+                        
+            weight  = diff( wavelength, lag=2 ) / 2
+            w.end   = c( wavelength[2] - wavelength[1], wavelength[p] - wavelength[p-1] )
+            
+            if( integration == 'rectangular' )
+                weight  = c( w.end[1], weight, w.end[2] )
+            else if( integration == 'trapezoidal' )
+                weight  = c( w.end[1]/2, weight, w.end[2]/2 )
+            else
+                {
+                log.string( ERROR, "integration='%s' is invalid.", as.character(integration) )
+                return(NULL)
+                }
+                
+            if( length(weight) != p )
+                {
+                log.string( ERROR, "length(weight)= %d != %d.", length(weight), p )
+                return(NULL)
+                }
+                
+            #   apply weight to the smaller matrix                
+            q   = min( ncol(mat.left), ncol(mat.right) )
+            
+            mat.weight  = matrix( weight, nrow=p, ncol=q )
+            
+            if( q == ncol(mat.left) )
+                mat.left    = mat.weight * mat.left
+            else
+                mat.right   = mat.weight * mat.right
+                
+            out = crossprod( mat.left, mat.right )
+            }
+            
+            
         #   assign row names from the left part
         idx = which( spectra == nrow(out) )
         idx = idx[ 1 ]
@@ -301,8 +373,9 @@ product.colorSpec <- function( ... )            #,  wavelength='identical', whit
         if( all( nchar(colnames(out)) == 1 ) )
             #   change 'x' to 'X', and 'r' to 'R', etc.
             colnames(out)   = toupper(colnames(out))            
-            
-        #   attr( out, "sequence" ) = theList
+         
+        #  this line is not good; the attr is printed when the matrix is !
+        #attr( out, "product" ) = list( wavelength=wavelength, integration=integration )
         
         return( out )
         }        
@@ -337,7 +410,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical', whit
                 quantity    = "reflectance"
             }
             
-        out = colorSpec( mat.cum, wavelength, quantity )
+        out = colorSpec( mat.cum, wavelength, quantity=quantity )
         
         attr( out, "sequence" ) = theList
                     
@@ -355,10 +428,10 @@ product.colorSpec <- function( ... )            #,  wavelength='identical', whit
         }
     
     quantity    = quantity( theList[[n]] )
-    pattern     = "^power"
+    pattern     = "^(energy|power)"
     if( ! grepl( pattern, quantity ) )
         {
-        log.string( FATAL, "Internal error. Last object quantity='%s' does not begin with 'power'.", quantity )
+        log.string( FATAL, "Internal error. Last object quantity='%s' does not begin with 'energy' or 'power'.", quantity )
         return(NULL)
         }    
     quantity    = sub( pattern, "material", quantity )
@@ -386,7 +459,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical', whit
         
     colnames(mat.cum)   = specnames    
            
-    out = colorSpec( mat.cum, wavelength, quantity )        
+    out = colorSpec( mat.cum, wavelength, quantity=quantity )        
                   
     attr( out, "sequence" ) = theList    
     
@@ -569,7 +642,7 @@ returnTypeProduct <- function( .list )
         out = "matrix"
     else
         {
-        log.string( ERROR, "types of colorSpec objects are invalid" )
+        log.string( ERROR, "Cannot form a product. The types of the colorSpec objects are invalid" )
         }
         
     return( out )
@@ -587,27 +660,39 @@ splitSequence <- function( x )
     n   = length(x)
     
     out = list()
-    out$begin   = 1:(n-1)
-    out$end     = n
+    out$begin       = 1:(n-1)
+    out$end         = n
+    out$ambiguous   = FALSE
     
     x.multi = x[ 1 < x ]
     
-    if( length(x.multi) <= 1 )
-        #   1 value > 1,  or none of them
+    if( length(x.multi) == 0 )
+        #   all 1s
         return(out)
         
+    x.multi.unique  = unique(x.multi)
+    
+    if( 3 <= length(x.multi.unique) )
+        #   not splittable
+        return(NULL)
+        
+    if( length(x.multi.unique) == 1 )
+        {
+        #   exactly one unique value greater than 1
+        if( 3 <= n )
+            out$ambiguous   = x.multi.unique  %in%  x[ 2:(n-1) ]
+        return(out)
+        }
+    
+    #   there are 2 unique values greater than 1
+    #   there must be 1 or more jumps
     jump    = which( diff(x.multi) != 0 )
-    
-    if( length(jump) == 0 )
-        #   no jumps, so x.multi is constant
-        return( out )
-    
+        
     if( 1 < length(jump) )  
-        #   cannot split
+        #   not splittable
         return(NULL)
         
     #   only 1 jump
-    
     #   find last occurence of x1
     k   =   which( x == x.multi[1] )
     k   =   k[ length(k) ]
@@ -620,7 +705,7 @@ splitSequence <- function( x )
     
 #--------       UseMethod() calls           --------------#                    
         
-product <- function( ... )      #,   wavelength="identical", white.response='auto' )
+product <- function( ... )      #,   wavelength="identical" 
     {
     UseMethod("product")
     }    
@@ -630,7 +715,7 @@ product <- function( ... )      #,   wavelength="identical", white.response='aut
     
 #--------       testing           --------------#           
     
-testVarArg <- function( ... )  #,   wavelength="identical", white.response='auto' )
+testVarArg <- function( ... )  #,   wavelength="identical" 
     {
     theList = list(...)
     print( as.character( substitute(list(...)) ) )
@@ -681,7 +766,6 @@ testVarArg <- function( ... )  #,   wavelength="identical", white.response='auto
     
     #   print( str( c(...) ) )
     
-    #   print( white.response )
     print( wavelength )
     
     print( lapply( theList, class ) )

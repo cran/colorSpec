@@ -25,41 +25,47 @@ RGBfromXYZ( XYZ, space )
 The input \code{XYZ} is multiplied by the appropriate 3x3 conversion matrix
 (for \bold{sRGB} or \bold{Adobe RGB}).
 These matrices are taken from \cite{Lindbloom} and not from the corresponding \cite{Wikipedia} articles; 
-for the reason see \bold{Note}.
+for the reason why see \bold{Note}.
 
 }
 
 \note{
 An RGB space is normally defined by the xy chromaticities of the 3 primaries and the white point.
-We follow \cite{Lindbloom} in using the xy chromaticities of the 3 primaries and the 'official' XYZ of the white point.
+We follow \cite{Lindbloom} in using the 'official' XYZ of the white point from ASTM E308.
 Using this XYZ of the white point makes the color space a little more consistent
 with other areas of color.\cr
-For example, for D65 we have xyY=(0.3127,0.3290,1) ->  XYZ=(0.9504559,1,1.0890578).
+For example, from IEC 61966-2-1 we have
+D65 xyY=(0.3127,0.3290,1) ->  XYZ=(0.9504559,1,1.0890578).
 But from ASTM E308, D65 XYZ=(0.95047,1,1.08883), which is a little different.
 
 }
 
 \value{
-  An Mx3 matrix where M is the number of rows in \code{XYZ}, or M=1 if XYZ is a 3-vector.
-  Each row of the returned matrix is filled with linear RGB in the appropriate RGB space.
-  Values outside the unit cube are not clipped.
-  To compute non-linear display RGB, see \code{\link{DisplayRGBfromLinearRGB}}. \cr
-  In case of error the function returns \code{NULL}.
+An Mx3 matrix where M is the number of rows in \code{XYZ}, or M=1 if XYZ is a 3-vector.
+Each row of the returned matrix is filled with linear RGB in the appropriate RGB space.
+Values outside the unit cube are not clamped.
+To compute non-linear display RGB, see \code{\link{DisplayRGBfromLinearRGB}()}. \cr
+In case of error the function returns \code{NULL}.
   
 }
 
 \source{
+IEC 61966-2-1:1999.
+Multimedia systems and equipment - Colour measurement and management.
+Part 2-1: Colour management - Default RGB colour space - sRGB.
+\url{http://webstore.iec.ch/publication/6169}
+
 Lindbloom, Bruce.
-RGB/XYZ Matrices.\cr
-http://brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+RGB/XYZ Matrices.
+\url{http://brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html}
 
 Wikipedia.
 \bold{sRGB}.
-http://en.wikipedia.org/wiki/SRGB
+\url{http://en.wikipedia.org/wiki/SRGB}
 
 Wikipedia.
 \bold{Adobe RGB}.
-http://en.wikipedia.org/wiki/Adobe_RGB_color_space
+\url{http://en.wikipedia.org/wiki/Adobe_RGB_color_space}
 
 }
 

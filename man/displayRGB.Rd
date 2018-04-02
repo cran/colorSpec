@@ -8,7 +8,8 @@
 \description{
 All RGB displays have a non-linear "gamma function" of some sort.
 This function converts from linear RGB to an RGB appropriate for 
-the gamma function of the display.
+the gamma function of the display;
+which is also called the \emph{electro-optical conversion function} (EOCF).
 }
 
 \usage{
@@ -34,7 +35,7 @@ In case of error, the function returns the clamped input values.
 \source{
 Wikipedia.
 \bold{sRGB}.
-http://en.wikipedia.org/wiki/sRGB
+\url{http://en.wikipedia.org/wiki/sRGB}
 }
 
 \seealso{

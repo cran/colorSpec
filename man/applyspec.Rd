@@ -6,7 +6,7 @@
 \alias{applyspec}
 
 \description{
-apply a function to each spectrum in a colorSpec object
+apply a function to each spectrum in a \bold{colorSpec} object
 }
 
 \usage{
@@ -26,20 +26,22 @@ apply a function to each spectrum in a colorSpec object
 a \bold{colorSpec} object with the same dimensions,
 \code{\link{wavelength}}, \code{\link{quantity}}, and \code{\link{organization}}.
 If \code{FUN} does not return an N-vector, it is an ERROR and
-\code{applyspec} returns \code{NULL}.
+\code{applyspec()} returns \code{NULL}.
 }
 
 
 \details{
-\code{applyspec} simply calls \code{\link[base]{apply}} with the right \code{MARGIN}.
+\code{applyspec()} simply calls \code{\link[base]{apply}()}
+with the right \code{MARGIN}.
 }
 
 
 \seealso{
-  \code{\link{quantity}},
-  \code{\link{wavelength}},
-  \code{\link{linearize}},  
-  \code{\link{organization}}
+\code{\link{quantity}},
+\code{\link{wavelength}},
+\code{\link{linearize}},  
+\code{\link{organization}},
+\code{\link[base]{apply}}  
 }
 
 \examples{

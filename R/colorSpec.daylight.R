@@ -5,11 +5,11 @@
 #   wavelength      at which to resample.  If NULL then the wavelengths in components are used   
 #   roundMs         round M1 and M2 to 3 decimal places
 #
-#   return value: colorSpec object with quantity  'power'
-#   Power is normalized so it is 1 at 560 nm
+#   return value: colorSpec object with quantity  'energy'
+#   Energy is normalized so it is 1 at 560 nm
 #   depends on global variable - colorSpec::daylight1964
 #
-daylightSpectra <-  function( temperature, components=colorSpec::daylight1964, wavelength=NULL, roundMs=FALSE )
+daylightSpectra <-  function( temperature, wavelength=NULL, components=colorSpec::daylight1964, roundMs=FALSE )
     {    
     locus = daylightLocus( temperature )
         
@@ -43,8 +43,8 @@ daylightSpectra <-  function( temperature, components=colorSpec::daylight1964, w
         #   colnames( out )[ ncol(out) ] = sprintf( "D%g", round(locus$temperature[k]) )
         }
         
-    #   components always normlizes to 100 at 560nm        
-    #   but we prefer power=1 at 560nm
+    #   components always normalizes to 100 at 560nm        
+    #   but we prefer energy=1 at 560nm
     mat3xm  = mat3xm / 100  #; print( mat3xm )
        
     colnames( mat3xm ) = sprintf( "D%g", round(temperature) )
@@ -53,7 +53,7 @@ daylightSpectra <-  function( temperature, components=colorSpec::daylight1964, w
         
     #   specnames( out ) = sprintf( "D%g", round(temperature) )
         
-    #   out = colorSpec( out, wavelength(data), 'power' )
+    #   out = colorSpec( out, wavelength(data), quantity='energy' )
     
     if( ! is.null(wavelength) )
         out = resample( out, wavelength )

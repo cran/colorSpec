@@ -20,18 +20,19 @@ A \bold{colorSpec} object organized as a matrix with 3 columns:
 }
 
 \source{
-http://www.cvrl.org/database/text/cones/vw.htm
+\url{http://www.cvrl.org/database/text/cones/vw.htm}
 }
 
 \references{
 Vos, J. J. & Walraven, P. L.
 On the derivation of the foveal receptor primaries. 
-Vision Research. 11 (1971) pp. 799-818.
+\bold{Vision Research}.
+11 (1971) pp. 799-818.
 
 }
 
 \seealso{
-\code{\link{lms2000}} 
+\link{lms2000}
 }
 
 \examples{

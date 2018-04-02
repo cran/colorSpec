@@ -12,7 +12,7 @@ Cone Fundamentals for the Higher Passerines
 }}
 
 \format{
-A \bold{colorSpec} object organized as a matrix with the 4 variables.
+A \bold{colorSpec} object organized as a matrix with the 4 spectra:
   \tabular{ll}{
     {\code{UV}} \tab {the UV wavelength responsivity} \cr
     {\code{Short}} \tab {the short wavelength responsivity} \cr
@@ -23,7 +23,7 @@ The {\code{wavelength}} is from 300 to 700 nm, at 1nm intervals.
 }
 
 \source{
-http://onlinelibrary.wiley.com/doi/10.1111/j.1095-8312.2005.00540.x/suppinfo
+\url{http://onlinelibrary.wiley.com/doi/10.1111/j.1095-8312.2005.00540.x/suppinfo}
 }
 
 \references{

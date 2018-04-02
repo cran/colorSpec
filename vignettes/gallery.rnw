@@ -73,7 +73,11 @@ if(!file.exists("figs")) dir.create("figs")
 The goal of this package \textbf{colorSpec} vignette is to display rendered images of a popular color target
 with different illuminants, both with and without chromatic adaption methods.
 The figures are best viewed on a display calibrated for sRGB.
-
+Featured functions in this vignette are: 
+\code{DisplayRGBfromLinearRGB()}, 
+\code{extradata()},
+\code{RGBfromXYZ()},
+and \code{plotPatchesRGB()}.
 
 <<packs, echo=TRUE, message=FALSE>>=
 library( colorSpec )

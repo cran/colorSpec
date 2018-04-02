@@ -7,7 +7,14 @@
 	<META NAME="AUTHOR" CONTENT="Glenn Davis">
 	<META NAME="CREATED" CONTENT="20171031;23415700">
 	<META NAME="CHANGEDBY" CONTENT="Glenn Davis">
-	<META NAME="CHANGED" CONTENT="20171101;23302600">
+	<META NAME="CHANGED" CONTENT="20180318;15241900">
+	<META NAME="CHANGEDBY" CONTENT="Glenn Davis">
+	<META NAME="CHANGEDBY" CONTENT="Glenn Davis">
+	<META NAME="CHANGEDBY" CONTENT="Glenn Davis">
+	<META NAME="CHANGEDBY" CONTENT="Glenn Davis">
+	<META NAME="CHANGEDBY" CONTENT="Glenn Davis">
+	<META NAME="CHANGEDBY" CONTENT="Glenn Davis">
+	<META NAME="CHANGEDBY" CONTENT="Glenn Davis">
 	<META NAME="CHANGEDBY" CONTENT="Glenn Davis">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
@@ -18,7 +25,7 @@
 		<COL WIDTH=154>
 		<COL WIDTH=63>
 		<COL WIDTH=60>
-		<COL WIDTH=348>
+		<COL WIDTH=350>
 		<THEAD>
 			<TR VALIGN=BOTTOM>
 				<TH WIDTH=72>
@@ -36,18 +43,18 @@
 				<TH WIDTH=60>
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">spectra</FONT></FONT></P>
 				</TH>
-				<TH WIDTH=348>
+				<TH WIDTH=350>
 					<P><FONT FACE="Arial, sans-serif"><FONT SIZE=2 STYLE="font-size: 9pt">comments</FONT></FONT></P>
 				</TH>
 			</TR>
 		</THEAD>
 		<TBODY>
 			<TR>
-				<TD WIDTH=72>
+				<TD ROWSPAN=2 WIDTH=72>
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">illuminants</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=92>
-					<P ALIGN=CENTER><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">power</FONT></FONT></P>
+				<TD ROWSPAN=2 WIDTH=92>
+					<P ALIGN=CENTER><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">energy</FONT></FONT></P>
 				</TD>
 				<TD WIDTH=154>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">sunlight.txt</FONT></FONT></P>
@@ -58,17 +65,35 @@
 				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">spectral
-					irradiance of the solar disk</FONT></FONT></P>
+					irradiance of the solar disk. A standard from NASA.</FONT></FONT></P>
 				</TD>
 			</TR>
 			<TR>
-				<TD ROWSPAN=10 WIDTH=72>
+				<TD WIDTH=154>
+					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">solar.exposure.txt</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=63>
+					<P ALIGN=CENTER><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">XYY</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
+					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=350>
+					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">radiant
+					exposure of the sun through cloudless sky, integrated from
+					sunrise to sunset. The unit is joule * m<SUP><SPAN STYLE="background: transparent">-2</SPAN></SUP>
+					* nm<SUP><SPAN STYLE="background: transparent">-1</SPAN></SUP>.
+					This was not measured; it was modeled by SMARTS 2.9.5.</FONT></FONT></P>
+				</TD>
+			</TR>
+			<TR>
+				<TD ROWSPAN=13 WIDTH=72>
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">sources</FONT></FONT></P>
 				</TD>
-				<TD ROWSPAN=9 WIDTH=92>
-					<P ALIGN=CENTER><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">power</FONT></FONT></P>
+				<TD ROWSPAN=12 WIDTH=92>
+					<P ALIGN=CENTER><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">energy</FONT></FONT></P>
 				</TD>
 				<TD WIDTH=154>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">BlueFlame.txt</FONT></FONT></P>
@@ -79,9 +104,24 @@
 				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">blue
-					part of a butane flame, see vignette blueflame</FONT></FONT></P>
+					part of a butane flame, see vignette <B>blueflame</B></FONT></FONT></P>
+				</TD>
+			</TR>
+			<TR>
+				<TD WIDTH=154>
+					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">Cree-LED.txt</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=63>
+					<P ALIGN=CENTER><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">XYY</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
+					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=350>
+					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">domestic
+					LED, A19 base, 75 lumens</FONT></FONT></P>
 				</TD>
 			</TR>
 			<TR>
@@ -94,9 +134,9 @@
 				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1
-					species of fire-fly</FONT></FONT></P>
+					species of firefly</FONT></FONT></P>
 				</TD>
 			</TR>
 			<TR>
@@ -109,7 +149,7 @@
 				<TD WIDTH=60 SDVAL="4" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">4</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">4
 					species of firefly</FONT></FONT></P>
 				</TD>
@@ -124,7 +164,7 @@
 				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">white
 					LED in a light-pad, captured by a ColorMunki</FONT></FONT></P>
 				</TD>
@@ -139,7 +179,7 @@
 				<TD WIDTH=60 SDVAL="7" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">7</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">7-channel
 					source of light - time-multiplexed</FONT></FONT></P>
 				</TD>
@@ -154,7 +194,7 @@
 				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">spectrum
 					of moonlight, captured by a SpecBos 1211</FONT></FONT></P>
 				</TD>
@@ -169,7 +209,7 @@
 				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">white
 					LED in a microscope, captured by a ColorMunki</FONT></FONT></P>
 				</TD>
@@ -184,9 +224,39 @@
 				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">halogen
 					lamp in a microscope, with blue filter</FONT></FONT></P>
+				</TD>
+			</TR>
+			<TR>
+				<TD WIDTH=154>
+					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">P4-phosphor-JEDEC.txt</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=63>
+					<P ALIGN=CENTER><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">XYY</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
+					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=350>
+					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">a
+					standard phosphor used in B&amp;W TV</FONT></FONT></P>
+				</TD>
+			</TR>
+			<TR>
+				<TD WIDTH=154>
+					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">Philips-HPS.txt</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=63>
+					<P ALIGN=CENTER><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">XYY</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
+					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
+				</TD>
+				<TD WIDTH=350>
+					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">High
+					Pressure Sodium lamp - 100W</FONT></FONT></P>
 				</TD>
 			</TR>
 			<TR>
@@ -199,14 +269,14 @@
 				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">halogen
 					lamp in a microscope. captured by a USB2000+</FONT></FONT></P>
 				</TD>
 			</TR>
 			<TR>
 				<TD WIDTH=92>
-					<P ALIGN=CENTER><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">photons/sec</FONT></FONT></P>
+					<P ALIGN=CENTER><FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">photons</FONT></FONT></P>
 				</TD>
 				<TD WIDTH=154>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">Airam-GR8E.txt</FONT></FONT></P>
@@ -217,7 +287,7 @@
 				<TD WIDTH=60 SDVAL="1" SDNUM="1033;">
 					<P ALIGN=CENTER><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">1</FONT></FONT></P>
 				</TD>
-				<TD WIDTH=348>
+				<TD WIDTH=350>
 					<P ALIGN=LEFT><FONT FACE="Arial, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">a
 					60W incandescent bulb, made by Airam</FONT></FONT></P>
 				</TD>
@@ -226,6 +296,6 @@
 	</TABLE>
 </CENTER>
 <P ALIGN=CENTER STYLE="margin-top: 0.08in; margin-bottom: 0in"><FONT FACE="Arial, sans-serif"><FONT SIZE=2>Table
-B.1 More Spectral Data Files, light sources. <FONT FACE="Courier New, monospace">type='light'</FONT></FONT></FONT></P>
+B.1 Bonus Spectral Data Files, light sources. <FONT FACE="Courier New, monospace">type='light'</FONT></FONT></FONT></P>
 </BODY>
 </HTML>

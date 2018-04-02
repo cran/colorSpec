@@ -1,0 +1,300 @@
+% emulation.rnw
+% Time-stamp: "emulation.rnw"
+
+\documentclass[11pt]{article}
+
+% Set margins to be narrow
+\RequirePackage[left=1in,top=0.75in,right=1in,bottom=0.75in]{geometry}
+
+
+%\VignetteIndexEntry{Emulation of one Camera by another Camera}
+%\VignetteEngine{knitr::knitr}
+
+\RequirePackage{color}
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{lightblue}{rgb}{0.2,0.2,0.9}
+\definecolor{darkred}{rgb}{0.6,0.0,0.0}
+\definecolor{red}{rgb}{0.7,0,0}
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
+\definecolor{darkorange}{rgb}{0.75, 0.45, 0}
+\definecolor{purple}{rgb}{0.65, 0, 0.75}
+\definecolor{goldenrod}{rgb}{0.80, 0.61, 0.11}
+\definecolor{lightyellow}{rgb}{0.98,0.94,0.83}
+
+
+\RequirePackage{fancyvrb}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{ae}       % ComputerModern Fonts
+\RequirePackage{fancyhdr}
+\RequirePackage{float}
+\RequirePackage{hyperref}
+\usepackage{lastpage}
+
+\pagestyle{fancy}
+\cfoot{page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+
+% \code mini environment ttfamily->texttt
+\newcommand\code{\bgroup\@codex}
+\def\@codex#1{{\color{darkred} \normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
+
+% This environment defines the look of R ouput
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{
+  fontsize=\small,
+  formatcom=\color{darkblue}
+}
+
+\begin{document}
+% \SweaveOpts{concordance=TRUE}
+
+\title{ {\Huge Emulation of one Camera by another Camera} }
+\author{Glenn Davis  \url{    <gdavis@gluonics.com>}}
+\maketitle
+% \thispagestyle{fancy}
+
+% Setup stuff.
+<<setup, echo=FALSE, results="hide">>=
+require("knitr",quietly=TRUE)
+opts_chunk$set(fig.path="figs/ag2-", fig.align="center",
+  fig.width=7, fig.height=7, comment="")
+knit_hooks$set(output = function(x, options) {
+  paste('\\begin{Soutput}\n', x, '\\end{Soutput}\n', sep = '')
+})
+options(width=90)
+par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
+if(!file.exists("figs")) dir.create("figs")
+@
+
+\setcounter{figure}{0}  
+
+% ----------------------------------------------------------------------------
+\section*{Introduction}
+
+The goal of this package \textbf{colorSpec} vignette is to reproduce
+the findings of \cite{Lyon2002} and \cite{Quality2007},
+where a camera with Foveon X3 sensor is modified to closely emulate
+the spectral responses of the human eye.
+The two modifications are:
+\begin{itemize}
+\item a prefilter in front of the camera; this modification is optical and classical, see \cite{Bretl2008}
+\item a 3x3 matrix applied to the camera output; this modification is in hardware or in software
+\end{itemize}
+
+The figures below are best viewed on a display calibrated for sRGB.
+Featured functions in this vignette are: 
+\code{emulate()} and \code{plotPatchesRGB()}.
+
+<<packs, echo=TRUE, message=FALSE>>=
+library( colorSpec )
+@
+
+
+
+% ----------------------------------------------------------------------------
+
+\section{BT.709.RGB and Foveon X3}
+
+The camera \code{BT.709.RGB} is not real; it is a theoretical
+camera whose spectral responses are linear combinations of the responses
+of the human eye (the \emph{standard observer}).
+See the man page of \code{BT.709.RGB} for details.
+Create a fixed wavelength vector,
+and resample both the Foveon camera,
+and the reference (the ideal) camera to the same wavelengths.
+Calibrate and plot both cameras.
+<<cameras, echo=TRUE, message=FALSE, fig.height=3.9, out.width='1.0\\linewidth', fig.cap='Reference camera BT.709.RGB (solid)  vs  Foveon X3 camera (dashed)'>>=
+wave = 380:720
+# read the Macbeth ColorCheck target
+path = system.file( 'extdata/cameras/FoveonX3.txt', package='colorSpec') 
+foveon = radiometric( readSpectra( path, wave=wave ) )
+reference = resample( BT.709.RGB, wave=wave )
+# calibrate so that both have the same response RGB=(1,1,1) to Illuminant E
+illum = illuminantE(wave=wave)
+foveon = calibrate( foveon, stimulus=illum )
+reference = calibrate( reference, stimulus=illum )
+# plot both for comparison
+par( omi=c(0,0,0,0), mai=c(0.5,0.9,0.1,0) )
+plot( reference, main='' )
+plot( foveon, lty=2, add=TRUE, legend=FALSE, color=c('red','green','blue') )
+@
+See Figure 1.
+These spectral responses are obviously quite different;
+although the area under all 6 curves is 1.
+To visualize the difference we will use the ever-popular
+\emph{ColorChecker} target.
+The data for this target has been kindly provided in CGATS format
+by \cite{Pascale}.
+\emph{ColorChecker} is a Registered Trademark of X-Rite,
+and X-Rite is a Trademark. 
+
+<<target, echo=TRUE, message=FALSE>>=
+# read the Macbeth ColorCheck target
+path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec') 
+MacbethCC = readSpectra( path, wave=wave )  # MacbethCC is a 'colorSpec' object
+MacbethCC = MacbethCC[ order(MacbethCC$SAMPLE_ID), ]  # still class 'colorSpec'
+print( extradata(MacbethCC), row.names=F )
+@
+
+Note that \code{MacbethCC} is organized as \code{'df.row'} and contains extra data for each spectrum,
+most importantly the coordinates of the patch rectangles.
+
+Calculate the RGB responses to both cameras and display them.
+<<lee11, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant E, with Foveon RGB in bottom right half' >>=
+RGB.ref = product( illum, MacbethCC, reference)   # this is *linear* sRGB
+# add the rectangle data to RGB.ref, so the patches are plotted in proper places
+# in cbind() use as.data.frame.model.matrix() so RGB is a single column 
+df.ref = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB.ref) )
+#  display in proper location, and use the sRGB display transfer function
+par( omi=c(0,0,0,0), mai=c(0,0,0,0) )
+plotPatchesRGB( df.ref, gamma='sRGB', back='gray20', labels=FALSE )
+# repeat with foveon camera, and add to existing plot
+RGB.foveon = product( illum, MacbethCC, foveon )
+df.foveon = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB.foveon) )
+plotPatchesRGB( df.foveon, gamma='sRGB', shape='bottomright', add=T, labels=FALSE )
+@
+There is only agreement for the neutral patches,
+as might be expected.
+
+Now modify the Foveon camera, using both a pre-filter
+and a matrix, to emulate the reference.
+<<lee12, echo=TRUE, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='Reference camera (solid)  vs  the modified Foveon camera (dashed)' >>=
+foveon.mod = emulate( foveon, reference, filter=TRUE, matrix=TRUE ) 
+par( omi=c(0,0,0,0), mai=c(0.5,0.9,0.2,0) )
+plot( reference, main='' )
+plot( foveon.mod, lty=2, add=TRUE, legend=FALSE )
+@
+The agreement is now much better.
+Replot the ColorChecker to visualize the improvement.
+<<lee15, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant E, with modified Foveon RGB in bottom right half' >>=
+par( omi=c(0,0,0,0), mai=c(0,0,0,0) )
+plotPatchesRGB( df.ref, gamma='sRGB', back='gray20', labels=FALSE )
+# repeat with modified foveon camera, and add to existing plot
+RGB.foveon.mod = product( illum, MacbethCC, foveon.mod )
+df.foveon.mod = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB.foveon.mod) )
+plotPatchesRGB( df.foveon.mod, gamma='sRGB', shape='bottomright', add=T, labels=FALSE )
+@
+
+The agreement in the RGBs is now much bettter, c.f. Figure 2.
+There is a noticeable difference in the \textbf{Red} and \textbf{Magenta} patches, and minor differences in some others.
+However, the neutrals are now worse; the green is low so they have
+a purple tint.
+A new feature - \emph{white-point preservation} - might be added to
+\code{emulate()} in future versions,
+using the techniques in \cite{Finlayson97}.
+Alternatively, one could also re-calibrate (white-balance) \code{foveon.mod}.
+
+The computed pre-filter and matrix are attached to \code{foveon.mod},
+and are easy to print and plot.
+<<lee16, echo=TRUE, fig.pos="H", fig.height=3.5, out.width='1.0\\linewidth', fig.cap='Prefilter for the modified Foveon camera' >>=
+attr(foveon.mod,"emulate")$A
+par( omi=c(0,0,0,0), mai=c(0.5,0.9,0.2,0) )
+prefilter = attr(foveon.mod,"emulate")$filter
+specnames(prefilter) = "prefilter for modified Foveon"
+plot( prefilter,  main='', ylim=c(0,1.1) )
+@
+This curve is broadly similar to those in \cite{Lyon2002} and \cite{Quality2007}.
+All are bimodal and have a valley near 500nm.
+But the peaks are in different locations, shaped differently,
+and both of their peaks have a maximum of 1.
+I suspect that they are different because of different optimization criteria.
+The function \code{emulate()} uses a simple least-squares criterion with the
+same weight at every wavelength.
+\cite{Lyon2002} uses a "Metamerism Index" defined in \cite{ISO17321}.
+This index uses color targets which \emph{might}
+be the same as those in the \emph{ColorChecker}.
+\cite{Quality2007} uses a criterion based on principal angles between subspaces.
+This option might be added to \code{emulate()} in the future.
+For a good comparison of the other 2 prefilters,
+see Figure 6 in \cite{Quality2007}.
+
+\medskip
+% ----------------------------------------------------------------------------
+
+\section{Red Epic Dragon and Plumbicon}
+
+The plumbicon, introduced in 1965, is a graylevel television camera tube.
+The Red Epic Dragon, announced in 2013,
+is a modern high-speed cinema RGB camera with 19.4 Megapixel CMOS sensor.
+We will find a good linear combination of the RGB responsivities of the Dragon
+to emulate the graylevel responsivity of the plumbicon.
+
+Create a fixed wavelength vector,
+and resample both cameras to the same wavelengths.
+Then calibrate and plot both cameras. 
+<<cameras2, echo=TRUE, message=FALSE, fig.height=3.9, out.width='1.0\\linewidth', fig.cap='plumbicon  (solid)  vs  Dragon (dashed)'>>=
+wave = 400:700
+# read the 2 cameras
+path = system.file( 'extdata/cameras/Plumbicon30mm.txt', package='colorSpec') 
+plumbicon =  readSpectra( path, wave=wave )
+path = system.file( 'extdata/cameras/Red-Epic-Dragon.txt', package='colorSpec') 
+dragon = readSpectra( path, wave=wave )
+# calibrate to normalize the response to Illuminant E
+illum = illuminantE(wave=wave)
+plumbicon = calibrate( plumbicon, stimulus=illum )
+dragon = calibrate( dragon, stimulus=illum )
+# plot both for comparison
+par( omi=c(0,0,0,0), mai=c(0.5,0.9,0.1,0) )
+plot( dragon, main='', lty=2, legend=FALSE )
+plot( plumbicon, col='black', lty=1, add=TRUE, legend='topleft'  )
+@
+
+The integral of all 4 curves is 1.
+Now matrix the Dragon camera to emulate the plumbicon.
+A filter is not used here, since the plumbicon has only one
+output channel, the problem is underdetermined
+and we could get an *exact* match with a filter.
+<<lee22, echo=TRUE, fig.pos="H", fig.height=3.9, out.width='1.0\\linewidth', fig.cap='Plumbicon camera (solid)  vs  the modified Dragon camera (dashed)' >>=
+dragon.mod = emulate( dragon, plumbicon, filter=FALSE, matrix=TRUE ) 
+specnames( dragon.mod ) = "Dragon, matrixed"
+combo = bind( plumbicon, dragon.mod )
+par( omi=c(0,0,0,0), mai=c(0.5,0.9,0.2,0) )
+plot( combo, main='', lty=c(1,2), col='black' )
+@
+The match on the interval [400,500] is not good.
+The RGB weights are attached to \code{dragon.mod} and easy to display.
+Note that the red weight is small.
+<<weights, echo=TRUE, message=FALSE>>=
+t( attr(dragon.mod,"emulate")$A )
+@
+Calculate the \emph{ColorChecker} graylevel responses
+from both cameras and display them.
+<<lee31, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant E, with matrixed Dragon in bottom right half' >>=
+MacbethCC = resample(MacbethCC,wave=wave)
+graylevel = product( illum, MacbethCC, plumbicon)
+RGB.plumbicon = matrix( graylevel, length(graylevel), 3 )
+# in cbind() use as.data.frame.model.matrix() so RGB.plumbicon is a single column 
+df.plumbicon = cbind( as.data.frame.model.matrix(RGB.plumbicon), extradata(MacbethCC) )
+par( omi=c(0,0,0,0), mai=c(0,0,0,0) )
+plotPatchesRGB( df.plumbicon, back='black', labels=FALSE )
+# repeat with dragon.mod camera, and add to existing plot, as triangles
+graylevel = product( illum, MacbethCC, dragon.mod)
+RGB.dragon = matrix( graylevel, length(graylevel), 3 )
+df.dragon = cbind( as.data.frame.model.matrix(RGB.dragon), extradata(MacbethCC) )
+plotPatchesRGB( df.dragon, back='black', labels=FALSE, add=T, shape='bottomright' )
+@
+Despite the mismatch on the interval [400,500],
+the visual agreement is pretty good.
+
+
+% \pagebreak
+
+% \bibliographystyle{apalike}
+% \bibliographystyle{alpha}
+\bibliographystyle{ieeetr}
+\bibliography{bibliography}
+
+
+% ----------------------------------------------------------------------------
+
+
+\section*{Appendix}
+This document was prepared \today,  with the following configuration:
+<<finish, echo=FALSE, results="asis">>=
+knit_hooks$set(output = function(x, options) { x })
+toLatex(sessionInfo(), locale=FALSE)
+@
+
+
+\end{document}

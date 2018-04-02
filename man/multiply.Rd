@@ -37,7 +37,7 @@ multiply spectra by coefficients and return modified object
 
 
 \details{
-  For \code{multiply}:\cr
+  For \code{multiply()}:\cr
   If \code{s} is an  MxP  matrix, say \bold{S}, and one thinks of the spectra as
   organized in an  NxM  matrix \bold{X}, 
   then the new spectra are defined by the matrix \bold{XS}, which is  NxP.
@@ -49,8 +49,8 @@ multiply spectra by coefficients and return modified object
   The multiplication may produce negative entries, but no check is made for this.\cr  
   WARNING: An M-vector and an Mx1 matrix may yield quite different results.
 
-  For \code{normalize}:\cr
-  \code{normalize} calls \code{multiply} with \code{s} = an M-vector.
+  For \code{normalize()}:\cr
+  \code{normalize()} calls \code{multiply} with \code{s} = an M-vector.
   If the norm of a spectrum is 0, then it is left unchanged.   
 }
 

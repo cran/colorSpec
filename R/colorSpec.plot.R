@@ -49,11 +49,12 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
             }
         else
             {
-            #   fake it by changing quantity to power
+            #   fake it by changing quantity to energy
             x.power  = x    #   resample( x, wavelength(BT.709.RGB) )    #   we know BT.709.RGB has regular wavelength steps
-            quantity(x.power) = 'power'
+            quantity(x.power) = 'energy'
             mat.rgb = product( x.power, colorSpec::BT.709.RGB, wave='auto' )         #; print( mat.rgb )
-            mat.rgb = mat.rgb / max(mat.rgb)            #   normalize so max RGB is 1; print( mat.rgb )
+            if( 0 < max(mat.rgb) )
+                mat.rgb = mat.rgb / max(mat.rgb)            #   normalize so max RGB is 1; print( mat.rgb )
             }
             
         mat.rgb = DisplayRGBfromLinearRGB( mat.rgb )  #; print( mat.rgb )
@@ -152,7 +153,7 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
         
         legend  = specnames( x.sub )
         
-        legend  = sub( "[.]Power$", '', legend, ignore.case=TRUE )    # cleanup, maybe remove later
+        legend  = sub( "[.](Energy|Power)$", '', legend, ignore.case=TRUE )    # cleanup, maybe remove later
         
         if( CCT  &&  type(x) == "light" )
             {
@@ -186,26 +187,27 @@ initPlot.colorSpec  <- function( .x, .xlim=c(NA,NA), .ylim=c(NA,NA), .ylab=NA, .
     specnames   = specnames(.x)
     quantity    = quantity(.x)
     
-    if( is.na(.ylab) )
+    if( ! is.expression(.ylab)  &&  is.na(.ylab) )
         {
+        #   assign a good default
         .ylab = "AU"
         
-        if( quantity == "power" )
-            .ylab = "Radiant Power (AU)"
+        if( quantity == "energy" || quantity == "power" )
+            .ylab = "Radiant Energy (AU)"
         else if( quantity == "photons" || quantity == "photons/sec" )
-            .ylab = "Photon Flux  (photons per second) (AU)"
-        else if( quantity == "power->electrical" )
-            .ylab = "Electrical Response / Radiant Power"
-        else if( quantity == "power->neural" )
-            .ylab = "Neural Response / Radiant Power"
-        else if( quantity == "power->action" )
-            .ylab = "Action Response / Radiant Power"
+            .ylab = "Photon Count  (AU)"
+        else if( grepl(  "^(energy|power)->electrical$", quantity ) )
+            .ylab = "Electrical Response / Radiant Energy"
+        else if( grepl(  "^(energy|power)->neural$", quantity )  )
+            .ylab = "Neural Response / Radiant Energy"
+        else if( grepl(  "^(energy|power)->action$", quantity ) )
+            .ylab = "Action Response / Radiant Energy"
         else if( quantity == "photons->electrical" )
-            .ylab = "Electrical Response / Photon Flux  (QE)"
+            .ylab = "Electrical Response / Photon Count (QE)"
         else if( quantity == "photons->neural" )
-            .ylab = "Neural Response / Photon Flux"
+            .ylab = "Neural Response / Photon Count"
         else if( quantity == "photons->action" )
-            .ylab = "Action Response / Photon Flux"
+            .ylab = "Action Response / Photon Count"
         else if( quantity == "reflectance" ||  quantity == "transmittance"  ||  quantity == "absorbance" )
             .ylab = paste( toupper( substr(quantity,1,1) ), substr( quantity, 2, nchar(quantity) ), sep='' )
         else if( quantity == "material->electrical" )
@@ -245,14 +247,13 @@ initPlot.colorSpec  <- function( .x, .xlim=c(NA,NA), .ylim=c(NA,NA), .ylab=NA, .
             ymin = min( data, 0, na.rm=T )
         }
         
-    margin.axislabels   = 0.25
+    marginx.axislabels   = 0.25
     
-    plot.default( c(xmin,xmax), c(ymin,ymax), las=1, xlab='', ylab='', type='n', lab=c(10,8,7), log=.log,  tcl=0, mgp=c(3, margin.axislabels, 0) )
+    plot.default( c(xmin,xmax), c(ymin,ymax), las=1, xlab='', ylab='', type='n', lab=c(10,8,7), log=.log,  tcl=0, mgp=c(3, marginx.axislabels, 0) )
     
-
-    title( xlab="Wavelength (nm)", line=1.25 + margin.axislabels )
-    
-    line_count = lines_for_ylab() + margin.axislabels   #; print( line_count )
+    title( xlab="Wavelength (nm)", line=1.25 + marginx.axislabels )
+        
+    line_count = lines_for_ylab( as.character( axTicks(2) ) ) + 0.5   #; print( line_count )
     
     title( ylab=.ylab, line=line_count )  # or 2.5 or 2.0
     grid( lty=1, equilogs=F )
@@ -262,12 +263,11 @@ initPlot.colorSpec  <- function( .x, .xlim=c(NA,NA), .ylim=c(NA,NA), .ylab=NA, .
     }
     
     
-#   no argument - use the current plot context    
-lines_for_ylab <- function()
+lines_for_ylab <- function( str )
     {
     #cat( "------------------\n")
     
-    str = as.character( axTicks(2) )    #; print(str)
+    #   str = as.character( axTicks(2) )    #; print(str)
     width.str   = max(strwidth(str,units="inches"))
     height.str  = max(strheight(str,units="inches"))   #   should all have the same height !
     #cat( width.str, " ", height.str, '\n' )
@@ -283,7 +283,7 @@ lines_for_ylab <- function()
     # height.str  = (width.plot/height.plot) * height.str ; print( height.str )
     
     fudge   = 0.70    
-    line_count  = fudge * width.str / height.str #; print(line_count)
+    line_count  = fudge * width.str / height.str   #; print(line_count)
 
     return( line_count )
     }
@@ -385,11 +385,34 @@ plotPatchesRGB  <-  function( obj, normalize=FALSE, gamma='sRGB', background='gr
         
     colvec  = rgb( obj$RGB )      #;    print( colvec )
     
+
+    
     #par( omi=rep(0,4) )
     #par( mai=c( 0.25, 0.25, 0.25, 0.25) )   
 
     if( ! add )
         {
+        #   check background
+        if( is.numeric(background) )
+            {
+            if( length(background) == 1 )   background = rep( background, 3 )
+            
+            if( length(background) != 3 )
+                {
+                log.string( ERROR, "background is invalid, because length(background)==%d", length(background) )
+                return(FALSE)
+                }
+                
+            dim(background) = c(1,3)            
+            background  = rgb( DisplayRGBfromLinearRGB( background, gamma ) )
+            }
+            
+        if( ! is.character( background ) )
+            {
+            log.string( ERROR, "background is invalid" )
+            return(FALSE)
+            }        
+
         bg.prev = par( bg=background )
         
         par( mgp=c(0, 0.5, 0) )
@@ -445,7 +468,7 @@ plotPatchesRGB  <-  function( obj, normalize=FALSE, gamma='sRGB', background='gr
         for( i in 1:n )
             {
             #   assign all 4 vertices            
-            xy  = c( left[i],top[i],  right[i],top[i],  right[i],bottom[i],  left[i],bottom[i] )
+            xy  = c( left[i],top[i],  right[i],top[i],  left[i],bottom[i],  right[i],bottom[i] )
             dim(xy) = c(2,4)
             
             #   now drop one column

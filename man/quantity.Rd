@@ -15,7 +15,8 @@
 }
 \usage{
 \S3method{quantity}{colorSpec}(x)
-quantity(x) <- value
+
+\S3method{quantity}{colorSpec}(x) <- value
 
 \S3method{type}{colorSpec}(x)
 
@@ -28,14 +29,14 @@ quantity(x) <- value
 }
 
 \details{
-There are 4 valid \code{types}, which are further divided into 14 valid \code{quantities}.
+There are 4 valid \code{types}, which are further divided into 14 valid quantities.
 All of these are strings:
 
 For \code{type='light'}\cr
-\code{quantity = } \code{'power'} (radiometric), or \code{'photons/sec'} (actinometric)
+\code{quantity = } \code{'energy'} (radiometric), or \code{'photons'} (actinometric)
 
 For \code{type='responsivity.light'}\cr
-\code{quantity = } \code{'power->electrical'}, \code{'power->neural'}, \code{'power->action'},\cr 
+\code{quantity = } \code{'energy->electrical'}, \code{'energy->neural'}, \code{'energy->action'},\cr 
 \code{'photons->electrical'}, \code{'photons->neural'}, or \code{'photons->action'} \cr
 
 For \code{type='material'}\cr
@@ -44,36 +45,38 @@ For \code{type='material'}\cr
 For \code{type='responsivity.material'}\cr
 \code{quantity = } \code{'material->electrical'}, \code{'material->neural'}, or \code{'material->action'} \cr
 
-For more explanation and examples of all these see 
-\code{colorSpec-guide.pdf} in the doc directory.  
-Go to the main index page and look for 
-\bold{User guides, package vignettes and other documentation}.
-
+Also see the \bold{colorSpec User Guide}.
 }
 
 
 \value{
-  \code{quantity} returns the quantity of \code{x}
+  \code{quantity()} returns the quantity of \code{x}
   
-  \code{type} returns the type of \code{x}, which depends only on the \code{quantity}.
+  \code{type()} returns the type of \code{x}, which depends only on the \code{quantity}.
 }
 
 \note{
-Although \code{quantity} is intended to represent a physical quantity,
-the units are left arbitrary in most cases.
+The \bold{colorSpec} \code{quantity} is more general than the physical SI quantity;
+for example \code{quantity='energy'} really includes 10 distinct SI quantities
+and maybe more.
+The unit is left arbitrary in most cases.
 Exceptions are \code{reflectance}, \code{transmittance}, and \code{absorbance}
 which are dimensionless.
 
-Changing the \code{quantity} does not change the underlying numbers.
-For example, changing \code{photons/sec} to \code{power} does not do numerical conversion.
-For this conversion, see \code{\link{radiometric}}.
+Changing the \code{quantity} should only be done if one knows what one is doing.
+It does not change the underlying numbers.
+For example, changing \code{photons} to \code{energy} does not do numerical conversion.
+For this specific conversion, see \code{\link{radiometric}()}.
 
-Similarly, see \code{\link{linearize}} for conversion from \code{absorbance} to \code{transmittance}.
+Similarly, see \code{\link{linearize}()} for conversion
+from \code{absorbance} to \code{transmittance}.
 
 }
 
 \seealso{
-  \code{\link{colorSpec}}; \code{\link{radiometric}}; \code{\link{linearize}}
+\code{\link{colorSpec}},
+\code{\link{radiometric}},
+\code{\link{linearize}}
 }
 
 \keyword{colorSpec}

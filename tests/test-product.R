@@ -3,6 +3,8 @@ require( colorSpec )
 
 #   cs.options( loglevel='D' )
 
+
+#   some of the calls below should fail and return NULL, so disable stopping   
 cs.options( stoponerror=FALSE )
 
 testProducts <- function()

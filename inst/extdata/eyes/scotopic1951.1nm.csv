@@ -1,12 +1,12 @@
 #
-#   Scoptic luminous efficiency function V'(lambda)
+#   Scotopic luminous efficiency function V'(lambda)
 #   CIE (1951)
 #   Wyszecki and Stiles
 #   Table I(4.3.2)
 #
 #   http://www.cvrl.org/database/data/lum/scvle_1.csv
 #
-#   quantity  power->neural
+#   quantity  energy->neural
 #
 wavelength, V
 380, 0.0005890000

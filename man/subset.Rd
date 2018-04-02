@@ -47,7 +47,7 @@ the number of \code{specnames(x)} matched by the expression.
 }
 
 \note{
-\code{subset} can also be used for re-ordering the spectra; 
+\code{subset()} can also be used for re-ordering the spectra; 
 just set argument \code{subset} to the desired permutation vector.
 }
 

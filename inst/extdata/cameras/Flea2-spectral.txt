@@ -3,7 +3,7 @@
 #
 #   Red spectral response curve
 #
-#   quantity    power->electrical
+#   quantity    energy->electrical
 
 [Control]
 Xpx	Ypx	X	Y
