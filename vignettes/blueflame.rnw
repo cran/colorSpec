@@ -51,7 +51,7 @@
 % \SweaveOpts{concordance=TRUE}
 
 \title{ {\Huge Blue Flame and Green Comet} \\ {\Large being a spectral analysis of comet vapor, expounding on its relation to a commonly observed phenomenon on Earth}}
-\author{Glenn Davis}
+\author{Glenn Davis  \url{    <gdavis@gluonics.com>}}
 \maketitle
 % \thispagestyle{fancy}
 
@@ -234,12 +234,12 @@ plotPatchesRGB( mat, gamma=2.2, norm=T )
 
 For Adobe RGB, the "CH part of blue flame" is still too vivid (the green is negative)
 but the other 3 colors are accurate.
-Here is a diagram comparing the 2 color spaces, taken from \cite{wiki:3}
+Figure 9 is a diagram comparing the 2 color spaces.
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{CIExy1931_AdobeRGB_vs_sRGB}
 
-Figure 9. A comparison of the Adobe RGB (1998) and sRGB chromaticity gamuts within the CIE 1931 xy chromaticity diagram. 
+Figure 9. A comparison of the Adobe RGB (1998) and sRGB chromaticity gamuts within the CIE 1931 xy chromaticity diagram; taken from \cite{wiki:3}.
 The sRGB gamut is lacking in cyan-green hues.
 \end{center}
 
@@ -263,7 +263,7 @@ so a better analysis would find the source(s) of this baseline and possibly subt
 % ----------------------------------------------------------------------------
 
 
-\section*{Appendix}
+\section*{Session Information}
 This document was prepared \today \quad with the following configuration:
 <<finish, echo=FALSE, results="asis">>=
 knit_hooks$set(output = function(x, options) { x })

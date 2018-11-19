@@ -50,7 +50,7 @@
 % \SweaveOpts{concordance=TRUE}
 
 \title{ {\Huge Plotting Chromaticity Loci of Optimal Colors} \\ {\Large Reproducing plots of MacAdam Limits}}
-\author{Glenn Davis}
+\author{Glenn Davis     \url{    <gdavis@gluonics.com>}}
 \maketitle
 % \thispagestyle{fancy}
 
@@ -174,7 +174,7 @@ The limits here can be regarded as the approximate output limits of the scanner.
 
 % \pagebreak
 
-\bibliographystyle{apalike}
+\bibliographystyle{alpha}
 \bibliography{optimals}
 
 

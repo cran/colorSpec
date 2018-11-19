@@ -1,70 +1,15 @@
 
-
-.onAttach <- function( libname, pkgname )
+    
+    
+#   returns time in seconds, from an arbitrary origin
+gettime <- function()
     {
-    #print( libname )
-    #print( pkgname )
-    
-    info    = library( help='colorSpec' )        #eval(pkgname) 
-    info    = format( info )
-    mask    = grepl( "^(Version|Author|Built)", info )     #Title
-    info    = gsub( "[ ]+", ' ', info[mask] )
-    mess    = sprintf( "This is %s", pkgname )
-    mess    = paste( c( mess, info ), collapse='.  ' )   #; cat(mess)
-    packageStartupMessage( mess )
-
-    unlockBinding( "g.options", asNamespace('colorSpec') )      # asNamespace(pkgname) here generates a NOTE !
-    unlockBinding( "g.word", asNamespace('colorSpec') )         # asNamespace(pkgname) here generates a NOTE !
-    unlockBinding( "g.loglevel", asNamespace('colorSpec') )     # asNamespace(pkgname) here generates a NOTE !
-    
-    #   print( g.options )  
-    
-    #   initialize the colorSpec options managed by base package    
-    for( opt in names(g.options) )
-        {
-        fopt    = sprintf( "%s.%s", pkgname, opt )
-
-        value   = getOption( fopt )
-        
-        if( is.null( value ) )
-            {
-            #   fopt is not set, so set it now from g.options
-            argv        = list( g.options[[ opt ]] )
-            names(argv) = fopt
-            options( argv ) 
-            }
-        else
-            {
-            #   option has been set in the base package, probably from Profile.site
-            assignPrivateOption( opt, value )
-            }
-        }
-        
-    #   force update of derived variables
-    setLogLevel( .Options$colorSpec.loglevel )      # updates g.loglevel, an integer
-    setLogFormat( .Options$colorSpec.logformat )    # updates g.word[], a character array
-        
-    checkBaseOptions()    
-    
-    #   the options are now in synch !
+    if( g.microbenchmark )
+        return( microbenchmark::get_nanotime() * 1.e-9 )
+    else
+        return( as.double( base::Sys.time() ) )
     }
-    
-    
-.onLoad <- function( libname, pkgname )
-    {            
-    #   requireNamespace( "utils" )
-    #   desc    = packageDescription( pkgname )
-    #   mess = sprintf( "This is %s %s.  %s.  Author: %s  Built: %s\n", 
-    #                    pkgname, desc$Version, desc$Title, desc$Author, desc$Built )
-    #   print( pkgname )
-    
-
-    #mess    = environmentName( environment(.onLoad) )
-    #mess = sprintf( "Environment: '%s'\n", mess )
-    #cat( mess )
-    }
-    
-    
+        
     
 #   package.file() is a simple wrapper around system.file()
 #   but gets the current package automatically
@@ -372,3 +317,39 @@ roundAffine  <- function( .x, .digits )
     }
 
  
+###########     argument processing     ##############
+#
+#   A   a non-empty numeric NxM matrix, or something that can be converted to be one
+#
+#   returns such a matrix, or NULL in case of error
+#
+prepareNxM  <-  function( A, M=3 )
+    {
+    ok  = is.numeric(A) &&  0<length(A)  &&  (length(dim(A))<=2)  # &&  (0<M) 
+    
+    ok  = ok  &&  ifelse( is.matrix(A), ncol(A)==M, ((length(A) %% M)==0)  )
+    
+    if( ! ok )
+        {
+        #print( "prepareNx3" )
+        #print( sys.frames() )
+        mess    = substr( paste0(as.character(A),collapse=','), 1, 10 )
+        #arglist = list( ERROR, "A must be a non-empty numeric Nx3 matrix (with N>0). A='%s...'", mess )
+        #do.call( log.string, arglist, envir=parent.frame(n=3) )
+        #myfun   = log.string
+        #environment(myfun) = parent.frame(3)
+        
+        Aname = deparse(substitute(A))        
+        
+        #   notice hack to make log.string() print name of parent function
+        log.string( c(ERROR,2L), "Argument '%s' must be a non-empty numeric Nx%d matrix (with N>0). %s='%s...'", 
+                                    Aname, M, Aname, mess )
+        return(NULL)
+        }
+    
+    if( ! is.matrix(A) )
+        A = matrix( A, ncol=M, byrow=TRUE )
+        
+    return( A )
+    }
+         

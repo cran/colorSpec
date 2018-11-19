@@ -16,6 +16,8 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(colorSpec)
@@ -39,6 +41,7 @@ Some features:
 <li>a product algebra for the **colorSpec** objects</li>
 <li>uniform handling of biological eyes, electronic cameras, and general action spectra</li>
 <li>a few advanced calculations, such as computing optimal colors (aka Macadam Limits)</li>
+<li>inverse colorimetry, e.g. reflectance recovery from response
 <li>built-in essential tables, such as the CIE illuminants and color matching functions</li>
 <li>a package logging system with log levels taken from the popular **Log4J**</li>
 <li>support for reading a few spectrum file types, including CGATS</li>
@@ -49,7 +52,11 @@ Some features:
 Some non-features:
 <ul>
 <li>
-There is no support for 3D colors spaces other than XYZ and RGB; see packages **colorspace** @colorspace and **colorscience** @colorscience for more 3D spaces.
+There is no support for 3D colors spaces other than XYZ and RGB; see packages **colorspace** @colorspace,
+**colorscience** @colorscience,
+**spacesRGB** @spacesRGB,
+and
+**spacesXYZ** @spacesXYZ for more 3D spaces.
 </li>
 <li>
 there are few non-linear operations.
@@ -191,7 +198,7 @@ and optionally include area, solid angle, and time.
 
 Similary, the **colorSpec** `quantity='photons'` includes all 5 of these SI quantities:
 photon flux, photon irradiance, photon exitance, photon intensity, and photon radiance.
-It also includes these 5 quantities integrated over time.
+It also includes these 5 quantities integrated over time, e.g. photon fluence.
 
 Versions of **colorSpec** before 0.7-1 used `power` in place of `energy`.
 But now we have switched to `energy`;

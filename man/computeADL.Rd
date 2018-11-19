@@ -49,8 +49,8 @@ The coordinates of \bold{G} are undefined.
 \arguments{
   \item{x}{a \bold{colorSpec} object with \code{type} equal to \code{responsivity.material} and 3 spectra }
   
-  \item{response}{ a vector of 3 numbers, or a matrix with 3 columns, that define 1 or more responses.
-A 3-vector is re-shaped to a 1x3 matrix.}              
+  \item{response}{a numeric Nx3 matrix with responses in the rows, or a numeric vector
+  that can be converted to such a matrix, by row.}
 }
     
 \value{
@@ -84,8 +84,8 @@ is near the neutral axis.
 
 
 \seealso{
-\code{\link{type}},
-\code{\link{probeOptimalColors}},
+\code{\link{type}()},
+\code{\link{probeOptimalColors}()},
 vignette \bold{optimals}
 }
 
@@ -103,14 +103,13 @@ Logvinenko, A. D.
 An object-color space. 
 \bold{Journal of Vision}.
 9(11):5, 1-23, (2009).
-\url{http://journalofvision.org/9/11/5/}.
+\url{https://jov.arvojournals.org/article.aspx?articleid=2203976}.
 doi:10.1167/9.11.5.
 
 Godau, Christoph and Brian Funt.
 XYZ to ADL: Calculating Logvinenko's Object Color Coordinates.
 Proceedings Eighteenth IS&T Color Imaging Conference.
 San Antonio. Nov 2009.
-
 }
 
 

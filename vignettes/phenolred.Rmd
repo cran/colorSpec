@@ -116,8 +116,8 @@ RGB
 All values have been multiplied by `bglin`, and are now OK.
 Draw the RGB patches on a white background multiplied by the same amount.
 ```{r, echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'}
-class(RGB) = 'model.matrix'
-df.RGB = data.frame( RGB=RGB, LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
+df.RGB = data.frame( LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
+df.RGB$RGB = RGB
 par( omi=c(0,0,0,0), mai=c(0.3,0,0.3,0) )
 plotPatchesRGB( df.RGB, labels=F, background=bglin )
 text( (1:nrow(RGB)) + 0.5, 2, sprintf("%.1f",pHvec), adj=c(0.5,1.2), xpd=NA )
@@ -133,9 +133,8 @@ An absorbance multiplier can easily tweak the unknown concentration, as follows.
 ```{r, echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'}
 tweak = 1.2
 phenolpool = multiply( phenolpool, tweak )
-RGB = product( phenolpool, testkit )
-class(RGB) = 'model.matrix'
-df.RGB = data.frame( RGB=RGB, LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
+df.RGB = data.frame( LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
+df.RGB$RGB = product( phenolpool, testkit )
 par( omi=c(0,0,0,0), mai=c(0.3,0,0.3,0) )
 plotPatchesRGB( df.RGB, background=bglin, labels=F )
 text( (1:nrow(RGB)) + 0.5, 2, sprintf("%.1f",pHvec), adj=c(0.5,1.2), xpd=NA )

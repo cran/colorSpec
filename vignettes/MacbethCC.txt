@@ -1,0 +1,14 @@
+
+In Figure 7 of the supplemental information of Meng et. al. \cite{Meng2015} is a full page
+of spectral estimates for the Macbeth ColorChecker.
+% These reflectances are included in \textbf{colorSpec} as kindly provided by Pascale \cite{Pascale}.
+Figure 13 is an imitation of their Figure 7
+(although the 24 original reflectances seem to be a little different).
+<<fig13, echo=TRUE, fig.pos="H", fig.height=12, fig.width=9, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle; the estimate is dashed. In each plot the two spectra are metameric for Illuminant E.' >>=
+path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec' )
+MacbethCC = readSpectra( path, wavelength=wave )
+MacbethCC = subset( MacbethCC, c( 21:24, 17:20, 13:16, 9:12, 5:8, 1:4 ) )
+XYZ = product( MacbethCC, E.eye, wavelength=wave )
+est.eq   = invert( E.eye, XYZ, method='centroid', alpha=1 )
+plotOriginalPlusEstimates( list(MacbethCC,est.eq), ymax=NA, mfrow=c(6,4) )
+@

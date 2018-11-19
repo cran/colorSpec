@@ -6,6 +6,7 @@
 \alias{computeCCT}
 \alias{computeCCT.colorSpec}
 \alias{CCTfromXYZ}
+\alias{CCTfromxy}
 \alias{CCTfromuv}
 
 \description{
@@ -17,32 +18,40 @@
 
 CCTfromXYZ( XYZ, method='robertson', strict=FALSE, c2=1.4388e7 )
 
+CCTfromxy( xy, method='robertson', strict=FALSE, c2=1.4388e7 )
+
 CCTfromuv( uv, method='robertson', strict=FALSE, c2=1.4388e7 )
 }
 
 \arguments{
 \item{x}{an \bold{colorSpec} \R object with \code{type} equal to \code{'light'}, and M spectra }
   
-\item{XYZ}{a 3-vector with XYZ tristimulus values (CIE 1931)}
+\item{XYZ}{a numeric Mx3 matrix with XYZ tristimulus values (CIE 1931) in the rows,
+or a numeric vector that can be converted to such a matrix, by row.}
 
-\item{uv}{a 2-vector with uv chromaticity values (CIE UCS 1960)}
+\item{xy}{a numeric Mx2 matrix with xy chromaticity values (CIE 1931) in the rows,
+or a numeric vector that can be converted to such a matrix, by row.}
+
+\item{uv}{a numeric Mx2 matrix with uv chromaticity values (CIE UCS 1960) in the rows,
+or a numeric vector that can be converted to such a matrix, by row.}
 
 \item{method}{For \code{'robertson'} a lookup table with linear interpolation is used.
 For \code{'lm'} the closest point on the Planckian locus is calculated directly
 using the Levenberg-Marquardt method. See \bold{Details}.
-Partial matching of the value is implemented.
+For \code{'mccamy'} a rational function of the xy chromaticity is used.
+Matching is partial and case-insensitive.
 }
 
 \item{strict}{The CIE considers the CCT of a chromaticity to be meaningful only
 if its distance to the Planckian locus is less than 0.05 [in CIE UCS 1960].
-If \code{strict=FALSE} then this condition is ignored.
+If \code{strict=FALSE} or \code{method='mccamy'}, then this condition is ignored.
 Otherwise, if the the condition is not satisfied,
 the functions returns \code{NA_real_}.
 }
 
-\item{c2}{For points on the Planckian locus, the function \code{\link{planckSpectra}()}
-is called, and this argument is passed to it.
-It is only used when \code{method='lm'}.
+\item{c2}{This is only used when \code{method='lm'}.
+For points on the Planckian locus, the function \code{\link{planckSpectra}()}
+is called, and this argument \code{c2} is passed to it.
 See \code{\link{planckSpectra}} for the definition,
 and the special value \code{c2='calc'}.
 }
@@ -72,8 +81,9 @@ where M is the number of spectra in \code{x}.
 The vector's \code{names} is set to \code{specnames(x)}.\cr
 If the \code{type} of \code{x} is not \code{'light'},
 then a warning is issued and all values are \code{NA_real_}.\cr
-\code{CCTfromXYZ()} and \code{CCTfromuv()} return a single number,
-but in case of ERROR, they return \code{NA_real_}.
+\code{CCTfromXYZ()}, \code{CCTfromxy()}, 
+and \code{CCTfromuv()} also return a a numeric vector of length M,
+and in case of error, the element of the vector is set to \code{NA_real_}.
 }
 
 \note{
@@ -89,6 +99,15 @@ which was corrected by Bruce Lindbloom (see \bold{Source}).
 }
 
 \references{
+McCamy, C. S.
+\emph{Correlated color temperature as an explicit function of chromaticity coordinates}.
+Color Research & Application.
+Volume 17.
+Issue 2.
+pages 142-144.
+April 1992.
+
+
 Robertson, A. R.
 Computation of correlated color temperature and distribution temperature.
 Journal of the Optical Society of America.
@@ -101,11 +120,11 @@ Table 1(3.11). pp. 227-228.
 }
 
 \seealso{
-  \code{\link{type}}, 
-  \code{\link{quantity}},
-  \code{\link{xyz1931}},
-  \code{\link{planckSpectra}},    
-  \code{\link{specnames}}
+\code{\link{type}()}, 
+\code{\link{quantity}()},
+\code{\link{xyz1931}},
+\code{\link{planckSpectra}()},    
+\code{\link{specnames}()}
 }
 
 \examples{
@@ -113,6 +132,7 @@ computeCCT( D65.1nm )               # returns 6502.068
 computeCCT( D65.1nm, meth='lm' )    # returns 6502.711
 computeCCT( A.1nm )                 # returns 2855.656
 computeCCT( A.1nm, meth='lm' )      # returns 2855.583
+computeCCT( A.1nm, meth='mccamy' )  # returns 2857.188
 CCTfromXYZ( c(1,1,1) )              # returns 5454.028
 
 moon = readSpectra( system.file( "extdata/sources/moonlight.txt", package='colorSpec' ) )

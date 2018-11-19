@@ -39,6 +39,7 @@ S3method(product,colorSpec)
 S3method(calibrate,colorSpec)
 S3method(computeCCT,colorSpec)
 S3method(computeCRI,colorSpec)
+# S3method(computeSSI,colorSpec)
 S3method(radiometric,colorSpec)
 S3method(is.radiometric,colorSpec)
 S3method(actinometric,colorSpec)
@@ -50,6 +51,7 @@ S3method(computeADL,colorSpec)
 S3method(interpolate,colorSpec)
 S3method(ptransform,colorSpec)
 S3method(emulate,colorSpec)      
+S3method(invert,colorSpec)
 
 S3method(as.colorSpec,default)     
 
@@ -86,6 +88,7 @@ export(numSpectra,
     convolvewith,
     computeCCT,
     computeCRI,    
+#    computeSSI,
     radiometric,
     is.radiometric,    
     actinometric,
@@ -96,7 +99,8 @@ export(numSpectra,
     computeADL,
     interpolate,
     ptransform,
-    emulate
+    emulate,
+    invert
     )
     
 #   functions that are already generic, for S3 classes    
@@ -131,6 +135,7 @@ export(
 export(
     erythemalSpectrum,
     neutralMaterial,
+    rectangularMaterial,
     lensAbsorbance,
     planckSpectra,
     daylightSpectra,
@@ -141,6 +146,7 @@ export(
 export(
     #   daylightLocus,
     CCTfromXYZ,
+    CCTfromxy,
     CCTfromuv
     )
     
@@ -161,4 +167,4 @@ importFrom( stats ,  approx, coef, lm, loess, predict,
              runif, spline, splinefun, rnorm )
 importFrom( utils, capture.output, flush.console, modifyList,
              object.size, read.table, write.table, str, type.convert )
-             
+importFrom( rootSolve, multiroot )

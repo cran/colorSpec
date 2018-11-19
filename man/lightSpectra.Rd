@@ -10,7 +10,7 @@
 \alias{illuminantE}
 
 \description{
-Two families of standard illuminants that depend on temperature are the
+Two families of standard illuminants that are parameterized by temperature are the
 Planckian spectra (black-body spectra), and daylight spectra.
 For the daylight spectra, a smoothed version is available.
 Illuminant E, a third and trivial spectrum, is also available.
@@ -38,11 +38,12 @@ If \code{TRUE} the Planck spectra are normalized to have value 1 at 560nm.
 If \code{FALSE} then the quantity returned is radiant exitance with unit 
 \eqn{W * m^{-2} * nm^{-1}}. }
        
-\item{c2}{the value of \eqn{h*c/k} in Planck's law.
+\item{c2}{the value of \eqn{hc/k} in Planck's law.
 \eqn{h} is the Planck constant; \eqn{c} is the speed of light; and \eqn{k} is the Boltzmann constant.
 The default value of 1.4388e7 \eqn{nm*K} was recommended by the CIE in 2005;
 in 1986 the CIE recommended \code{c2}=1.438e7.
-If \code{c2='calc'} then \code{c2} is calculated directly from the 3 physical constants.
+If \code{c2='calc'} then \code{c2} is calculated directly from the 3 physical constants,
+as recommended by CODATA 2014.
 }
 
 \item{components}{a \bold{colorSpec} object with the daylight components \eqn{S_0, S_1}, and \eqn{S_2}.

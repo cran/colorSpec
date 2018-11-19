@@ -70,7 +70,7 @@ if(!file.exists("figs")) dir.create("figs")
 % ----------------------------------------------------------------------------
 \section*{Introduction}
 
-The goal of this package \textbf{colorSpec} vignette is to display rendered images of a popular color target
+The goal of this \textbf{colorSpec} vignette is to display rendered images of a popular color target
 with different illuminants, both with and without chromatic adaption methods.
 The figures are best viewed on a display calibrated for sRGB.
 Featured functions in this vignette are: 
@@ -116,8 +116,8 @@ Calculate XYZ and then RGB:
 XYZ = product( MacbethCC, D65.eye, wave='auto' )
 RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
 # add the rectangle data to RGB, so they can be plotted in proper places
-# in cbind() use as.data.frame.model.matrix() so RGB is a single column in obj
-obj = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+obj = extradata(MacbethCC)
+obj$RGB = RGB
 #  display in proper location, and use the sRGB display transfer function
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
 plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
@@ -134,7 +134,8 @@ Another way to do the same thing is use the built-in theoretical camera
 \code{BT.709.RGB} that computes sRGB directly from spectra, and has already been calibrated.
 <<lee12, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and Theoretical BT.709.RGB Camera' >>=
 RGB = product( D65.1nm, MacbethCC, BT.709.RGB, wave='auto' )    # this is *linear* sRGB
-obj = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+obj = extradata(MacbethCC)
+obj$RGB = RGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
 plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
 @
@@ -155,8 +156,8 @@ D50.eye = calibrate( D50.eye, stimulus=PRD, response=officialXYZ('D50'), method=
 Calculate XYZ and then RGB:
 <<lee21, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D50 and xyz1931.5nm' >>=
 XYZ = product( MacbethCC, D50.eye, wave='auto' )
-RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
-obj = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+obj = extradata(MacbethCC)
+obj$RGB =  RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
 plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
 @
@@ -170,8 +171,8 @@ PRD = neutralMaterial( 1, wavelength(D50.eye) )
 XYZ.D65 = officialXYZ('D65')
 D50toD65.eye = calibrate( D50.eye, stimulus=PRD, response=XYZ.D65, method='Bradford' )
 XYZ = product( MacbethCC, D50toD65.eye, wave='auto' )
-RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
-obj = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+obj = extradata(MacbethCC)
+obj$RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
 plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
 @
@@ -202,8 +203,8 @@ scanner = product( subset(Fs.5nm,'F11'), 'artwork', Flea2.RGB, wave='auto' )
 #   set the RGB gains independently
 PRD = neutralMaterial( 1, wavelength(scanner) )
 scanner = calibrate( scanner, stimulus=PRD, response=1, method='scaling' )
-RGB = product( MacbethCC, scanner, wave='auto' )       # this RGB is not sRGB
-obj = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+obj = extradata(MacbethCC)
+obj$RGB = product( MacbethCC, scanner, wave='auto' )       # this RGB is not sRGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
 plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
 @
@@ -215,7 +216,7 @@ For an interactive viewer along these lines, see \cite{Lindbloom}.
 
 % \pagebreak
 
-\bibliographystyle{apalike}
+\bibliographystyle{plain}
 \bibliography{gallery}
 
 

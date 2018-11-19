@@ -796,10 +796,7 @@ multiply.colorSpec   <-  function( x, s )
     if( length(dim(s)) == 2 )
         mat = s
     else
-        {
         mat = diag(s)
-        colnames(mat)   = specnames(x)
-        }
 
     if( ncol(mat) == spectra )
         {
@@ -809,8 +806,7 @@ multiply.colorSpec   <-  function( x, s )
         if( org == 'matrix' )
             {
             out = out %*% mat
-            colnames(out)   = specnames(x)
-            out = colorSpec( out, wavelength(x), quantity=quantity(x), organization="matrix" )
+            out = colorSpec( out, wavelength(x), quantity=quantity(x), organization="matrix", specnames=specnames(x) )
             }
         else if( org == 'df.col' )
             out[ 2:ncol(out) ]  = as.matrix.data.frame( out[ 2:ncol(out) ] ) %*% mat
@@ -821,11 +817,15 @@ multiply.colorSpec   <-  function( x, s )
         {
         #   mat is not square, so the number of spectra in the output is different
         #   must unpack and repack
-        data    = as.matrix( x ) %*% mat
+        data    = as.matrix( x ) %*% mat  #; print(str(data))
         
-        out     = colorSpec( data, wavelength(x), quantity=quantity(x), organization=org )
+        out     = colorSpec( data, wavelength(x), quantity=quantity(x), organization=org )  # if colnames(mat) is NULL, this will generate a warning
         }
         
+    cnames = colnames(mat)        
+    if( ! is.null(cnames)  &&  ! anyDuplicated(cnames) )
+        specnames(out) = cnames     # this may be redundant
+            
     return(  out  )
     }    
 

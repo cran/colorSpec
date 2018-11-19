@@ -115,7 +115,7 @@ Logvinenko, A. D.
 An object-color space. 
 Journal of Vision.
 9(11):5, 1-23, (2009).
-\url{http://journalofvision.org/9/11/5/}.
+\url{https://jov.arvojournals.org/article.aspx?articleid=2203976}.
 doi:10.1167/9.11.5.
 
 West, G. and M. H. Brill.

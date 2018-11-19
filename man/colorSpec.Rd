@@ -34,7 +34,7 @@ is.colorSpec(x)
     and the number of spectra is the number of columns in \code{data}.
     It is OK for the matrix to have only 0 or 1 column.}
 
-  \item{wavelength}{a numeric vector of wavelengths for all the spectra.
+  \item{wavelength}{a numeric vector of wavelengths for all the spectra, in nm.
     The length of this vector must be equal to \code{\link[base]{NROW}(data)}.
     The sequence must be increasing.
     The \code{wavelength} vector can be changed after construction.}

@@ -17,6 +17,7 @@ Package \pkg{colorSpec} is for working with spectral color data in \R.
 \item  a product algebra for the \bold{colorSpec} objects
 \item  uniform handling of biological eyes, electronic cameras, and general action spectra
 \item  a few advanced calculations, such as computing optimal colors  (aka Macadam Limits)
+\item  inverse colorimetry, e.g. reflectance recovery from response
 \item  built-in essential tables, such as the CIE illuminants and color matching functions
 \item  a package logging system with log levels taken from the popular \bold{Log4J}
 \item  support for reading a few spectrum file types, including CGATS
@@ -29,7 +30,12 @@ Package \pkg{colorSpec} is for working with spectral color data in \R.
 \bold{Non-features}:
 \enumerate{
 \item there is no support for many common 3D color spaces, such as CIELAB, HSL, etc..  
-For these spaces see packages \pkg{colorspace}  and  \pkg{colorscience}.
+For these spaces see packages 
+\pkg{colorspace},
+\pkg{colorscience},
+\pkg{spacesRGB}, and
+\pkg{spacesXYZ}.
+
 \item  there are few non-linear operations 
 \item  there is little support for scientific units; for these see package \pkg{colorscience}
 \item photons are parameterized by wavelength in nanometers; 
@@ -39,8 +45,8 @@ are not available
 }
 
 Regarding the non-linear operations in 2, 
-the only such operations are conversion of linear
-RGB to display RGB, conversion of absorbance to transmittance,
+the only such operations are conversion of linear RGB to display RGB, 
+conversion of absorbance to transmittance,
 and the reparameterized wavelength in \code{\link{computeADL}}.
 The electronic camera model is purely linear
 with no dark current offset or other deviations.

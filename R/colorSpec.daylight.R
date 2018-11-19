@@ -51,14 +51,14 @@ daylightSpectra <-  function( temperature, wavelength=NULL, components=colorSpec
               
     out = multiply( components, mat3xm )
         
-    #   specnames( out ) = sprintf( "D%g", round(temperature) )
-        
-    #   out = colorSpec( out, wavelength(data), quantity='energy' )
-    
+    #  specnames( out ) = sprintf( "D%g", round(temperature) )   not necessary, since multiply() assigns from colnames(mat3xm)
+
     if( ! is.null(wavelength) )
         out = resample( out, wavelength )
     
     #   organization(out) = 'matrix'
+    
+    if( m == 1 )    organization(out) = 'vector'
     
     return( out )
     }

@@ -192,7 +192,7 @@ interpSprague  <-  function( .mat, .wavemin, .wavestep, .wavenew )
     #   return( rowSums(weight) )
 
     
-    out = matrix( NA_real_, length(.wavenew), ncol(.mat) )
+    out = matrix( NaN, length(.wavenew), ncol(.mat) )
     
     #   extend by constant on the low end, to the left
     idx = which( .wavenew <= .wavemin )
@@ -236,7 +236,7 @@ interpSprague  <-  function( .mat, .wavemin, .wavestep, .wavenew )
     
     #   print( c( "interpSprague().  elapsed: ", as.double(Sys.time()) - time_start) )
         
-    if( any( is.na(out) ) )
+    if( any( is.nan(out) ) )
         {
         log.string( FATAL, "Failed to fill all the %dx%d entries !", nrow(out), ncol(out) )
         return(NULL)

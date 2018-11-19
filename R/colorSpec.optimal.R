@@ -63,14 +63,10 @@ probeOptimalColors.colorSpec <- function( x, gray, direction, tol=1.e-6, aux=FAL
         return(NULL)
         }    
     
-    if( length(direction) == 3 )
-        direction = matrix( direction, 1, 3 )
-        
-    ok  = is.matrix(direction) &&  ncol(direction)==3
-    if( ! ok )
+    direction   = prepareNxM( direction, M=3 )
+    if( is.null(direction) )
         {
-        log.string( ERROR, "direction is invalid." )             
-        log.object( ERROR, direction, addname=F )
+        #   log.object( ERROR, direction, addname=F )
         return(NULL)
         }       
         
@@ -742,6 +738,8 @@ omegaFromCW <- function( .center, .width )
     {
     a   = 0.5 * deltaFromWidth( .width )
     
+    .center = .center %% 1      # this is so both 0 and 1 give the same output (exactly)
+    
     omega1  = .center - a   # ; 0.5*delta
     omega2  = .center + a   # ; 0.5*delta
       
@@ -1222,22 +1220,9 @@ computeADL.colorSpec <- function( x, response )
         return(NULL)
         }     
         
-    if( ! is.numeric(response) )
-        {
-        log.string( ERROR, "response must be numeric, but typeof(response) = '%s'.", typeof(response) )
-        return(NULL)
-        }     
-    
-    if( is.null(dim(response))  &&  length(response) == 3 )
-        dim(response)   = c(1,3)
-        
-    ok  = length(dim(response))==2  &&  ncol(response)==3
-    if( ! ok )
-        {
-        log.string( ERROR, "response is not a matrix with 3 columns." )
-        return(NULL)
-        }     
-    
+    response    = prepareNxM( response, M=3 )
+    if( is.null(response) ) return(NULL)
+           
             
     response.white  = step.wl(x) * colSums( as.matrix(x) )
     
@@ -1248,19 +1233,25 @@ computeADL.colorSpec <- function( x, response )
     data    = probeOptimalColors( x, 0.5, direction )
     
     if( is.null(data) ) return(NULL)
-    
-    #print( data )
-    
+       
     ADL = cbind( 1/data$s, data$dol[ ,1], data$dol[ ,3] )
     rownames(ADL)   = NULL
     colnames(ADL)   = c('alpha','delta','lambda')
-    class(ADL)      = "model.matrix"    
+    #   class(ADL)      = "model.matrix"    
     
     colnames(response)  = toupper( specnames(x) )
-    class(response)     = "model.matrix"
-
-    out = data.frame( response=response, ADL=ADL, omega=data$dol[ ,2],
-                        lambda=data$lambda, row.names=rownames(response) )  # as.data.frame.model.matrix
+    #   class(response)     = "model.matrix"
+    
+    rnames  = rownames(response)
+    if( is.null(rnames) )   rnames = 1:nrow(response)
+    
+    out             = data.frame( row.names=rnames ) 
+    out$response    = response
+    out$ADL         = ADL
+    out$omega       = data$dol[ ,2]
+    out$lambda      = data$lambda
+    
+    #   out = data.frame( response=response, ADL=ADL, omega=data$dol[ ,2], lambda=data$lambda, row.names=rownames(response) )  # as.data.frame.model.matrix
     
     return( out )
     }

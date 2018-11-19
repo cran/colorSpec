@@ -23,7 +23,7 @@
     \code{'sprague'}, \code{'spline'}, and \code{'linear'}.
     Also available is \code{'auto'} which means to use \code{'sprague'}
     if \code{x} is regular, and \code{'spline'} otherwise.
-    This is the CIE recommendation.\cr
+    % This is the CIE recommendation.\cr
     An available smoothing method is \code{'loess'}.
     See \bold{Details}.
     }
@@ -68,7 +68,7 @@ The \code{'sprague'} method is only supported when \code{x} is regular.
 
 If method is \code{'spline'}, the function \code{stats::\link{spline}()}
 is called with \code{method='natural'}.
-Four weights are applied to nearby data values: 2 on each side.
+% Four weights are applied to nearby data values: 2 on each side.
 The \code{'spline'} method is supported even when \code{x} is irregular.
 
 If method is \code{'linear'}, the function \code{stats::\link{approx}()} is called.
@@ -78,9 +78,8 @@ The \code{'linear'} method is supported even when \code{x} is irregular.
 If method is \code{'loess'}, the function \code{stats::\link[stats]{loess}()} is called
 with the given \code{span} parameter.
 Smoothing is most useful for noisy data, e.g. raw data from a spectrometer.
-I have found that \code{span=0.02} works well for \code{.scope} files, 
-but this may be too small in other cases,
-when it triggers an error in \code{stats::loess()}. 
+I have found that \code{span=0.02} works well for Ocean Optics \code{.scope} files, 
+but this may be too small in other cases, which triggers an error in \code{stats::loess()}. 
 The \code{'loess'} method is supported even when \code{x} is irregular.
 
 If extrapolation is \code{'const'},
@@ -122,13 +121,13 @@ equation (S).
 
 
 \seealso{
-\code{\link{organization}},   
-\code{\link{quantity}},
-\code{\link{wavelength}},
-\code{\link{is.regular}},
+\code{\link{organization}()},   
+\code{\link{quantity}()},
+\code{\link{wavelength}()},
+\code{\link{is.regular}()},
 \code{\link{theoreticalRGB}},
-\code{\link{spline}},
-\code{\link{approx}},
+\code{\link{spline}()},
+\code{\link{approx}()},
 \code{\link[stats]{loess}}
 }
 

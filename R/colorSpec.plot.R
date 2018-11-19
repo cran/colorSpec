@@ -53,8 +53,17 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
             x.power  = x    #   resample( x, wavelength(BT.709.RGB) )    #   we know BT.709.RGB has regular wavelength steps
             quantity(x.power) = 'energy'
             mat.rgb = product( x.power, colorSpec::BT.709.RGB, wave='auto' )         #; print( mat.rgb )
-            if( 0 < max(mat.rgb) )
-                mat.rgb = mat.rgb / max(mat.rgb)            #   normalize so max RGB is 1; print( mat.rgb )
+            
+            if( all( is.na(mat.rgb) ) )
+                {
+                log.string( ERROR, "Cannot determine colors for plot.  Is all data NA ?" )                
+                return( invisible(FALSE) )                
+                }            
+                
+            theMax  = max( mat.rgb, na.rm=TRUE ) 
+
+            if( 0 < theMax )
+                mat.rgb = mat.rgb / theMax            #   normalize so max RGB is 1; print( mat.rgb )
             }
             
         mat.rgb = DisplayRGBfromLinearRGB( mat.rgb )  #; print( mat.rgb )
@@ -103,6 +112,16 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
             }        
         }
         
+    #   plot just the subset
+    mat = as.matrix( x.sub )        
+    
+    if( all( is.na(mat) ) )
+        {
+        log.string( ERROR, "Cannot plot because all data in subset to be plotted is NA." )                
+        return( invisible(FALSE) )                
+        }              
+        
+        
     if( ! add )
         {
         #   init for just the subset
@@ -126,8 +145,6 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
             }
         }
         
-    #   plot just the subset
-    mat = as.matrix( x.sub )
     
     color_vec   =   x.sub$color
         
@@ -169,7 +186,7 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
         }
 
         
-    return( invisible(T) )
+    return( invisible(TRUE) )
     }
     
     
@@ -237,14 +254,27 @@ initPlot.colorSpec  <- function( .x, .xlim=c(NA,NA), .ylim=c(NA,NA), .ylab=NA, .
     ymax    = .ylim[2]
     
     if( is.na(ymax) )
+        {
         ymax = max( data, na.rm=T )
         
+        if( is.na(ymax) )
+            {
+            log.string( ERROR, "Cannot determine ymax limit for plot.  Is all data NA ?" )
+            return( invisible(FALSE) )
+            }
+        }
     if( is.na(ymin) )
         {
         if( .log == 'y' )
             ymin = max( min(data), 1.e-4, na.rm=T )
         else
             ymin = min( data, 0, na.rm=T )
+            
+        if( is.na(ymin) )
+            {
+            log.string( ERROR, "Cannot determine ymin limit for plot.  Is all data NA ?" )
+            return( invisible(FALSE) )
+            }
         }
         
     marginx.axislabels   = 0.25

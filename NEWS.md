@@ -1,5 +1,11 @@
 # NEWS for **colorSpec** package
 
+### Changes for version 0.7-5  [2018-11-19]
+* add new function `invert()` plus new vignette **Estimating a Spectrum from its Response - Inverse Colorimetry**
+* add new function `rectangularMaterial()`
+* in `computeCCT()` etc., add new `method` `'mccamy'`
+* now Imports package `rootSolve`
+
 ### Changes for version 0.7-3  [2018-04-01]
 * add new function `actinometric()`
 * add new function `as.data.frame()`

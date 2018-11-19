@@ -58,8 +58,8 @@ then it would be accurate to state that
   \item{gray}{vector of numbers in the open interval (0,1) that define neutral grays on the
               line segment from black to white; this neutral gray point is the basepoint of a probe ray}
   
-  \item{direction}{ a vector of 3 numbers, or a matrix with 3 columns, that define 1 or more directions
-              for the probe rays.  A vector of 3 numbers is changed to a matrix with 1 row.}
+  \item{direction}{a numeric Nx3 matrix with directions of the probe rays in the rows,
+                   or a numeric vector that can be converted to such a matrix, by row.}
               
   \item{tol}{error tolerance for the intersection of probe and object-color boundary}  
                
@@ -68,7 +68,7 @@ then it would be accurate to state that
     
 \value{
 \code{probeOptimalColors()} returns a \code{data.frame} with a row for each traced ray.
-There are \code{length(gray)} * \code{ncol(direction)} rays.
+There are \code{length(gray)} * \code{nrow(direction)} rays.
 The columns in the output are:
   \item{gray}{the graylevel defining the \eqn{basepoint} of the ray. \eqn{basepoint = gray*W} }
   \item{direction}{the \eqn{direction} of the ray}  
@@ -94,7 +94,7 @@ And if aux is \code{TRUE}, these auxiliary columns related to performance:
 
 \details{
 Each gray level and each direction defines a ray.
-So the total number of rays traced is \code{length(gray)} * \code{ncol(direction)}.
+So the total number of rays traced is \code{length(gray)} * \code{nrow(direction)}.
 The intersection problem is reduced to a 2-dimension root finding problem
 which is solved using Newton's Method.
 The initial estimate is found by precomputing a fine quadrilateral mesh
@@ -121,7 +121,7 @@ Logvinenko, A. D.
 An object-color space. 
 \bold{Journal of Vision}.
 9(11):5, 1-23, (2009).
-\url{http://journalofvision.org/9/11/5/}.
+\url{https://jov.arvojournals.org/article.aspx?articleid=2203976}.
 doi:10.1167/9.11.5.
 
 Schrödinger, E. (1920). 

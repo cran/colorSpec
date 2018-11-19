@@ -12,7 +12,7 @@
 
 <meta name="author" content="Glenn Davis" />
 
-<meta name="date" content="2018-04-01" />
+<meta name="date" content="2018-11-18" />
 
 <title>Photon Counting</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Photon Counting</h1>
 <h4 class="author"><em>Glenn Davis</em></h4>
-<h4 class="date"><em>2018-04-01</em></h4>
+<h4 class="date"><em>2018-11-18</em></h4>
 
 
 <div id="TOC">
@@ -110,7 +110,7 @@ Figure 1. Energy Spectrum of a Domestic LED Bulb, manufactured by Cree
 <p>The unit is lumen, but the first one - <code>photopic1924</code> - is the appropriate official standard. Scale spectrum to have 75 lumens.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bulb =<span class="st"> </span><span class="kw">multiply</span>( bulb, <span class="dv">75</span><span class="op">/</span>luminous.flux[<span class="dv">1</span>] ) ; bulb</code></pre></div>
 <pre><code>## 
-## colorSpec object.   The organization is 'df.col'.  Object size is 11896 bytes.
+## colorSpec object.   The organization is 'df.col'.  Object size is 12184 bytes.
 ## the object describes a single source of light, and the quantity is 'energy' (energy of photons, which is radiometric).
 ## Wavelength range: 275 to 899 nm.  Step size is 1 nm.
 ## 
@@ -151,7 +151,7 @@ Figure 3. Photon Flux of a Domestic LED Bulb, manufactured by Cree
 <p>This plot looks similar but note that <span class="math inline">\(\lambda_{max}\)</span> has moved slightly higher. For the total number of photons/sec from this bulb, compute the integral over <span class="math inline">\(\lambda\)</span>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bulb</code></pre></div>
 <pre><code>## 
-## colorSpec object.   The organization is 'df.col'.  Object size is 11896 bytes.
+## colorSpec object.   The organization is 'df.col'.  Object size is 12184 bytes.
 ## the object describes a single source of light, and the quantity is 'photons' (number of photons, which is actinometric).
 ## Wavelength range: 275 to 899 nm.  Step size is 1 nm.
 ## 
@@ -177,7 +177,7 @@ Figure 3. Photon Flux of a Domestic LED Bulb, manufactured by Cree
 <div id="session-information" class="section level2">
 <h2>Session Information</h2>
 <pre>
-R version 3.4.4 (2018-03-15)
+R version 3.5.1 (2018-07-02)
 Platform: i386-w64-mingw32/i386 (32-bit)
 Running under: Windows 7 (build 7601) Service Pack 1
 
@@ -194,14 +194,16 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] colorSpec_0.7-3
+[1] colorSpec_0.7-5
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.16     digest_0.6.15    rprojroot_1.3-2  MASS_7.3-49     
- [5] backports_1.1.2  magrittr_1.5     evaluate_0.10.1  highr_0.6       
- [9] stringi_1.1.7    rmarkdown_1.9    tools_3.4.4      stringr_1.3.0   
-[13] yaml_2.1.18      compiler_3.4.4   minpack.lm_1.2-1 htmltools_0.3.6 
-[17] knitr_1.20      
+ [1] Rcpp_0.12.19         digest_0.6.17        rprojroot_1.3-2     
+ [4] MASS_7.3-50          backports_1.1.2      magrittr_1.5        
+ [7] evaluate_0.11        rootSolve_1.7        highr_0.7           
+[10] stringi_1.1.7        rmarkdown_1.10       tools_3.5.1         
+[13] stringr_1.3.1        yaml_2.2.0           compiler_3.5.1      
+[16] microbenchmark_1.4-4 minpack.lm_1.2-1     htmltools_0.3.6     
+[19] knitr_1.20          
 </pre>
 </div>
 

@@ -1,0 +1,345 @@
+% inversion.rnw
+% Time-stamp: "inversion.rnw"
+
+\documentclass[11pt]{article}
+
+% Set margins to be narrow
+\RequirePackage[left=1in,top=0.75in,right=1in,bottom=0.75in]{geometry}
+
+
+%\VignetteIndexEntry{Estimating a Spectrum from its Response - Inverse Colorimetry}
+%\VignetteEngine{knitr::knitr}
+
+\RequirePackage{color}
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{lightblue}{rgb}{0.2,0.2,0.9}
+\definecolor{darkred}{rgb}{0.6,0.0,0.0}
+\definecolor{red}{rgb}{0.7,0,0}
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
+\definecolor{darkorange}{rgb}{0.75, 0.45, 0}
+\definecolor{purple}{rgb}{0.65, 0, 0.75}
+\definecolor{goldenrod}{rgb}{0.80, 0.61, 0.11}
+\definecolor{lightyellow}{rgb}{0.98,0.94,0.83}
+
+
+\RequirePackage{fancyvrb}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{ae}       % ComputerModern Fonts
+\RequirePackage{fancyhdr}
+\RequirePackage{float}
+\RequirePackage{hyperref}
+\usepackage{lastpage}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\captionsetup[figure]{
+width=5in
+}  
+
+\pagestyle{fancy}
+\cfoot{page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+
+% \code mini environment ttfamily->texttt
+\newcommand\code{\bgroup\@codex}
+\def\@codex#1{{\color{darkred} \normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
+
+% This environment defines the look of R ouput
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{
+  fontsize=\small,
+  formatcom=\color{darkblue}
+}
+
+\begin{document}
+% \SweaveOpts{concordance=TRUE}
+
+\title{ {\Huge Estimating a Spectrum from its Response} \\ {\Large Inverse Colorimetry}}
+\author{Glenn Davis  \url{    <gdavis@gluonics.com>}}
+\maketitle
+% \thispagestyle{fancy}
+
+% Setup stuff.
+<<setup, echo=FALSE, results="hide">>=
+require("knitr",quietly=TRUE)
+opts_chunk$set(fig.path="figs/ag2-", fig.align="center",
+  fig.width=7, fig.height=7, comment="")
+knit_hooks$set(output = function(x, options) {
+  paste('\\begin{Soutput}\n', x, '\\end{Soutput}\n', sep = '')
+})
+options(width=90)
+if(!file.exists("figs")) dir.create("figs")
+@
+
+\setcounter{figure}{0}
+
+% ----------------------------------------------------------------------------
+\section*{Introduction}
+
+Given a ``material responder" (e.g. a scanner),
+two materials that produce the same response from the responder
+are called \emph{metamers} for that responder.
+A given response typically has infinitely many metamers;
+the goal of this \textbf{colorSpec} vignette is to demonstrate
+the calculation of a ``good" metamer from a response.
+Koenderink \cite{Koenderink} calls this topic \emph{inverse colorimetry}.
+In the case that the estimated spectrum is a reflectance spectrum,
+the topic is often called \emph{reflectance estimation} or \emph{reflectance recovery},
+see Bianco \cite{bianco2010}.
+
+The \emph{centroid method}, which is the default and the featured method
+in this package, computes the \emph{centroid} of the set of all the metamers (if any).
+This centroid is computed in an infinite-dimensional function space 
+and its definition is expounded further in Davis \cite{Davis2018}.
+
+The featured function from \textbf{colorSpec} used in this vignette is \code{invert()}.
+Some lengthy plotting functions are imported from the file \code{invert-help.R}.
+<<packs, echo=TRUE, message=FALSE>>=
+library( colorSpec )
+source( "invert-help.R" )  # for plotOriginalPlusEstimates() and plotReparam3()
+@
+
+
+Make a ``material responder'' from Illuminant E and the CIE 1931 standard observer.
+<<block0, echo=TRUE, message=TRUE >>=
+wave  = 400:700
+E.eye = product( illuminantE(1,wave), "material", xyz1931.1nm, wavelength=wave )
+@
+Compare the original and equalized responsivities after reparameterization,
+see Figure 1.
+<<fig1, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=3, fig.width=9, out.width='1.0\\linewidth', fig.cap='(a) the original responsivities of `E.eye`, and their sum. (b) the reparameterization to interval [0,1].  (c) the equalized responsivities, and their sum.' >>=
+specnames( E.eye ) = c('xE','yE','zE')
+plotReparam3( E.eye )
+@
+
+
+
+
+% ----------------------------------------------------------------------------
+
+\section{Comparison of Unequalized and Equalized Responsivities - Centroid Method}
+
+For the centroid method both unequalized and equalized versions are available.
+For the equalized version, a perfectly neutral reflectance spectrum
+is estimated exactly (up to numerical precision).
+
+Read reflectances from the standard NCSU collection, Vrhel \cite{Vrhel},
+and select a subset of 6.
+<<block1, echo=TRUE, message=FALSE >>=
+NCSU = readSpectra( system.file( 'extdata/objects/NCSU.txt', package='colorSpec' ) )
+NCSU6 = resample( subset( NCSU, c(18,32,54,62,142,170) ), wave=wave )
+@
+Compute responses (XYZ) for these 6 and then estimate spectra from the responses.
+<<block2, echo=TRUE, message=FALSE >>=
+XYZ = product( NCSU6, E.eye, wavelength=wave )
+est.eq   = invert( E.eye, XYZ, method='centroid', alpha=1 )
+est.uneq = invert( E.eye, XYZ, method='centroid', alpha=NULL )
+@
+Compare the original spectra, and the spectra estimated from the responses,
+see Figure 2.
+<<fig2, echo=TRUE, fig.pos="H", fig.height=4, fig.width=8, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle; the equalized estimate is dashed; and the unequalized estimate is dotted.  Both estimates use the centroid method.' >>=
+plotOriginalPlusEstimates( list(NCSU6,est.eq,est.uneq), ymax=0.9 )
+@
+Note that the unequalized (dotted) estimates have 2 artifacts:
+undulations and tending to 0.5 at both ends.
+The undulations are especially noticeable for \textsf{170 Cotton cloth -- Light gray}.
+The equalized estimates (dashed) suppress the undulations 
+and now both ends tend to flatten.
+
+
+
+\section{Comparison of Centroid and Hawkyard Methods}
+
+The Hawkyard method is explained in Hawkyard \cite{Hawkyard1993} 
+and Bianco \cite{bianco2010}.
+As in the centroid method, both unequalized and equalized versions are available.
+Compare the equalized verions of both methods, see Figure 3.
+<<fig3, echo=TRUE, message=TRUE, fig.pos="H", fig.height=4, fig.width=8, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle; the centroid estimate is dashed; and the Hawkyard estimate is dotted.  Both estimates are equalized, and the illuminant is E.' >>=
+est.c = invert( E.eye, XYZ, method='centroid', alpha=1 )
+est.h = invert( E.eye, XYZ, method='Hawkyard', alpha=1 )
+plotOriginalPlusEstimates( list(NCSU6,est.c,est.h) )
+@
+The estimates are similar, but note that for \textsf{142 Carrot} 
+the Hawkyard estimate (dotted) was negative near 500nm and had to be clamped.
+For this material, the Hawkyard estimate is not metameric to the original spectrum.
+
+
+
+
+\section{Near Optimal Colors - Centroid Method}
+
+An \emph{optimal color} (\emph{Optimalfarbe}) is generated by a
+reflectance spectrum that only takes 2 values - 0 and 1.
+The centroid method cannot invert an optimal color;
+the numerical iteration fails to converge.
+But it \emph{can} invert \emph{near}-optimal colors.
+In this section all spectra take the 2 reflectance values - 0.01 and 0.99.
+
+The first group is the near-\emph{edge colors} (\emph{Kantenfarben})
+that have exactly one transition.
+See Figure 4.
+The estimates are good, except when the reflectance is concentrated near the ends,
+where the responsivity of the eye is low.
+<<fig4, echo=TRUE, fig.pos="H", fig.height=4.5, fig.width=8, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle, and the centroid estimate is dashed. The light source is Illuminant E.' >>=
+lambda = c(-Inf,450, -Inf,500, -Inf,550, 650,Inf, 600,Inf, 550,Inf )
+nearedge = rectangularMaterial( lambda, 0.98, wave )  # chromatic amplitude = 0.98
+XYZ   = product( nearedge, E.eye, wavelength=wave )
+est.c = invert( E.eye, XYZ, method='centroid' )
+# range( extradata(est.c)$estim.precis )    # est.c$estim.precis also works
+plotOriginalPlusEstimates( list(nearedge,est.c), ymax=1.1 )
+@
+The next group is the near-optimals with exactly two transitions;
+in \cite{West} these are called the \emph{Schr{\"o}dinger colors}
+because they were studied by Schr{\"o}dinger \cite{ANDP:ANDP19203671504}.
+<<fig5, echo=TRUE, fig.pos="H", fig.height=6.75, fig.width=8, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle; the centroid estimate is dashed. The light source is Illuminant E.' >>=
+lambda = c(600,450, 650,500, 450,500, 500,550, 550,600, 600,650 )
+lambda = c( lambda, 500,525, 525,550, 550,575 )
+nearschro = rectangularMaterial( lambda, 0.98, wave ) # chromatic amplitude = 0.98
+XYZ = product( nearschro, E.eye, wavelength=wave )
+est.c = invert( E.eye, XYZ, method='centroid' )
+# range( extradata(est.c)$estim.precis )      # est.c$estim.precis also works
+plotOriginalPlusEstimates( list(nearschro,est.c), ymax=1.1, mfrow=c(3,3) )
+@
+See Figure 5.
+The method is now clearly having trouble with these extreme spectra.
+It does best in the region around 500nm where the discrimination of the
+responsivities is the best, see Figure 1.
+
+
+\section{Fluorescent Light Source}
+
+Now we turn from perfectly constant Illuminant E to a fluorescent illuminant,
+which is as spiky as you can get.
+Make a ``material responder'' from Illuminant F10 and the CIE 1931 standard observer.
+Compare the original and equalized responsivities
+<<fig6, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=3, fig.width=9, out.width='1.0\\linewidth', fig.cap='(a) the original responsivities of `F10.eye`, and their sum. (b) the reparameterization to interval [0,1].  (c) the equalized responsivities, and their sum.' >>=
+F10.eye = product( subset(Fs.5nm,'F10'), "material", xyz1931.1nm, wavelength=wave )
+specnames( F10.eye ) = c('xF10','yF10','zF10')
+plotReparam3( F10.eye )
+@
+Because the spectrum of \textsf{F10} is so spiky,
+the equalized responsivities are much more irregular than they were for
+Illuminant E, compare with Figure 2.
+Now compute the XYZ responses, and
+compare the original spectra, and the spectra estimated from the responses.
+<<fig7, echo=TRUE, fig.pos="H", fig.height=4, fig.width=8, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle, and the equalized estimate is dashed. The light source is Illuminant F10.' >>=
+XYZ    = product( NCSU6, F10.eye, wavelength=wave )
+est.eq = invert( F10.eye, XYZ, method='centroid', alpha=1 )
+# range( extradata(est.eq)$estim.precis )    # est.eq$estim.precis also works
+plotOriginalPlusEstimates( list(NCSU6,est.eq), ymax=0.9 )
+@
+Despite the irregularities in the equalized responsivities,
+there is enough cancellation in the linear combinations that the estimated
+spectra are not that irregular; compare with Figure 3.
+
+
+\section{An Electronic Camera}
+
+Now we turn from the 1931 Standard Observer to an electronic camera.
+Make a ``material responder'' from Illuminant E and the \texttt{Flea2.RGB} camera.
+Compare the original and equalized responsivities
+<<fig8, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=3, fig.width=9, out.width='1.0\\linewidth', fig.cap='(a) the original responsivities of E.Flea2, and their sum. (b) the reparameterization to interval [0,1].  (c) the equalized responsivities, and their sum.' >>=
+E.Flea2 = product( illuminantE(1,wave), "material", Flea2.RGB, wavelength=wave )
+specnames( E.Flea2 ) = c('rE','gE','bE')
+plotReparam3( E.Flea2 )
+@
+Compute the RGB responses, 
+and compare the original spectra and the spectra estimated from the responses,
+see Figure 9.
+The results are comparable to those with a human eye, see Figure 3.
+<<fig9, echo=TRUE, fig.pos="H", fig.height=4, fig.width=8, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle; the equalized estimate is dashed.  The light source is Illuminant E, and the camera is a Flea2.' >>=
+RGB    = product( NCSU6, E.Flea2, wavelength=wave )
+est.eq = invert( E.Flea2, RGB, method='centroid', alpha=1 )
+# range( extradata(est.eq)$estim.precis )     # est.eq$estim.precis also works
+plotOriginalPlusEstimates( list(NCSU6,est.eq), ymax=0.9 )
+@
+Now we turn to techniques for improving the accuracy of the estimate.
+One classical technique is to keep the same camera, and add more light sources.
+Here, we will add Illuminant A, which has lots of energy at long wavelengths,
+and also add a black body radiator with a temperature of 9000 K,
+which has lots of energy at short wavelengths.
+There are now 9 responsivities, see Figure 10.
+<<fig10, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=3, fig.width=9, out.width='1.0\\linewidth', fig.cap='(a) the original responsivities of `E.flea`, and their sum. (b) the reparameterization to interval [0,1].  (c) the equalized responsivities, and their sum.' >>=
+A.Flea2 = product( A.1nm, "material", Flea2.RGB, wavelength=wave )
+specnames( A.Flea2 ) = c('rA','gA','bA')
+P.Flea2 = product( planckSpectra(9000), "material", Flea2.RGB, wavelength=wave )
+specnames( P.Flea2 ) = c('rP','gP','bP')
+PEA.Flea2 = bind( P.Flea2, E.Flea2, A.Flea2 )
+plotReparam3( PEA.Flea2 )
+@
+Compute the responses, and
+compare the original spectra and the spectra estimated from the responses. 
+Note that each response is now a 9-vector instead of a 3-vector.
+See Figure 11.
+<<fig11, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=4, fig.width=8, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle; the equalized estimate is dashed; and the unequalized estimate is dotted.  Both estimates use the centroid method.' >>=
+response = product( NCSU6, PEA.Flea2, wavelength=wave )
+est.eq   = invert( PEA.Flea2, response, method='centroid', alpha=1 )
+# range( extradata(est.eq)$estim.precis )    # est.eq$estim.precis also works
+plotOriginalPlusEstimates( list(NCSU6,est.eq), ymax=0.9 )
+@
+The accuracy of all materials is now improved over Figure 9,
+except for \textsf{170 Cotton cloth -- Light gray}, which now has some undulations.
+It appears that the extra accuracy in matching the dip below 425nm
+has introduced these undulations.
+There's a trade-off - oh well.
+
+
+\section{Estimating Light Sources}
+
+The centroid method also works for estimating light sources,
+but the mathematics is now different because there is no upper limit constraint
+on the energy spectrum of light.
+Create an arbitrary sequence of light spectra with increasing 
+correlated color temperature (CCT),
+and then estimate the spectra from the XYZ response.
+<<fig12, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=5, fig.width=10, out.width='1.0\\linewidth', fig.cap='(a) the original responsivities of the standard observer `eye`, and their sum. (b) the reparameterization to interval [0,1].  (c) the equalized responsivities, and their sum.' >>=
+eye   = resample( xyz1931.1nm, wave )
+spec  = planckSpectra( c(3000,4000), wave )
+spec  = bind( spec, daylightSpectra( c(5000,6504,9000), wave ) )
+spec  = bind( spec, planckSpectra( 11000, wave ) )
+XYZ   = product( spec, eye )
+est.c = invert( eye, XYZ )  
+plotOriginalPlusEstimates( list(spec,est.c), mfrow=c(2,3), ymax=NA )
+@
+These estimates are quite poor.  
+They tend to flatten out at the ends, while the originals do not.
+% A better method might be to compute the CCT and then a Planckian or daylight
+% spectrum from the CCT, as Koenderink has pointed out in \cite{Koenderink} page 544.
+Moreover, there are some XYZ vectors for which the centroid method
+does not work at all; for more on this see Appendix A and \cite{Davis2018} Section 13.
+I see little practical value in this type of inversion.
+
+
+% \pagebreak
+
+\bibliographystyle{plain}    % apalike
+\bibliography{bibliography}
+
+
+
+
+\section*{Appendix A - Inverse Colorimetry}
+<<appendixRI, child='right-inverse.txt'>>=
+@
+
+
+\section*{Appendix B - The Macbeth ColorChecker\texttrademark}
+<<appendixCC, child='MacbethCC.txt'>>=
+@
+
+
+
+% ----------------------------------------------------------------------------
+
+
+\section*{Session Information}
+This document was prepared \today \hskip 0.5em\relax with the following configuration:
+<<finish, echo=FALSE, results="asis">>=
+knit_hooks$set(output = function(x, options) { x })
+toLatex(sessionInfo(), locale=FALSE)
+@
+
+
+\end{document}

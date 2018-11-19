@@ -38,11 +38,11 @@ In case of ERROR, a message is logged and the original \code{x} is returned.
   If \code{response} is \code{NULL}, then an appropriate default \emph{may be} chosen, see \bold{Details}.
   }
   
-  \item{method}{an MxM \emph{adaption matrix}. 
+  \item{method}{an MxM \emph{adaptation matrix}. 
   \code{method} can also be \code{'scaling'} and it is then set to the MxM identity matrix,
   which scales each responsivity spectrum in \code{x} independently. \cr
   If M=3, \code{method} can also be \code{'Bradford'}, \code{'Von Kries'}, or \code{'MCAT02'},
-  and it is then set to the popular corresponding \emph{chromatic adaption matrix}.
+  and it is then set to the popular corresponding \emph{chromatic adaptation matrix}.
   For these special matrices, the spectra in \code{x} are \bold{not} scaled independently;
   there is "cross-talk".\cr
   If \code{method} is \code{NULL}, then an appropriate default is chosen, see \bold{Details}.
@@ -53,7 +53,7 @@ In case of ERROR, a message is logged and the original \code{x} is returned.
    a \bold{colorSpec} object equal to \code{multiply(x,mat)} 
    where \code{mat} is an internally calculated MxM matrix.  
    The \code{\link{quantity}} and \code{\link{wavelength}} are preserved.\cr
-   Note that \code{mat} is not the same as the the  MxM \emph{adaption matrix}.
+   Note that \code{mat} is not the same as the the  MxM \emph{adaptation matrix}.
    To inspect \code{mat} execute \code{\link{summary}} on the returned object.
    If \code{method} is \code{'scaling'} then \code{mat} is diagonal and the
    diagonal entries are the M gain factors needed to achieve the calibration.\cr
@@ -80,11 +80,12 @@ In case of ERROR, a message is logged and the original \code{x} is returned.
 }
 
 \note{
-Chromatic adaption transforms, such as \code{'Bradford'},
+Chromatic adaptation transforms, such as \code{'Bradford'},
 do not belong in the realm of spectra;
 this is not really a spectral calculation.
-For more about this subject see the explanation in \cite{Digital Color Management}.
-This adaption option is provided in \code{calibrate} because it is possible and convenient.
+For more about this subject see the explanation in \cite{Digital Color Management},
+Chapter 15 - Myths and Misconceptions.
+This adaptation option is provided in \code{calibrate} because it is possible and convenient.
 }
 
 \references{

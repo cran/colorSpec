@@ -12,6 +12,7 @@
 
 planckSpectra <-  function( temperature, wavelength=300:830, normalize=TRUE, c2=1.4388e7 )
     {
+    #   fundamental constants - CODATA 2014
     h   = 6.62607004e-34    # Planck's Contant in, J*s or W*s^2
     c   = 2.99792458e17     # speed of light, in nm/s
     k   = 1.38064852e-23    # Boltzmann constant, in J/K
@@ -136,6 +137,115 @@ neutralMaterial <- function( gray=1, wavelength=380:780 )
                  
     return( out )
     }    
+    
+rectangularMaterial <- function( lambda, alpha=1, wavelength=380:780 )
+    {     
+    lambda  = prepareNxM( lambda, M=2 )
+    if( is.null(lambda) )   return(NULL)
+    
+    if( ! is.numeric(alpha) )
+        {
+        log.string( ERROR, "alpha is invalid, because it is not numeric." )
+        return(NULL)
+        }
+    
+    n   = nrow(lambda)
+    if( length(alpha) == 1 )    alpha = rep( alpha, n )
+    
+    if( length(alpha) != n )
+        {
+        log.string( ERROR, "length(alpha) = %d != %d = nrow(lambda).", length(alpha), nrow(lambda) )
+        return(NULL)
+        }
+    
+    if( ! all( -1<=alpha  &  alpha<=1 ) )
+        {
+        log.string( ERROR, "alpha is invalid; all values must be in [-1,1]." )
+        return(NULL)
+        }
+        
+        
+    p   = length(wavelength) 
+    
+    #   compute the midpoints
+    #mid = 0.5 * ( wavelength[1:(p-1)] + wavelength[2:p] )
+    #mid = c( wavelength[1] - (mid[1]-wavelength[1]), mid, wavelength[p] + (wavelength[p]-mid[p-1]) )    # extend by 1 on either side
+    
+    mat = matrix( NA_real_, p, n )
+    
+    for( i in 1:n )
+        {
+        if( alpha[i] == 0 )
+            {
+            #   special case; use this shortcut to save some time
+            mat[ ,i]    = 0.5
+            next
+            }
+
+        lam = lambda[i, ]
+        
+        if( lam[1] == lam[2] )
+            {
+            #   special case - undefined
+            log.string( WARN, "material is undefined because lambda_min==lambda_max == %g.", lam[1] )
+            next
+            }
+
+        lambda_min  = min(lam)
+        lambda_max  = max(lam)
+        
+        #y   = as.numeric( lambda_min <= mid  &  mid < lambda_max )
+        #y   = approx( mid, y, xout=wavelength, rule=2 )$y 
+        
+        y   = 0.25 * (sign(wavelength - lambda_min) + 1) * (sign(lambda_max - wavelength) + 1)
+        
+        a   = ifelse( lam[1] < lam[2], alpha[i], -alpha[i] )
+        
+        #   if( lam[2] < lam[1] )   y = 1 - y   # flip it
+        
+        mat[ ,i]    = a*y + (1-a)*0.5
+        }
+        
+    namevec = rownames(lambda)
+    if( is.null(namevec) )
+        {
+        #   make suitable names
+        namevec = character(n)
+        for( i in 1:n )
+            {
+            lam = lambda[i, ]
+            
+            theDiff = diff( mat[ ,i] )
+            pos     = any( 0 < theDiff )
+            neg     = any( theDiff < 0 )
+            
+            if( any(is.na(theDiff)) )
+                filter  = 'NA'
+            else if( pos && neg )
+                filter  = ifelse( lam[1] < lam[2], 'BP', 'BS' )
+            else if( neg )
+                filter  = 'SP'
+            else if( pos )
+                filter  = 'LP'
+            else
+                filter  = 'N'
+             
+            namevec[i] = sprintf( '%s_[%g,%g]', filter, lam[1], lam[2] )
+            }
+        }
+        
+    colnames(mat) = make.unique( namevec )
+        
+    out = colorSpec( mat, wavelength=wavelength, quantity='transmittance', organization='df.row' )
+    
+    extra   = data.frame( row.names=1:n )
+    extra$lambda    = lambda
+    extra$alpha     = alpha
+    extradata(out)  = extra  
+    
+    return( out )
+    }
+    
     
 
 #   age     vector of ages, between 20 and Inf

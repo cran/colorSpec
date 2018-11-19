@@ -162,8 +162,8 @@ Calculate XYZ and then RGB:
 XYZ = product( MacbethCC, D65.eye, wave=wavelength(lens.64) )
 RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
 # add the rectangle data to RGB, so they can be plotted in proper places
-# in cbind() use as.data.frame.model.matrix() so RGB is a single column in patches
-patches = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+patches = extradata(MacbethCC)
+patches$RGB = RGB
 patches.first = patches   # save this reference object for later
 #  display in proper location, and use the sRGB display transfer function
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
@@ -182,8 +182,8 @@ between target and the eye, and then recalculate RGBs.
 <<lee20, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=64 without adaption' >>=
 D65.eye.64 = applyspec( D65.eye, function(y) {lens.64 * y} )
 XYZ = product( MacbethCC, D65.eye.64, wave=wavelength(lens.64) )
-RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
-patches = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+patches = extradata(MacbethCC)
+patches$RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
 plotPatchesRGB( patches, gamma='sRGB', back='gray20', labels=FALSE )
 @
@@ -211,8 +211,8 @@ prd = neutralMaterial( 1, wavelength(lens.64) )
 XYZ.D65 = officialXYZ('D65')
 D65.eye.64 = calibrate( D65.eye.64, stimulus=prd, response=XYZ.D65, method='Bradford' )
 XYZ = product( MacbethCC, D65.eye.64, wave=wavelength(lens.64) )
-RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
-patches = cbind( extradata(MacbethCC), as.data.frame.model.matrix(RGB) )
+patches = extradata(MacbethCC)
+patches$RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
 plotPatchesRGB( patches, gamma='sRGB', back='gray20', labels=FALSE )
 @

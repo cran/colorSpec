@@ -14,6 +14,24 @@
     note = {R package version 1.3-2},
     url = {https://CRAN.R-project.org/package=colorspace},
   }
+  
+  
+@Manual{spacesRGB,  
+  title = {{spacesRGB: Standard and User-Defined RGB Color Spaces, with Conversion Between RGB and CIE XYZ}},
+  author = {Glenn Davis},
+  year = {2018},
+  note = {R package version 1.1-1},
+  url = {https://cran.r-project.org/package=spacesRGB},
+  }
+
+@Manual{spacesXYZ,  
+  title = {{spacesXYZ: CIE XYZ and some of Its Derived Color Spaces}},
+  author = {Glenn Davis},
+  year = {2018},
+  note = {R package version 1.0-1},
+  url = {https://cran.r-project.org/package=spacesXYZ},
+  }
+
 
 @Manual{hsdar,
     title = {{hsdar: Manage, analyse and simulate hyperspectral data in R}},
@@ -343,9 +361,9 @@ abstract = {Estimating spectral reflectance has attracted extensive research eff
 }
 
 
-@article {ANDP:ANDP19203671504,
+@article{ANDP:ANDP19203671504,
 author = {Schr{\"o}dinger, Erwin},
-title = {Theorie der Pigmente von größter Leuchtkraft},
+title = {Theorie der Pigmente von gr{\"o\ss}ter Leuchtkraft},
 journal = {Annalen der Physik},
 volume = {367},
 number = {15},
@@ -355,6 +373,7 @@ url = {http://dx.doi.org/10.1002/andp.19203671504},
 doi = {10.1002/andp.19203671504},
 pages = {603--622},
 year = {1920},
+junk = {ß},
 }
 
 
@@ -379,8 +398,23 @@ pages = {5},
 year = {2009},
 doi = {10.1167/9.11.5},
 UUURL = { + http://dx.doi.org/10.1167/9.11.5},
-eprint = {/data/journals/jov/933556/jov-9-11-5.pdf}
+eprint = {/data/journals/jov/933556/jov-9-11-5.pdf},
+note = {\url{https://jov.arvojournals.org/article.aspx?articleid=2203976}},
 }
+
+@article{Logvinenko2015,
+title = "The colour cone",
+keywords = "colour, vision science, optics",
+author = "Alexander Logvinenko",
+year = "2015",
+doi = "10.1364/JOSAA.32.000314",
+volume = "32",
+pages = "314-322",
+journal = "Journal of the Optical Society of America A",
+number = "2",
+note = {\url{https://www.osapublishing.org/josaa/abstract.cfm?uri=josaa-32-2-314}},
+}
+
 
 @book{poynton,
   title={Digital Video and HD: Algorithms and Interfaces},
@@ -453,6 +487,7 @@ uuuurl = {http://dx.doi.org/10.1111/j.1478-4408.1993.tb01507.x},
 doi = {10.1111/j.1478-4408.1993.tb01507.x},
 pages = {323--329},
 year = {1993},
+note = {\url{https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1478-4408.1993.tb01507.x}},
 }
 
 
@@ -570,7 +605,8 @@ year = {2002},
  journal = {Journal of the Optical Society of America A},
  pdf = {/download/bianco2010reflectance-spectra.pdf},
  doi = {10.1364/JOSAA.27.001868},
- issn = {1084-7529}
+ issn = {1084-7529},
+ note = {\url{https://www.osapublishing.org/josaa/abstract.cfm?uri=josaa-27-8-1868}}
 }
 
 
@@ -758,9 +794,9 @@ UUURL = {https://doi.org/10.1117/12.704524},
 
 
 @misc{Pascale,
-author={{Danny Pascale}},
+author={Danny Pascale},
 title={{The ColorChecker, page 2}},    
-NOTE={http://www.babelcolor.com/colorchecker-2.htm}
+note={\url{http://www.babelcolor.com/colorchecker-2.htm}}
 }
 
 @misc{Bretl2008,
@@ -974,3 +1010,74 @@ url = {https://www.siam.org/journals/pdf/stylemanual.pdf}}
   url =		 {http://sourceforge.net/projects/pgfplots}
 }
 
+@ARTICLE{Davis2018,
+   author = {{Davis}, Glenn},
+    title = "{A Centroid for Sections of a Cube in a Function Space, with application to Colorimetry}",
+  journal = {ArXiv e-prints},
+      url = "https://arxiv.org/abs/1811.00990",
+     note = "\url{https://arxiv.org/abs/1811.00990}",
+archivePrefix = "arXiv",
+   eprint = {1811.00990},
+ primaryClass = "math.FA",
+ keywords = {Mathematics - Functional Analysis, 45Q05, 65R32, 41A60, 44A10},
+     year = 2018,
+    month = nov,
+   adsurl = {http://adsabs.harvard.edu/abs/2018arXiv181100990D},
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+@article{Meng2015,
+author = {Meng, Johannes and Simon, Florian and Hanika, Johannes and Dachsbacher, Carsten},
+title = {Physically Meaningful Rendering using Tristimulus Colours},
+journal = {Computer Graphics Forum},
+volume = {34},
+number = {4},
+pages = {31-40},
+year = {2015},
+keywords = {Categories and Subject Descriptors (according to ACM CCS), Computer Graphics I.3.7: Three-Dimensional Graphics and Realism—Color, shading, shadowing, and texture},
+doi = {10.1111/cgf.12676},
+note = {\url{https://onlinelibrary.wiley.com/doi/abs/10.1111/cgf.12676}},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1111/cgf.12676},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1111/cgf.12676},
+abstract = {Abstract In photorealistic image synthesis the radiative transfer equation is often not solved by simulating every wavelength of light, but instead by computing tristimulus transport, for instance using sRGB primaries as a basis. This choice is convenient, because input texture data is usually stored in RGB colour spaces. However, there are problems with this approach which are often overlooked or ignored. By comparing to spectral reference renderings, we show how rendering in tristimulus colour spaces introduces colour shifts in indirect light, violation of energy conservation, and unexpected behaviour in participating media. Furthermore, we introduce a fast method to compute spectra from almost any given XYZ input colour. It creates spectra that match the input colour precisely. Additionally, like in natural reflectance spectra, their energy is smoothly distributed over wide wavelength bands. This method is both useful to upsample RGB input data when spectral transport is used and as an intermediate step for corrected tristimulus-based transport. Finally, we show how energy conservation can be enforced in RGB by mapping colours to valid reflectances.}
+}
+
+@article{West,
+author={{West, G. and Brill, M. H.}},
+title={{Conditions under which Schr{\"o}dinger object colors are optimal}},
+journal={Journal of the Optical Society of America},
+volume={73},
+pages={1223-1225},
+year={1983}
+}
+
+
+@article{Foss1944,
+author = {Carl E. Foss and Dorothy Nickerson and Walter C. Granville},
+journal = {J. Opt. Soc. Am.},
+keywords = {Color; Color measurement; Colorimetry; Interpolation; Reflection; Surfaces},
+number = {7},
+pages = {361-381},
+publisher = {OSA},
+title = {Analysis of the Ostwald Color System},
+volume = {34},
+month = {Jul},
+year = {1944},
+note = {\url{http://www.osapublishing.org/abstract.cfm?URI=josa-34-7-361}},
+doi = {10.1364/JOSA.34.000361},
+abstract = {},
+}
+
+@INPROCEEDINGS{Holm2016,
+author={J. Holm and T. Maier and P. Debevec and C. LeGendre and J. Pines and J. Erland and G. Joblove and S. Dyer and B. Sloan and J. di Gennaro and D. Sherlock},
+booktitle={SMPTE 2016 Annual Technical Conference and Exhibition},
+title={A Cinematographic Spectral Similarity Index},
+year={2016},
+volume={},
+number={},
+pages={1-36},
+keywords={cameras;cinematography;image colour analysis;cinematographic spectral similarity index;solid state lighting sources;color rendition;human observer;potential color differences;luminaire spectrum similarity;reference spectrum;camera spectral sensitivity;confidence factor;SSL;LED;CRI;CCT;TLCI;SSI;cinematographic;spectral;similarity;index;Academy;AMPAS;Sci-Tech;Council},
+doi={10.5594/M001680},
+ISSN={},
+month={Oct},
+}

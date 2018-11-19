@@ -15,9 +15,17 @@ log.string <- function( level, msg, ... )
     updatePrivateOptions()
     
     #   compare with g.loglevel
-    if( g.loglevel < level )
+    if( g.loglevel < level[1] )
         #   do nothing
         return( invisible(FALSE) )
+    
+    generation  = 1L
+    if( 2 <= length(level) )
+        {
+        #   hack to get higher generation parents !!
+        generation  = level[2]
+        level       = level[1]  # this preserves names(level[1])
+        }    
     
     msg = sprintf( msg[1], ... )    # should this really be msg[1] ?
     
@@ -52,7 +60,7 @@ log.string <- function( level, msg, ... )
             word[k] = "colorSpec"
         else if( spec == "%f" )
             {
-            where   = sys.parent(1)  # ; print(where)
+            where   = sys.parent(generation)  # ; print(where)
           
             if( 0 < where )
                 word[k] = tryCatch( deparse(sys.call(where)[[1L]]), error=function(e) "[console]" )
