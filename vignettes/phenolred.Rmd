@@ -19,11 +19,11 @@ in swimming pool test kits, see e.g. @K-1000.
 The goal of this **colorSpec** vignette is to reproduce the colors seen in such
 a test kit, for typical values of pool pH.
 Calculations like this one might make a good project for a college freshman chemistry class.
-Featured functions in this vignette are: `interpolate()`, `calibrate()`,
-and `plotPatchesRGB()`.
+Featured functions in this vignette are: `interpolate()` and `calibrate()`.
 
 ```{r, echo=TRUE, message=FALSE}
 library( colorSpec )
+library( spacesRGB )    # for functions plotPatchesRGB() and SignalRGBfromLinearRGB()
 ```
 
 <br>
@@ -55,8 +55,8 @@ wavesel = c( 365, 430, 477, 520, 560, 590 )  # 365 and 477 are 'isosbestic point
 mat = apply( as.matrix(wavesel), 1, function( lambda ) { as.numeric(lambda == wave) } )
 colnames( mat ) = sprintf( "%g nm", wavesel )
 mono = colorSpec( mat, wavelength=wave, quantity='power' )
-RGB = product( mono, BT.709.RGB, wavelength=wave )
-colvec = grDevices::rgb( DisplayRGBfromLinearRGB( RGB / max(RGB) ) )
+RGB = product( mono, BT.709.RGB, wavelength=wave )  # this is *linear* RGB
+colvec = grDevices::rgb( SignalRGBfromLinearRGB( RGB/max(RGB), which='scene' )$RGB )
 
 phenolsel = resample( phenolred, wavesel )
 pH = as.numeric( sub( '[^0-9]*([0-9]+)$', '\\1', specnames(phenolred) ) )
@@ -110,7 +110,7 @@ testkit = product( D65.1nm, 'solution', BT.709.RGB, wave=wave )
 # recalibrate, but lower the background a little, to allow more 'headroom' for indicator colors
 bglin = 0.96  #  graylevel for the background, linear
 testkit = calibrate( testkit, response=bglin )
-RGB = product( phenolpool, testkit )
+RGB = product( phenolpool, testkit )   # this is *linear* sRGB
 RGB
 ```
 All values have been multiplied by `bglin`, and are now OK.
@@ -119,7 +119,7 @@ Draw the RGB patches on a white background multiplied by the same amount.
 df.RGB = data.frame( LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
 df.RGB$RGB = RGB
 par( omi=c(0,0,0,0), mai=c(0.3,0,0.3,0) )
-plotPatchesRGB( df.RGB, labels=F, background=bglin )
+plotPatchesRGB( df.RGB, space='sRGB', which='scene', labels=F, background=bglin )
 text( (1:nrow(RGB)) + 0.5, 2, sprintf("%.1f",pHvec), adj=c(0.5,1.2), xpd=NA )
 title( main='Calculated Colors for pH from 6.8 to 8.2' )
 ```
@@ -131,12 +131,12 @@ Compared to a real test kit, the calculated colors look a little faded.
 An absorbance multiplier can easily tweak the unknown concentration, as follows.
 
 ```{r, echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'}
-tweak = 1.2
+tweak = 1.3
 phenolpool = multiply( phenolpool, tweak )
 df.RGB = data.frame( LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
-df.RGB$RGB = product( phenolpool, testkit )
+df.RGB$RGB = product( phenolpool, testkit ) # this is *linear scene* sRGB
 par( omi=c(0,0,0,0), mai=c(0.3,0,0.3,0) )
-plotPatchesRGB( df.RGB, background=bglin, labels=F )
+plotPatchesRGB( df.RGB, space='sRGB', which='scene', background=bglin, labels=F )
 text( (1:nrow(RGB)) + 0.5, 2, sprintf("%.1f",pHvec), adj=c(0.5,1.2), xpd=NA )
 main = sprintf( 'Calculated Colors for pH from 6.8 to 8.2 (absorbance multiplier=%g)', tweak )
 title( main=main )

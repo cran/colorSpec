@@ -10,24 +10,8 @@ testReflectanceInversion <- function()
     E.eye = product( illuminantE(1,wave), "material", xyz1931.1nm, wavelength=wave )
     #   A.eye = product( A.1nm, "material", xyz1931.1nm, wavelength=wave )
     
-    
-    ##------------     MacbethCC     ----------##
-    cat( "\n##------------     MacbethCC     ----------##\n" )
     path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec' )
     MacbethCC = readSpectra( path, wavelength=wave )
-    #   MacbethCC = subset( MacbethCC, c( 21:24, 17:20, 13:16, 9:12, 5:8, 1:4 ) )
-    
-    XYZ = product( MacbethCC, E.eye, wavelength=wave )
-    est.eq   = invert( E.eye, XYZ, method='centroid', alpha=1 )
-    if( is.null(est.eq) ) return(FALSE)
-    
-    extra   = extradata(est.eq)
-    #extra$response = NULL   # do not want to see it
-    print( extra )
-    if( any( is.na(extra$estim.precis) ) )    return(FALSE)
-
-    cat( 'mean(iters) = ', mean(extra$iters), '\n' )
-    cat( 'mean(estim.precis) = ', mean(extra$estim.precis), '\n' )
     
     
     ##------------     rectangular, i.e. Logvinenko     ----------##
@@ -68,6 +52,29 @@ testReflectanceInversion <- function()
 
     cat( 'mean(iters) = ', mean(extra$iters), '\n' )
     cat( 'mean(estim.precis) = ', mean(extra$estim.precis), '\n' )
+    
+    
+    
+    ##------------     MacbethCC     ----------##
+    cat( "\n##------------     MacbethCC     ----------##\n" )
+
+    #   MacbethCC = subset( MacbethCC, c( 21:24, 17:20, 13:16, 9:12, 5:8, 1:4 ) )
+    
+    XYZ = product( MacbethCC, E.eye, wavelength=wave )
+    est.eq   = invert( E.eye, XYZ, method='centroid', alpha=1 )
+    if( is.null(est.eq) ) return(FALSE)
+    
+    extra   = extradata(est.eq)
+    #extra$response = NULL   # do not want to see it
+    print( extra )
+    if( any( is.na(extra$estim.precis) ) )    return(FALSE)
+
+    cat( 'mean(time.msec) = ', mean(extra$time.msec), '\n' )    
+    cat( 'mean(iters) = ', mean(extra$iters), '\n' )
+    cat( 'mean(estim.precis) = ', mean(extra$estim.precis), '\n' )
+    
+        
+    
     
     return(TRUE)
     }
@@ -112,12 +119,10 @@ testSourceInversion <- function()
     return(TRUE)
     }
     
-
     
 if( ! testReflectanceInversion() )  stop( "testReflectanceInversion() failed !" )
-
+    
 if( ! testSourceInversion() )  stop( "testSourceInversion() failed !" )
-
-
+    
 
 cat( "Passed all inversion tests !\n", file=stderr() )

@@ -25,7 +25,7 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
         return( out )
         }
     
-    CCT = computeCCT( x, method='lm' )     #;  print(CCT)
+    CCT = computeCCT( x )     #;  print(CCT)
     
     if( is.na(CCT) )    return(out) # error message already issued
     

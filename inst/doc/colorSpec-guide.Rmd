@@ -40,14 +40,35 @@ Some features:
 <li>flexible organization for the spectra in memory, using an S3 class - **colorSpec**</li>
 <li>a product algebra for the **colorSpec** objects</li>
 <li>uniform handling of biological eyes, electronic cameras, and general action spectra</li>
-<li>a few advanced calculations, such as computing optimal colors (aka Macadam Limits)</li>
-<li>inverse colorimetry, e.g. reflectance recovery from response
+<li>a few advanced calculations, such as computing optimal colors (aka MacAdam Limits)</li>
+<li>_inverse colorimetry_, e.g. reflectance recovery from response
 <li>built-in essential tables, such as the CIE illuminants and color matching functions</li>
 <li>a package logging system with log levels taken from the popular **Log4J**</li>
 <li>support for reading a few spectrum file types, including CGATS</li>
 <li>bonus files containing some other interesting spectra</li>
 <li>minimal dependencies on other **R** packages</li>
 </ul>
+
+
+Regarding the dependencies, the following packages are **Imports**:
+<ul>
+<li>**spacesXYZ** @spacesXYZ, required for computing CCT</li>
+<li>**MASS** @MASS, required for camera emulation,
+which uses the matrix pseudoinverse `MASS::ginv()`</li>
+</ul>
+
+The following packages are **Suggests**:
+<ul>
+<li>**rootSolve** @rootSolve, required for inverse colorimetry</li>
+<li>**rgl** @rgl, required for plotting optimal colors in 3D</li>
+<li>**knitr** @knitr,  **rmarkdown** @rmarkdown, and **spacesRGB** @spacesRGB, 
+required for building the vignettes</li>
+<li>**microbenchmark** @microbenchmark, for a timer with higher precision 
+than **R**'s built-in timer</li>
+<li>**arrangements** @arrangements, makes the zonohedron calculations 
+for optimal colors a little bit faster</li>
+</ul>
+
 
 Some non-features:
 <ul>
@@ -60,7 +81,8 @@ and
 </li>
 <li>
 there are few non-linear operations.
-The only such operations are conversion of linear RGB to display RGB, conversion of absorbance to transmittance, and the reparameterized wavelength in `computeADL()`.
+The only such operations are conversion of absorbance to transmittance, 
+and the reparameterized wavelength $\omega$ from $\lambda$ in `computeADL()`.
 The electronic camera model is purely linear with no dark current offset or other deviations.
 </li>
 <li>there is little support for scientific units; for these see packages
@@ -460,13 +482,6 @@ For example, there would then be a way to evaluate how close an electronic camer
 comes to satisying the _Maxwell-Ives Criterion_.
 Possible metrics would be the principal angles between subspaces.
 
-`probeOptimalColors()`   
-For optimal colors in 3D, 
-better numerical handling of optimal colors near the cusps at black and white would
-be an improvement. 
-For optimal colors in 2D, it should be possible to probe the true optimal colors,
-and also the 1-transition edge-colors, or _Kantenfarben_.
-
 `plot()`   
 the `product()` function saves the terms with the product object, 
 but the `plot()` function ignores them. 
@@ -532,7 +547,7 @@ Some of the files in `Control` format have associated `JPG` or `PNG` images of p
 ```
 <br>
 ```{r echo=FALSE, results='asis'}
-    includetable("tables/table-B.3.html", "460px" )
+    includetable("tables/table-B.3.html", "500px" )
 ```
 
 <br>

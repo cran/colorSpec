@@ -39,14 +39,16 @@ S3method(product,colorSpec)
 S3method(calibrate,colorSpec)
 S3method(computeCCT,colorSpec)
 S3method(computeCRI,colorSpec)
-# S3method(computeSSI,colorSpec)
+S3method(computeSSI,colorSpec)
 S3method(radiometric,colorSpec)
 S3method(is.radiometric,colorSpec)
 S3method(actinometric,colorSpec)
 S3method(is.actinometric,colorSpec)
 S3method(photometric,colorSpec)
 S3method(probeOptimalColors,colorSpec)
+S3method(sectionOptimalColors,colorSpec)
 S3method(plotOptimals3D,colorSpec)
+S3method(plotOptimals2D,colorSpec)
 S3method(computeADL,colorSpec)
 S3method(interpolate,colorSpec)
 S3method(ptransform,colorSpec)
@@ -88,14 +90,16 @@ export(numSpectra,
     convolvewith,
     computeCCT,
     computeCRI,    
-#    computeSSI,
+    computeSSI,
     radiometric,
     is.radiometric,    
     actinometric,
     is.actinometric,    
     photometric,
     probeOptimalColors,
+    sectionOptimalColors,    
     plotOptimals3D,
+    plotOptimals2D,    
     computeADL,
     interpolate,
     ptransform,
@@ -114,10 +118,7 @@ export(
     plot.colorSpec
     )
     
-export(
-    plotPatchesRGB    
-    )
-    
+
 
 export( colorSpec )
 export( 
@@ -143,22 +144,24 @@ export(
     atmosTransmittance
     )
     
-export(
-    #   daylightLocus,
-    CCTfromXYZ,
-    CCTfromxy,
-    CCTfromuv
-    )
+#export(
+#   daylightLocus,
+#    CCTfromXYZ,
+#    CCTfromxy,
+#    CCTfromuv
+#    )
     
+# export(plotPatchesRGB)
 export(DisplayRGBfromLinearRGB)
-export(officialXYZ)
 export(RGBfromXYZ)
+export(officialXYZ)
+
 
 export(cs.options)
 
 importFrom( MASS, ginv )
-importFrom( minpack.lm, nls.lm )
-importFrom( grDevices, colorRampPalette, rgb )
+importFrom( spacesXYZ, CCTfromXYZ, standardXYZ )
+importFrom( grDevices, colorRampPalette, rgb, rainbow )
 importFrom( graphics, abline, grid, legend, lines,
              lines.default, par, plot, plot.default, plot.new,
              plot.window, points, points.default, polygon,
@@ -167,4 +170,6 @@ importFrom( stats ,  approx, coef, lm, loess, predict,
              runif, spline, splinefun, rnorm )
 importFrom( utils, capture.output, flush.console, modifyList,
              object.size, read.table, write.table, str, type.convert )
-importFrom( rootSolve, multiroot )
+#importFrom( rootSolve, multiroot )
+#   importFrom( minpack.lm, nls.lm )  was used in CCTfromuv() but no longer
+# importFrom( spacesRGB, SignalRGBfromLinearRGB )

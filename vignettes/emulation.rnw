@@ -83,11 +83,11 @@ The two modifications are:
 \end{itemize}
 
 The figures below are best viewed on a display calibrated for sRGB.
-Featured functions in this vignette are: 
-\code{emulate()} and \code{plotPatchesRGB()}.
+Featured functions in this vignette are: \code{emulate()}.
 
 <<packs, echo=TRUE, message=FALSE>>=
 library( colorSpec )
+library( spacesRGB )    # for function plotPatchesRGB()
 @
 
 
@@ -142,18 +142,18 @@ most importantly the coordinates of the patch rectangles.
 
 Calculate the RGB responses to both cameras and display them.
 <<lee11, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant E, with Foveon RGB in bottom right half' >>=
-RGB.ref = product( illum, MacbethCC, reference)   # this is *linear* sRGB
+RGB.ref = product( illum, MacbethCC, reference) # this is *linear scene* sRGB
 # add the rectangle data to RGB.ref, so the patches are plotted in proper places
 df.ref = extradata(MacbethCC)
 df.ref$RGB.ref = RGB.ref
 #  display in proper location, and use the sRGB display transfer function
 par( omi=c(0,0,0,0), mai=c(0,0,0,0) )
-plotPatchesRGB( df.ref, gamma='sRGB', back='gray20', labels=FALSE )
+plotPatchesRGB( df.ref, space='sRGB', which='scene', back='gray20', labels=FALSE )
 # repeat with foveon camera, and add to existing plot
 RGB.foveon = product( illum, MacbethCC, foveon )
 df.foveon = extradata(MacbethCC)
 df.foveon$RGB.foveon = RGB.foveon
-plotPatchesRGB( df.foveon, gamma='sRGB', shape='bottomright', add=T, labels=FALSE )
+plotPatchesRGB( df.foveon, space='sRGB', which='scene', shape='bottomright', add=T )
 @
 There is only agreement for the neutral patches,
 as might be expected.
@@ -170,11 +170,11 @@ The agreement is now much better.
 Replot the ColorChecker to visualize the improvement.
 <<lee15, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant E, with modified Foveon RGB in bottom right half' >>=
 par( omi=c(0,0,0,0), mai=c(0,0,0,0) )
-plotPatchesRGB( df.ref, gamma='sRGB', back='gray20', labels=FALSE )
+plotPatchesRGB( df.ref, space='sRGB', which='scene', back='gray20', labels=FALSE )
 # repeat with modified foveon camera, and add to existing plot
 df.foveon.mod = extradata(MacbethCC)
 df.foveon.mod$RGB.foveon.mod  = product( illum, MacbethCC, foveon.mod )
-plotPatchesRGB( df.foveon.mod, gamma='sRGB', shape='bottomright', add=T, labels=FALSE )
+plotPatchesRGB( df.foveon.mod, space='sRGB', which='scene', shape='bottomright', add=T )
 @
 
 The agreement in the RGBs is now much bettter, c.f. Figure 2.
@@ -182,7 +182,7 @@ There is a noticeable difference in the \textbf{Red} and \textbf{Magenta} patche
 However, the neutrals are now worse; the green is low so they have
 a purple tint.
 A new feature - \emph{white-point preservation} - might be added to
-\code{emulate()} in future versions,
+a future version of \code{emulate()},
 using the techniques in \cite{Finlayson97}.
 Alternatively, one could also re-calibrate (white-balance) \code{foveon.mod}.
 
@@ -206,7 +206,7 @@ same weight at every wavelength.
 This index uses color targets which \emph{might}
 be the same as those in the \emph{ColorChecker}.
 \cite{Quality2007} uses a criterion based on principal angles between subspaces.
-This option might be added to \code{emulate()} in the future.
+These optional criteria might be added to \code{emulate()} in the future.
 For a good comparison of the other 2 prefilters,
 see Figure 6 in \cite{Quality2007}.
 
@@ -279,12 +279,12 @@ RGB.plumbicon = matrix( graylevel, length(graylevel), 3 )
 df.plumbicon = extradata(MacbethCC)
 df.plumbicon$RGB = RGB.plumbicon
 par( omi=c(0,0,0,0), mai=c(0,0,0,0) )
-plotPatchesRGB( df.plumbicon, back='black', labels=FALSE )
+plotPatchesRGB( df.plumbicon, space='sRGB', which='scene', back='black' )
 # repeat with dragon.mod camera, and add to existing plot, as triangles
 graylevel = product( illum, MacbethCC, dragon.mod)
 df.dragon = extradata(MacbethCC)
 df.dragon$RGB = matrix( graylevel, length(graylevel), 3 )
-plotPatchesRGB( df.dragon, back='black', labels=FALSE, add=T, shape='bottomright' )
+plotPatchesRGB( df.dragon, space='sRGB', which='scene', add=T, shape='bottomright' )
 @
 Despite the mismatch on the interval [400,500],
 the visual agreement is pretty good.

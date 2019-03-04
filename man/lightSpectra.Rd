@@ -16,7 +16,7 @@ For the daylight spectra, a smoothed version is available.
 Illuminant E, a third and trivial spectrum, is also available.
 }
 \usage{
-planckSpectra( temperature, wavelength=300:830, normalize=TRUE, c2=1.4388e7 )
+planckSpectra( temperature, wavelength=300:830, normalize=TRUE, c2=1.4388e-2 )
 
 daylightSpectra( temperature, wavelength=NULL, 
                     components=colorSpec::daylight1964, roundMs=FALSE )
@@ -39,9 +39,11 @@ If \code{FALSE} then the quantity returned is radiant exitance with unit
 \eqn{W * m^{-2} * nm^{-1}}. }
        
 \item{c2}{the value of \eqn{hc/k} in Planck's law.
-\eqn{h} is the Planck constant; \eqn{c} is the speed of light; and \eqn{k} is the Boltzmann constant.
-The default value of 1.4388e7 \eqn{nm*K} was recommended by the CIE in 2005;
-in 1986 the CIE recommended \code{c2}=1.438e7.
+\eqn{h} is the Planck constant; 
+\eqn{c} is the speed of light in \eqn{m/sec}; and 
+\eqn{k} is the Boltzmann constant.
+The default value of 1.4388e-2 \eqn{m*K} was recommended by the CIE in 2005;
+in 1986 the CIE recommended \code{c2}=1.438e-2.
 If \code{c2='calc'} then \code{c2} is calculated directly from the 3 physical constants,
 as recommended by CODATA 2014.
 }
@@ -68,11 +70,25 @@ The number of spectra in the object is the number of temperatures = \code{length
   
 For \code{illuminantE()} :\cr
 A \bold{colorSpec} object with \code{\link{quantity}} equal to \code{'energy'}. \cr
-The number of spectra in the object is the number of energy levels = \code{length(energy)}.
+The number of spectra in the object is the number of 
+energy levels = \code{length(energy)}.
 }
 
 
 \details{
+For \code{planckSpectra()} the valid range of temperatures is 
+0 to \code{Inf} (\eqn{\infty}) K, but with exceptions at the endpoints.
+For a negative temperature the spectrum is set to all \code{NA}s.
+\cr
+If \code{temperature=0} and \code{normalize=TRUE}, the spectrum is set to all \code{NA}s.
+If \code{temperature=0} and \code{normalize=FALSE}, the spectrum is set to all 0s.
+\cr
+Conversely, if \code{temperature=Inf} and \code{normalize=FALSE}, 
+the spectrum is set to all \code{NA}s.
+If \code{temperature=Inf} and \code{normalize=TRUE}, 
+the spectrum is set to the pointwise limit \eqn{(560/\lambda)^4} (which appears blue).
+
+
 For \code{daylightSpectra()} the valid range of temperatures is 4000 to 25000 K.
 For a temperature outside this range the spectrum is set to all \code{NA}s.
 

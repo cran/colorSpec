@@ -211,7 +211,7 @@ compileText  <-  function( text )
 #   3)  the reparameterized responses
     
 plotReparam3 <- function( .obj, .alpha=1 )
-    {
+    {        
     par( mfcol= c(1,3) )
     par( mai=c(0.4,0.4,0.3,0.1) )
     
@@ -220,7 +220,7 @@ plotReparam3 <- function( .obj, .alpha=1 )
     quantity(obj.copy) = 'energy'
     mat.rgb = product( obj.copy, colorSpec::BT.709.RGB, wave='auto' )  #; print( mat.rgb )
     mat.rgb = mat.rgb / max(mat.rgb)                        #; print( mat.rgb )    
-    mat.rgb = DisplayRGBfromLinearRGB( mat.rgb )            #; print( mat.rgb )
+    mat.rgb = DisplayRGBfromLinearRGB( mat.rgb )          #; print( mat.rgb )
     color_vec   = rgb( mat.rgb )      
     
     #   plot #1 is the normal plot of .obj, with extra spectrum sum
@@ -341,4 +341,35 @@ plotReparam3 <- function( .obj, .alpha=1 )
     }
     
         
+#   RGB     linear RGB any sort of array
+#           it is OK if val is a matrix, and then the return value is a matrix of the same shape
+#   gamma   name of transfer function, supported are 'sRGB'
+#           or numeric gamma of the display, so output is (linear)^(1/gamma)
+#
+#   return  first clips to [0,1], and then maps [0,1] to [0,1].
+#           in case of ERROR it logs a message and returns the clipped values only
+DisplayRGBfromLinearRGB <- function( RGB, gamma='sRGB' )
+    {
+    out = as.numeric(RGB)
     
+    out = pmin( pmax( RGB, 0 ), 1 )
+    
+    if( is.character(gamma) )
+        {
+        if( tolower(gamma[1]) == 'srgb' )
+            out = ifelse( out <= 0.0031308,    12.92 * out,  1.055 * out^(1/2.4) - 0.055 )
+        #else
+        #    log.string( ERROR, "gamma is invalid" )
+        }
+    else if( is.numeric(gamma) && 0 < gamma[1] )
+        out = out ^ (1/gamma[1])
+    else
+        {
+        #log.string( ERROR, "gamma is invalid" )
+        }
+    
+    dim(out)        = dim(RGB)
+    dimnames(out)   = dimnames(RGB) #; print( out )
+    
+    return( out )
+    }    

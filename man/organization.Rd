@@ -37,7 +37,7 @@
 
   If the \code{organization} of \code{x} is \code{"df.row"}, then \code{x} is a \code{data.frame}
   with N rows, where N is the number of spectra.
-  The spectra are stored in the last column, which is a \code{"model.matrix"} with the name \code{"spectra"}.
+  The spectra are stored in the last column, which is a matrix with the name \code{"spectra"}.
   The other columns preceding \code{spectra} (if present) contain extra data associated with
   the spectra; see \code{\link{extradata}}.
 }

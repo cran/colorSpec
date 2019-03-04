@@ -56,15 +56,18 @@ The coordinates of \bold{G} are undefined.
 \value{
 \code{computeADL()} returns a \code{data.frame} with a row for each response.
 The columns in the data frame are:
-  \item{response}{the input response vector}
-  \item{ADL}{the computed ADL coordinates of the response vector}  
-  \item{omega}{the reparameterized \eqn{\lambda} in the interval [0,1];  see \bold{References}}
-  \item{lambda}{lambda.1 and lambda.2 at the 2 transitions, in nm.
-  lambda.1 < lambda.2  => bandpass,
-  and lambda.1 > lambda.2 => bandstop.}
+\item{response}{the input response vector}
+\item{ADL}{the computed ADL coordinates of the response vector}  
+\item{omega}{the reparameterized \eqn{\lambda} in the interval [0,1];  see \bold{References}}
+\item{lambda}{lambda.1 and lambda.2 at the 2 transitions, in nm.
+lambda.1 < lambda.2  => bandpass,
+and lambda.1 > lambda.2 => bandstop.}
 
-  If an individual ray could not be traced, the row contains \code{NA} in appropriate columns.\cr
-  In case of global error, the function returns \code{NULL}.
+If an individual ray could not be traced,
+or if the optimal spectrum has more than 2 transitions,
+the row contains \code{NA} in appropriate columns.
+\cr
+In case of global error, the function returns \code{NULL}.
 }    
 
 
@@ -75,11 +78,10 @@ done by \code{\link{probeOptimalColors}()}.
 }
 
 
-\section{Known Issues}{
-The optimal color boundary is not differentiable at \bold{0} and \bold{W}.
-There may be numerical iteration failures if the response
-is near the neutral axis.
-
+\section{WARNING}{
+Since this function is really a simple wrapper around 
+\code{\link{probeOptimalColors}()},
+please see the performance warnings there.
 }
 
 
@@ -90,11 +92,15 @@ vignette \bold{optimals}
 }
 
 \examples{
-D50.eye = product( D50.5nm, 'varmat', xyz1931.1nm, wave='auto' )
+D50.eye = product( D50.5nm, 'varmat', xyz1931.1nm, wave=seq(360,830,by=5) )
 computeADL( D50.eye, c(30,50,70) )
-# response.x response.y response.z   ADL.alpha   ADL.delta  ADL.lambda     omega lambda.1 lambda.2
-#         30         50         70   0.7364348   0.5384243 473.3909184 0.3008561 427.1431 555.5176
-#since alpha < 1, this response is *inside* the object-color solid
+##    response.X response.Y response.Z   ADL.alpha   ADL.delta  ADL.lambda     omega 
+##  1         30         50         70   0.7371475   0.5384104 473.3594572 0.3008817
+
+##  lambda.1 lambda.2
+##  427.2011 555.5261
+
+## since alpha < 1, XYZ=c(30,50,70) is *inside* the object-color solid of D50.eye
 }
 
 

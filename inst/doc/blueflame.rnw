@@ -101,9 +101,10 @@ and to display both colors accurately.
 
 <<packs, echo=TRUE, message=FALSE>>=
 library( colorSpec )
+library( spacesRGB )    # for function plotPatchesRGB()
 @
-Featured functions in this vignette are: \code{chop()}, \code{bind()},
-and \code{plotPatchesRGB()}.
+Featured functions in this vignette are: \code{chop()} and \code{bind()}.
+
 
 %\section*{Lucid output?}
 
@@ -204,9 +205,10 @@ The second color is definitely greener than the first, and the next section will
 Here we collect the colors discussed above and display them as large rectangular patches.
 
 <<lee6, echo=T, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='Colors as patches - computed for an sRGB display' >>=
-mat = product( combo, BT.709.RGB, wavelength='auto' )
+RGB = product( combo, BT.709.RGB, wavelength='auto' )  # linear scene sRGB
+RGB = RGB/max(RGB)  # normalize so the maximum value is 1
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( mat, norm=T )
+plotPatchesRGB( RGB, space='sRGB', which='scene', labels='right', adj=c(0,NA) )
 @
 
 In this figure:
@@ -227,13 +229,14 @@ which is probably the most popular wide-gamut RGB space.
 Here are the same large patches as in the previous section, but computed for Adobe RGB.
 
 <<lee7, echo=T, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='Colors as patches - computed for an Adobe RGB display' >>=
-mat = product( combo, Adobe.RGB, wavelength='auto' )
+RGB = product( combo, Adobe.RGB, wavelength='auto' ) # linear scene Adobe RGB
+RGB = RGB/max(RGB)  # normalize so the maximum value is 1
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( mat, gamma=2.2, norm=T )
+plotPatchesRGB( RGB, space='AdobeRGB', which='scene', labels='right', adj=c(0,NA) )
 @
-
-For Adobe RGB, the "CH part of blue flame" is still too vivid (the green is negative)
-but the other 3 colors are accurate.
+This figure is best viewed on a display calibrated for Adobe RGB.
+The "CH part of blue flame" is still too vivid (the green is negative)
+but the other 3 colors are in the Adobe RGB gamut.
 Figure 9 is a diagram comparing the 2 color spaces.
 
 \begin{center}

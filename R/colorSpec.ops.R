@@ -771,9 +771,7 @@ multiply.colorSpec   <-  function( x, s )
         log.string( ERROR, "Size of s is invalid for %d spectra.", spectra )
         return(x)
         }
-    
 
-    
     org = organization(x)
     
     if( length(s) == 1 )
@@ -787,8 +785,8 @@ multiply.colorSpec   <-  function( x, s )
         else if( org == 'df.col' )
             out[ 2:ncol(out) ]  = s * out[ 2:ncol(out) ]
         else if( org == 'df.row' )        
-            out[ ncol(out) ]    = s * out[ ncol(out) ]
-            
+            out[[ ncol(out) ]]    = s * out[[ ncol(out) ]]
+        
         return( out )
         }
         
@@ -826,7 +824,7 @@ multiply.colorSpec   <-  function( x, s )
     if( ! is.null(cnames)  &&  ! anyDuplicated(cnames) )
         specnames(out) = cnames     # this may be redundant
             
-    return(  out  )
+    return( out )
     }    
 
     

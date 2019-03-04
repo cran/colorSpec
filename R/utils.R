@@ -250,6 +250,44 @@ time.ringOrder <- function( .dim=c(32,32), .reps=10 )
     return( out )
     }
     
+
+#   vec     numeric vector, regarded as periodic.  no NAs
+#
+#   returns an Nx2 matrix with indices of the transitions, including possible first and last    
+transitionMatrix <- function( vec )
+    {
+    n   = length(vec)
+    if( n == 0 )    return( matrix( 0L, 0, 2 ) )
+    
+    idx = which( diff( vec ) != 0 )
+    if( length(idx) == 0 )  return( matrix( 0L, 0, 2 ) )
+    
+    out = cbind( idx, idx+1 )
+    
+    if( vec[n] != vec[1] )  out = rbind( out, c(n,1) )
+    
+    return( out )
+    }
+    
+#   a simpleminded approach here    
+breakandstep <- function( wavelength, method='rectangular' )
+    {    
+    n   = length(wavelength)
+    
+    out = list()  
+    
+    breakvec        = 0.5 * (wavelength[1:(n-1)] + wavelength[2:n])
+    
+    if( tolower(method) == substr("trapezoidal",1,nchar(method)) )     
+        out$breakvec    = c( wavelength[1], breakvec, wavelength[n]  )   # cutoff first and last bins
+    else
+        out$breakvec    = c( 2*wavelength[1] - breakvec[1], breakvec, 2*wavelength[n] - breakvec[n-1] )   # extend first and last bins symmetric
+    
+    out$stepvec     = diff( out$breakvec )
+    
+    return(out)
+    }
+    
     
 #   .x          vector of numbers
 #   .range      min and max    
@@ -287,7 +325,7 @@ roundAffine  <- function( .x, .digits )
     
     if( isum != n )
         {
-        log.string( ERROR, "sum(.x) = %g is not accurate to %d fractional digits\n", 
+        log.string( ERROR, "sum(.x) = %g is not accurate to %g fractional digits\n", 
                                 sum(.x), .digits )
         return(NULL)
         }
@@ -302,7 +340,7 @@ roundAffine  <- function( .x, .digits )
         
     if( length(.x) < abs(delta) )
         {
-        log.string( ERROR, "abs(delta) = %d is too large.  This should not happen.", abs(delta) )
+        log.string( ERROR, "abs(delta) = %g is too large.  This should not happen.", abs(delta) )
         return(NULL)
         }
     
@@ -316,7 +354,16 @@ roundAffine  <- function( .x, .digits )
     return( out / n )
     }
 
- 
+angleBetween  <-  function( .vec1, .vec2 )
+    {
+    denom = sqrt( sum(.vec1^2) * sum(.vec2^2) )
+    
+    if( denom == 0 )    return( as.numeric(NA) )
+    
+    return( acos( sum( .vec1*.vec2 ) / denom ) )
+    }
+
+    
 ###########     argument processing     ##############
 #
 #   A   a non-empty numeric NxM matrix, or something that can be converted to be one

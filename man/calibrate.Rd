@@ -111,7 +111,7 @@ Chapter 15 - Myths and Misconceptions.
 # make an art gallery illuminated by illuminant A, and with tristimulus XYZ as output
 gallery = product( A.1nm, 'artwork', xyz1931.1nm, wave='auto')      
 # chromatically adapt the output XYZs to D50 white point, using Bradford matrix
-gallery.D50 = calibrate( gallery, response=officialXYZ('D50') )
+gallery.D50 = calibrate( gallery, response=spacesXYZ::standardXYZ('D50') )
 
 # make an RGB flatbead scanner from illuminant F11 and a Flea2 camera
 scanner = product( subset(Fs.5nm,'F11'), 'paper', Flea2.RGB, wave='auto')  

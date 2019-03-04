@@ -28,7 +28,6 @@ All XYZ values are taken from the ASTM publication in \bold{References},
 except \code{B} which is taken from \cite{Wyszecki & Stiles}
 and \code{D50.ICC} which is taken from ICC publications.
 The latter is different than that of ASTM.
-
 }
 
 \value{
@@ -40,7 +39,11 @@ The latter is different than that of ASTM.
 \note{
 The input names are case-sensitive.
 The output XYZ is normalized so that \code{Y=1}.
+}
 
+\section{WARNING}{
+This function is deprecated.
+New software should use \code{spacesRGB::standardXYZ()} instead.
 }
 
 

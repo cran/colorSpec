@@ -50,9 +50,9 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
         else
             {
             #   fake it by changing quantity to energy
-            x.power  = x    #   resample( x, wavelength(BT.709.RGB) )    #   we know BT.709.RGB has regular wavelength steps
-            quantity(x.power) = 'energy'
-            mat.rgb = product( x.power, colorSpec::BT.709.RGB, wave='auto' )         #; print( mat.rgb )
+            x.energy    = x    #   resample( x, wavelength(BT.709.RGB) )    #   we know BT.709.RGB has regular wavelength steps
+            quantity(x.energy) = 'energy'
+            mat.rgb = product( x.energy, colorSpec::BT.709.RGB, wave='auto' )         #; print( mat.rgb )
             
             if( all( is.na(mat.rgb) ) )
                 {
@@ -63,12 +63,13 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
             theMax  = max( mat.rgb, na.rm=TRUE ) 
 
             if( 0 < theMax )
-                mat.rgb = mat.rgb / theMax            #   normalize so max RGB is 1; print( mat.rgb )
+                mat.rgb = mat.rgb / theMax              #   normalize so max RGB is 1; print( mat.rgb )
             }
             
-        mat.rgb = DisplayRGBfromLinearRGB( mat.rgb )  #; print( mat.rgb )
+        mat.rgb = DisplayRGBfromLinearRGB( mat.rgb )    #; print( mat.rgb )
+        #   mat.rgb = spacesRGB::SignalRGBfromLinearRGB( mat.rgb, space='sRGB', which='scene' )$RGB    #; print( mat.rgb )
          
-        color_vec   = rgb( mat.rgb )                #;   print( color_vec )
+        color_vec   = myrgb( mat.rgb )                  #;   print( color_vec )
         }
     else if( color_vec[1] == 'auto' )
         {
@@ -174,7 +175,7 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
         
         if( CCT  &&  type(x) == "light" )
             {
-            legend  = paste( legend, sprintf( "    [CCT=%d K\u00B0]", round( computeCCT(x) ) ) )     # degree symbol °
+            legend  = paste( legend, sprintf( "    [CCT=%g K]", round( computeCCT(x) ) ) )     # degree symbol °
             }
         
         if( 1 < length(color_vec)  &&  length( unique(color_vec) ) == 1 )   #  1 < length( unique(vararg$lty) ) 
@@ -317,7 +318,27 @@ lines_for_ylab <- function( str )
 
     return( line_count )
     }
-        
+     
+
+#   mat             an Nx3 numeric matrix, possibly with NAs
+#   maxColorValue   same as rgb()
+#   returns a character vector, with NAs where any input row is NA
+
+myrgb   <- function( mat, maxColorValue=1 ) 
+    {
+    n   = nrow( mat )
+    out = rep( NA_character_, n )
+    
+    #   this is the fastest way I found to test a whole row, even though we do not need the sums
+    finite  = is.finite( .rowSums( mat, n, 3 ) )
+    
+    out[finite] = rgb( mat[finite, ,drop=F], maxColorValue=maxColorValue )
+    
+    return(out)
+    }
+    
+    
+    
     
     
 #   obj         mx3 matrix of linear RGBs, with rownames and colnames assigned

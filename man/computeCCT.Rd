@@ -5,74 +5,52 @@
 \title{Compute Correlated Color Temperature (CCT) of Light Spectra}
 \alias{computeCCT}
 \alias{computeCCT.colorSpec}
-\alias{CCTfromXYZ}
-\alias{CCTfromxy}
-\alias{CCTfromuv}
+
 
 \description{
   Compute the CCT, in K,
   of a \bold{colorSpec} object with \code{type} equal to \code{'light'}
 }
 \usage{
-\S3method{computeCCT}{colorSpec}( x, method='robertson', strict=FALSE, c2=1.4388e7 )
-
-CCTfromXYZ( XYZ, method='robertson', strict=FALSE, c2=1.4388e7 )
-
-CCTfromxy( xy, method='robertson', strict=FALSE, c2=1.4388e7 )
-
-CCTfromuv( uv, method='robertson', strict=FALSE, c2=1.4388e7 )
+\S3method{computeCCT}{colorSpec}( x, isotherms='robertson', locus='robertson', strict=FALSE )
 }
 
 \arguments{
 \item{x}{an \bold{colorSpec} \R object with \code{type} equal to \code{'light'}, and M spectra }
-  
-\item{XYZ}{a numeric Mx3 matrix with XYZ tristimulus values (CIE 1931) in the rows,
-or a numeric vector that can be converted to such a matrix, by row.}
 
-\item{xy}{a numeric Mx2 matrix with xy chromaticity values (CIE 1931) in the rows,
-or a numeric vector that can be converted to such a matrix, by row.}
+\item{isotherms}{A character vector whose elements match one
+of the available isotherm families:
+\code{'robertson'}, \code{'mccamy'}, and \code{'native'}.
+Matching is partial and case-insensitive.
+When more than one family is given, a matrix is returned, see \bold{Value}.
+When \code{isotherms='native'} the isotherms are defined implicitly
+as lines perpendicular to the locus, see \bold{Details} in 
+\code{\link[spacesXYZ:CCT]{spacesXYZ::CCTfromXYZ}()}.
+The character \code{NA} (\code{NA_character_}) is taken as
+a synonym for \code{'native'}.
+}
 
-\item{uv}{a numeric Mx2 matrix with uv chromaticity values (CIE UCS 1960) in the rows,
-or a numeric vector that can be converted to such a matrix, by row.}
-
-\item{method}{For \code{'robertson'} a lookup table with linear interpolation is used.
-For \code{'lm'} the closest point on the Planckian locus is calculated directly
-using the Levenberg-Marquardt method. See \bold{Details}.
-For \code{'mccamy'} a rational function of the xy chromaticity is used.
+\item{locus}{
+valid values are \code{'robertson'} and \code{'precision'}, see above.
 Matching is partial and case-insensitive.
 }
 
-\item{strict}{The CIE considers the CCT of a chromaticity to be meaningful only
-if its distance to the Planckian locus is less than 0.05 [in CIE UCS 1960].
-If \code{strict=FALSE} or \code{method='mccamy'}, then this condition is ignored.
-Otherwise, if the the condition is not satisfied,
-the functions returns \code{NA_real_}.
+\item{strict}{The CIE considers the CCT of a chromaticity \code{uv} to be meaningful only
+if the distance from \code{uv} to the Planckian locus is less than or equal to 0.05 
+[in CIE UCS 1960].
+If \code{strict=FALSE}, then this condition is ignored.
+Otherwise, the distance is computed along the corresponding isotherm,
+and if it exceeds 0.05 the returned CCT is set to \code{NA}.}
+
 }
 
-\item{c2}{This is only used when \code{method='lm'}.
-For points on the Planckian locus, the function \code{\link{planckSpectra}()}
-is called, and this argument \code{c2} is passed to it.
-See \code{\link{planckSpectra}} for the definition,
-and the special value \code{c2='calc'}.
-}
-}
 
 \details{
 In \code{computeCCT()}, for each spectrum,
 XYZ is computed using \code{\link{xyz1931.1nm}},
-and the result passed to \code{CCTfromXYZ()},
-and then to \code{CCTfromuv()}, along with the other three arguments. 
+and the result passed to \code{spacesXYZ::CCTfromXYZ()}.
 If the \code{quantity} of \code{x} is \code{'photons'} (actinometric) each spectrum is
-converted to \code{'energy'} (radiometric) on the fly.\cr  
-In \code{CCTfromuv()}, Robertson's Method uses a lookup table with 31 entries
-and can compute CCTs in the interval [1666.7K,Inf], 
-see \bold{References} and \bold{Source}.
-If \code{method='lm'} the result of Robertson's Method is used as an initial point
-for Levenberg-Marquardt, which then "polishes" it.
-The package \bold{minpack.lm} is required here.
-The difference between the 2 methods is small.
-To enable diagnostic information about the polishing,
-execute \code{cs.options(loglevel='INFO')} before calling one of these functions.
+converted to \code{'energy'} (radiometric) on the fly.\cr 
 }
 
 \value{
@@ -81,22 +59,8 @@ where M is the number of spectra in \code{x}.
 The vector's \code{names} is set to \code{specnames(x)}.\cr
 If the \code{type} of \code{x} is not \code{'light'},
 then a warning is issued and all values are \code{NA_real_}.\cr
-\code{CCTfromXYZ()}, \code{CCTfromxy()}, 
-and \code{CCTfromuv()} also return a a numeric vector of length M,
-and in case of error, the element of the vector is set to \code{NA_real_}.
 }
 
-\note{
-The lookup table on page 228 in Wyszecki & Stiles (see \bold{References})
-contains an error at 325 mired,
-which was corrected by Bruce Lindbloom (see \bold{Source}).
-
-}
-
-\source{
-\url{http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_T.html}
-
-}
 
 \references{
 McCamy, C. S.
@@ -124,16 +88,16 @@ Table 1(3.11). pp. 227-228.
 \code{\link{quantity}()},
 \code{\link{xyz1931}},
 \code{\link{planckSpectra}()},    
-\code{\link{specnames}()}
+\code{\link{specnames}()},
+\code{\link[spacesXYZ:CCT]{spacesXYZ::CCTfromXYZ}()}
 }
 
 \examples{
-computeCCT( D65.1nm )               # returns 6502.068
-computeCCT( D65.1nm, meth='lm' )    # returns 6502.711
-computeCCT( A.1nm )                 # returns 2855.656
-computeCCT( A.1nm, meth='lm' )      # returns 2855.583
-computeCCT( A.1nm, meth='mccamy' )  # returns 2857.188
-CCTfromXYZ( c(1,1,1) )              # returns 5454.028
+computeCCT( D65.1nm )                       # returns 6502.068
+computeCCT( D65.1nm, isotherms='native' )   # returns 6503.323
+computeCCT( A.1nm )                         # returns 2855.656
+computeCCT( A.1nm, isotherms='native' )     # returns 2855.662
+computeCCT( A.1nm, isotherms='mccamy' )     # returns 2857.188
 
 moon = readSpectra( system.file( "extdata/sources/moonlight.txt", package='colorSpec' ) )
 computeCCT( moon )                  # returns 4482.371

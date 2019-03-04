@@ -11,8 +11,10 @@ g.microbenchmark    = FALSE     # logical value, whether the package microbenchm
     #                    pkgname, desc$Version, desc$Title, desc$Author, desc$Built )
     #   print( pkgname )
     
-    #   unlockBinding() fails here in .onLoad(), so use .onAttach() instead
-    
+    #   unlockBinding( "g.microbenchmark", asNamespace('colorSpec') )   # asNamespace(pkgname) here generates a NOTE ! 
+
+    g.microbenchmark    <<- requireNamespace( 'microbenchmark', quietly=TRUE )  #;  cat( "g.microbenchmark=", g.microbenchmark, '\n' )
+        
 
     #mess    = environmentName( environment(.onLoad) )
     #mess = sprintf( "Environment: '%s'\n", mess )
@@ -36,11 +38,7 @@ g.microbenchmark    = FALSE     # logical value, whether the package microbenchm
     unlockBinding( "g.options", asNamespace('colorSpec') )          # asNamespace(pkgname) here generates a NOTE !
     unlockBinding( "g.word", asNamespace('colorSpec') )             # asNamespace(pkgname) here generates a NOTE !
     unlockBinding( "g.loglevel", asNamespace('colorSpec') )         # asNamespace(pkgname) here generates a NOTE !
-    unlockBinding( "g.microbenchmark", asNamespace('colorSpec') )   # asNamespace(pkgname) here generates a NOTE ! 
-    # unlockBinding( "g.Trap30x301", asNamespace('colorSpec') )       # asNamespace(pkgname) here generates a NOTE ! 
-    
-    g.microbenchmark    <<- requireNamespace( 'microbenchmark', quietly=TRUE )  #;  cat( "g.microbenchmark=", g.microbenchmark, '\n' )
-        
+
     
     #   print( g.options )  
     

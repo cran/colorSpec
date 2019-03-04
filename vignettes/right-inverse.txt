@@ -6,29 +6,30 @@ Each function in $Q^\infty$ corresponds to the reflectance function of a materia
 A ``material responder" is a linear operator 
 $\Lambda : Q^\infty \to \mathbb{R}^3$,
 where points in $\mathbb{R}^3$ are tristimulus responses.
-Define $B := \Lambda(Q^\infty)$; 
-$B$ is a compact convex body - the \emph{object color solid} 
+Define $Z := \Lambda(Q^\infty)$; 
+$Z$ is a compact convex body - the \emph{object color solid} 
 (\emph{R{\"o}sch Farbk{\"o}rper}).
-Points in the boundary $\partial B$ correspond to \emph{optimal colors}
+Points in the boundary $\partial Z$ correspond to \emph{optimal colors}
 (\emph{Optimalfarben}).
-Non-optimal colors correspond to points in the interior $\operatorname{int}(B)$.
-The centroid method for spectral reflectance estimation is a function
-$\gamma : \operatorname{int}(B) \to \operatorname{int}(Q^\infty)$ so that
-$$\text{the composition } \hspace{30pt} \operatorname{int}(B) ~~
+Non-optimal colors correspond to points in the interior $\operatorname{int}(Z)$.
+The centroid method for spectral reflectance estimation is a
+continuous function
+$\gamma : \operatorname{int}(Z) \to \operatorname{int}(Q^\infty)$ so that
+$$\text{the composition } \hspace{30pt} \operatorname{int}(Z) ~~
 {\overset{\gamma}\rightarrow} ~~
 \operatorname{int}(Q^\infty) ~~
 {\overset{\Lambda}\twoheadrightarrow}~~
-\operatorname{int}(B) \hspace{30pt}  \text{ is the identity on } \operatorname{int}(B).$$
-Whenever $\Lambda \circ \gamma = \operatorname{id}_{\operatorname{int}(B)}$,
+\operatorname{int}(Z) \hspace{30pt}  \text{ is the identity on } \operatorname{int}(Z).$$
+Whenever $\Lambda \circ \gamma = \operatorname{id}_{\operatorname{int}(Z)}$,
 $\gamma$ is said to be a \emph{right-inverse for} $\Lambda$
 (or a \emph{section of} $\Lambda$).
-Note that $\gamma$ is not defined for optimal colors in $\partial B$.
+Note that $\gamma$ is not defined for optimal colors in $\partial Z$.
 For more details on $\gamma$, see Davis \cite{Davis2018}.
 There are many other possible right-inverses.
 Assuming that $\Lambda$ has the property that
 every optimal color comes from a spectrum with $\le 2$ transitions (jumps),
-Alexander Logvinenko has defined a right-inverse that is defined on all of $B$
-(including $\partial B$)
+Alexander Logvinenko has constructed a right-inverse 
+that is defined on all of $Z$ (including $\partial Z$)
 and whose image is a 3D space of step functions 
 (the \emph{rectangle color atlas})
 that is the same for every such $\Lambda$, see \cite{Logvinenko2009}.

@@ -74,13 +74,13 @@ The goal of this \textbf{colorSpec} vignette is to display rendered images of a 
 with different illuminants, both with and without chromatic adaption methods.
 The figures are best viewed on a display calibrated for sRGB.
 Featured functions in this vignette are: 
-\code{DisplayRGBfromLinearRGB()}, 
 \code{extradata()},
-\code{RGBfromXYZ()},
-and \code{plotPatchesRGB()}.
+and \code{product()}.
 
 <<packs, echo=TRUE, message=FALSE>>=
 library( colorSpec )
+library( spacesXYZ )    # for function standardXYZ()
+library( spacesRGB )    # for functions RGBfromXYZ() and plotPatchesRGB()
 @
 
 Read the target spectra.  This data has been kindly provided in CGATS format by \cite{Pascale}.
@@ -109,23 +109,23 @@ D65.eye = product( D65.1nm, "artwork", xyz1931.1nm, wave='auto' )
 #   calibrate so the perfect-reflecting-diffuser is the 'official XYZ'
 #   scale XYZ independently
 PRD = neutralMaterial( 1, wavelength(D65.eye) )
-D65.eye = calibrate( D65.eye, stimulus=PRD, response=officialXYZ('D65'), method='scaling' )
+D65.eye = calibrate( D65.eye, stimulus=PRD, response=standardXYZ('D65'), method='scaling' )
 @
 Calculate XYZ and then RGB:
 <<lee11, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm' >>=
 XYZ = product( MacbethCC, D65.eye, wave='auto' )
-RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+RGB = RGBfromXYZ( XYZ, space='sRGB', which='scene' )$RGB  # this is *signal* sRGB
 # add the rectangle data to RGB, so they can be plotted in proper places
 obj = extradata(MacbethCC)
 obj$RGB = RGB
 #  display in proper location, and use the sRGB display transfer function
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
+plotPatchesRGB( obj, space='sRGB', which='signal', back='gray20', labels=FALSE )
 obj.first = obj   # save this reference object for later
 @
 Here are the 8-bit device values:
 <<lee13, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='8-bit Device Values' >>=
-RGB8 = round( 255 * DisplayRGBfromLinearRGB( RGB, gamma='sRGB' ) )
+RGB8 = round( 255 * RGB )
 print( RGB8 )
 @
 Note that all of these patches are inside the sRGB gamut, exept for Cyan.
@@ -133,11 +133,11 @@ Note that all of these patches are inside the sRGB gamut, exept for Cyan.
 Another way to do the same thing is use the built-in theoretical camera
 \code{BT.709.RGB} that computes sRGB directly from spectra, and has already been calibrated.
 <<lee12, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and Theoretical BT.709.RGB Camera' >>=
-RGB = product( D65.1nm, MacbethCC, BT.709.RGB, wave='auto' )    # this is *linear* sRGB
+RGB = product( D65.1nm, MacbethCC, BT.709.RGB, wave='auto' ) # this is *linear* sRGB
 obj = extradata(MacbethCC)
 obj$RGB = RGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
+plotPatchesRGB( obj, space='sRGB', which='scene', back='gray20', labels=FALSE )
 @
 
 
@@ -151,30 +151,30 @@ D50.eye = product( D50.5nm, "artwork", xyz1931.5nm, wave='auto' )
 #   calibrate so the response to the perfect-reflecting-diffuser is the 'official XYZ' of D50
 #   scale XYZ independently
 PRD = neutralMaterial( 1, wavelength(D50.eye) )
-D50.eye = calibrate( D50.eye, stimulus=PRD, response=officialXYZ('D50'), method='scaling' )
+D50.eye = calibrate( D50.eye, stimulus=PRD, response=standardXYZ('D50'), method='scaling' )
 @
 Calculate XYZ and then RGB:
 <<lee21, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D50 and xyz1931.5nm' >>=
 XYZ = product( MacbethCC, D50.eye, wave='auto' )
 obj = extradata(MacbethCC)
-obj$RGB =  RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+obj$RGB = RGBfromXYZ( XYZ, space='sRGB' )$RGB     # this is *signal* sRGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
+plotPatchesRGB( obj, space='sRGB', which='signal', back='gray20', labels=FALSE )
 @
 Since D50 is yellower than D65, the result has a yellow cast.
 Start over, but this time calibrate and adapt to D65 using the Bradford method.
 <<lee22, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D50 and xyz1931.5nm, but then adapted to D65' >>=
 D50.eye = product( D50.5nm, "artwork", xyz1931.5nm, wave='auto' )
-#  calibrate so the response to the perfect-reflecting-diffuser is the 'official XYZ' of D65
-#  with this chromatic adaption the destination XYZ is a 3x3 matrix times the source XYZ
+# calibrate so the response to the perfect-reflecting-diffuser is the 'official XYZ' of D65
+# with this chromatic adaption the destination XYZ is a 3x3 matrix times the source XYZ
 PRD = neutralMaterial( 1, wavelength(D50.eye) )
-XYZ.D65 = officialXYZ('D65')
+XYZ.D65 = standardXYZ('D65')
 D50toD65.eye = calibrate( D50.eye, stimulus=PRD, response=XYZ.D65, method='Bradford' )
 XYZ = product( MacbethCC, D50toD65.eye, wave='auto' )
 obj = extradata(MacbethCC)
-obj$RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+obj$RGB = RGBfromXYZ( XYZ, space='sRGB' )$RGB       # this is *signal* sRGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
+plotPatchesRGB( obj, space='sRGB', which='signal', back='gray20', labels=FALSE )
 @
 The white-balance here is much improved.
 But it hard to compare colors in this figure with the ones way back in Figure 1.
@@ -183,8 +183,8 @@ in Figure 4 by splitting each square into 2 triangles.
 We can do this by setting \code{add=T} in the second plot.
 <<lee23, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with both D65 (Figure 1), and D50 then adapted to D65 (Figure 4)' >>=
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( obj.first, gamma='sRGB', back='gray20', labels=F )
-plotPatchesRGB( obj, gamma='sRGB', labels=F, shape='bottomright', add=T )
+plotPatchesRGB( obj.first, space='sRGB', back='gray20', labels=F )
+plotPatchesRGB( obj, space='sRGB', labels=F, shape='bottomright', add=T )
 @
 The top-left triangle has the color from Figure 1 
 and the bottom-right triangle has the color from Figure 4.
@@ -204,9 +204,9 @@ scanner = product( subset(Fs.5nm,'F11'), 'artwork', Flea2.RGB, wave='auto' )
 PRD = neutralMaterial( 1, wavelength(scanner) )
 scanner = calibrate( scanner, stimulus=PRD, response=1, method='scaling' )
 obj = extradata(MacbethCC)
-obj$RGB = product( MacbethCC, scanner, wave='auto' )       # this RGB is not sRGB
+obj$RGB = product( MacbethCC, scanner, wave='auto' ) # this linear RGB is not linear sRGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( obj, gamma='sRGB', back='gray20', labels=FALSE )
+plotPatchesRGB( obj, space='sRGB', which='scene', back='gray20', labels=FALSE )
 @
 The colors are too pale; this time \code{Cyan} has a substantial Red signal.
 Some sort of color management is necessary in this scanner to improve accuracy.

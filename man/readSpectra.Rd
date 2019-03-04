@@ -62,10 +62,11 @@ or \code{NULL} in case of ERROR.
 
 The functions \code{readSpectraCGATS()} and \code{readSpectraControl()}
 are more complicated.
-These 2 file formats can contain multiple spectra with different \code{wavelength} vectors
-so both functions return a \emph{list} of \bold{colorSpec} objects
-(unless the list is of length 1, when just that single \bold{colorSpec} object is returned).  
-  
+These 2 file formats can contain multiple spectra with different \code{wavelength} sequences,
+so both functions return a \emph{list} of \bold{colorSpec} objects,
+even when that list has length 1.
+If no spectral objects are found, they return \code{NULL}.
+
 If \code{readSpectra()} calls \code{readSpectraCGATS()} or \code{readSpectraControl()}
 and receives a list of \bold{colorSpec} objects,
 \code{readSpectra()} attempts to \code{\link{bind}()} them into a single object.

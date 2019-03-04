@@ -913,7 +913,7 @@ spectralFileType <- function( .path )
             }
         }
     
-    pattern = c(  "^NUMBER_OF_FIELDS|^KEYWORD" ,  "^\\[Control\\]", "^(wave|wv?l)", "^>+Begin", "^ID\tName", "^Time"  )
+    pattern = c(  "^CGATS|^ISO28178|^NUMBER_OF_FIELDS|^KEYWORD" ,  "^\\[Control\\]", "^(wave|wv?l)", "^>+Begin", "^ID\tName", "^Time"  )
     
     type    = c( "CGATS", "Control", "XYY", "scope", "spreadsheet", "spreadsheet" )
     

@@ -261,7 +261,7 @@ Here, we will add Illuminant A, which has lots of energy at long wavelengths,
 and also add a black body radiator with a temperature of 9000 K,
 which has lots of energy at short wavelengths.
 There are now 9 responsivities, see Figure 10.
-<<fig10, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=3, fig.width=9, out.width='1.0\\linewidth', fig.cap='(a) the original responsivities of `E.flea`, and their sum. (b) the reparameterization to interval [0,1].  (c) the equalized responsivities, and their sum.' >>=
+<<fig10, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=3, fig.width=9, out.width='1.0\\linewidth', fig.cap='(a) the original responsivities of `E.flea`, and their sum. (b) the reparameterization to interval [0,1].  (c) the equalized responsivities using 3 different light sources, and their sum.' >>=
 A.Flea2 = product( A.1nm, "material", Flea2.RGB, wavelength=wave )
 specnames( A.Flea2 ) = c('rA','gA','bA')
 P.Flea2 = product( planckSpectra(9000), "material", Flea2.RGB, wavelength=wave )
@@ -273,7 +273,7 @@ Compute the responses, and
 compare the original spectra and the spectra estimated from the responses. 
 Note that each response is now a 9-vector instead of a 3-vector.
 See Figure 11.
-<<fig11, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=4, fig.width=8, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle; the equalized estimate is dashed; and the unequalized estimate is dotted.  Both estimates use the centroid method.' >>=
+<<fig11, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=4, fig.width=8, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle; the equalized estimate is dashed.  This estimate uses 3 different light sources.' >>=
 response = product( NCSU6, PEA.Flea2, wavelength=wave )
 est.eq   = invert( PEA.Flea2, response, method='centroid', alpha=1 )
 # range( extradata(est.eq)$estim.precis )    # est.eq$estim.precis also works
@@ -319,10 +319,10 @@ I see little practical value in this type of inversion.
 
 
 
-
 \section*{Appendix A - Inverse Colorimetry}
 <<appendixRI, child='right-inverse.txt'>>=
 @
+
 
 
 \section*{Appendix B - The Macbeth ColorChecker\texttrademark}

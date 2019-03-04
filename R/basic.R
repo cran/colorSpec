@@ -165,6 +165,8 @@ XYZ_from_xyY    <- function( x, y, Y )
     return( out )
     }
     
+    
+    
 #   requires private data frame dataIlluminants, which is lazy-loaded from sysdata.rda;  see savePrivateDatasets()
 officialXYZ <- function( name )
     {
@@ -184,87 +186,6 @@ officialXYZ <- function( name )
     
 
     
-Lightness_from_linear  <-  function( iY )
-    {
-    thresh = (24/116)^3
-    
-    out = ifelse( iY < thresh, (116/12)^3 * iY, 116*iY^(1/3) - 16 )
-    
-    out
-    }
-    
-linear_from_Lightness  <-  function( iL )
-    {
-    out = ifelse( iL < 8, (12/116)^3 * iL, ((iL + 16)/116)^3 )
-    
-    out
-    }
-    
-    
-Lab_from_XYZ <- function( XYZ, XYZ_white )
-    {
-    Lab = XYZ   #  get the dimension right    
-    
-    if( NCOL(XYZ) == 3 )
-        {
-        for( i in 1:nrow(XYZ) )
-            {
-            Lab[i, ] = Lab_from_XYZ( XYZ[i, ], XYZ_white )
-            }
-        return(Lab)
-        }
-
-    
-    #fY = forwardLab( XYZ[2]/XYZ_white[2] )
-    #Lab[1] = 116 * fY - 16
-    #Lab[2] = 500 * ( forwardLab( XYZ[1]/XYZ_white[1] ) - fY )
-    #Lab[3] = 200 * (  fY - forwardLab( XYZ[3]/XYZ_white[3] )  )
-    
-    Lab[1] = Lightness_from_linear( XYZ[2]/XYZ_white[2] )
-    Lab[2] = (500/116) * (Lightness_from_linear( XYZ[1]/XYZ_white[1] ) - Lab[1])
-    Lab[3] = (200/116) * (Lab[1] - Lightness_from_linear( XYZ[3]/XYZ_white[3] ))
-    
-    return( Lab )
-    }
-    
-XYZ_from_Lab    <- function( Lab, XYZ_white )
-    {
-    XYZ = Lab    #  get the dimension right    
-    
-    if( NCOL(Lab) == 3 )
-        {
-        for( i in 1:nrow(Lab) )
-            {
-            XYZ[i, ] = XYZ_from_Lab( Lab[i, ], XYZ_white )
-            }
-        return(XYZ)
-        }    
-    
-    XYZ[2]  = linear_from_Lightness( Lab[1] ) * XYZ_white[2]
-    
-    XYZ[1]  = linear_from_Lightness( (116/500) * Lab[2]  +  Lab[1]) * XYZ_white[1]
-    XYZ[3]  = linear_from_Lightness(-(116/200) * Lab[3]  +  Lab[1]) * XYZ_white[3]  
-    
-    return( XYZ )
-    }
-    
-    
-LCh_from_Lab    <- function( Lab )
-    {
-    dim.saved   = dim(Lab)
-    
-    dim(Lab)    = c( length(Lab)/3L, 3L )
-    
-    LCh = Lab
-    
-    LCh[ , 2]   = sqrt( Lab[ ,2]^2 +  Lab[ ,3]^2 )                  #   Chroma
-        
-    LCh[ , 3]   = (atan2( Lab[ ,3], Lab[ ,2] ) * 180/pi) %% 360     #   hue
-    
-    dim(LCh)    = dim.saved
-    
-    return( LCh )
-    }
         
     
 #   .xy     from 1931    a 2-vector or a matrix with 2 columns

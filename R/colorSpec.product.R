@@ -327,19 +327,11 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
             {
             log.string( INFO, "Wavelength sequence is irregular.  integration='%s'",  integration )
                         
-            weight  = diff( wavelength, lag=2 ) / 2
-            w.end   = c( wavelength[2] - wavelength[1], wavelength[p] - wavelength[p-1] )
+            #weight  = diff( wavelength, lag=2 ) / 2
+            #w.end   = c( wavelength[2] - wavelength[1], wavelength[p] - wavelength[p-1] )
             
-            if( integration == 'rectangular' )
-                weight  = c( w.end[1], weight, w.end[2] )
-            else if( integration == 'trapezoidal' )
-                weight  = c( w.end[1]/2, weight, w.end[2]/2 )
-            else
-                {
-                log.string( ERROR, "integration='%s' is invalid.", as.character(integration) )
-                return(NULL)
-                }
-                
+            weight  = breakandstep(wavelength,integration)$stepvec
+                             
             if( length(weight) != p )
                 {
                 log.string( ERROR, "length(weight)= %d != %d.", length(weight), p )

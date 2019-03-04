@@ -149,8 +149,9 @@ colorSpec  <-  function( data, wavelength, quantity='auto', organization='auto',
         {
         tdata   = t(data)      #;      print( tdata )
         colnames(tdata) = wavelength
-        class(tdata)    = "model.matrix"
-        out = data.frame( spectra=tdata, row.names=specnames )    #; print( out )
+        #   class(tdata)    = "model.matrix"
+        out = data.frame( row.names=specnames )    #; print( out )
+        out$spectra = tdata
         #   row.names(out)   = sprintf( "S%d", 1:nrow(out) )        
         }
         

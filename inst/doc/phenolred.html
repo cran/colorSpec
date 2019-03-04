@@ -12,14 +12,14 @@
 
 <meta name="author" content="Glenn Davis" />
 
-<meta name="date" content="2018-11-18" />
+<meta name="date" content="2019-03-03" />
 
 <title>Phenol Red - pH Indicator</title>
 
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
+<style type="text/css" data-origin="pandoc">
 div.sourceCode { overflow-x: auto; }
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
@@ -55,7 +55,29 @@ code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
 code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
 code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
 </style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -70,7 +92,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Phenol Red - pH Indicator</h1>
 <h4 class="author"><em>Glenn Davis</em></h4>
-<h4 class="date"><em>2018-11-18</em></h4>
+<h4 class="date"><em>2019-03-03</em></h4>
 
 
 <div id="TOC">
@@ -83,8 +105,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul>
 </div>
 
-<p>Phenol red is an indicator commonly used to measure pH in swimming pool test kits, see e.g. <span class="citation">[2]</span>. The goal of this <strong>colorSpec</strong> vignette is to reproduce the colors seen in such a test kit, for typical values of pool pH. Calculations like this one might make a good project for a college freshman chemistry class. Featured functions in this vignette are: <code>interpolate()</code>, <code>calibrate()</code>, and <code>plotPatchesRGB()</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>( colorSpec )</code></pre></div>
+<p>Phenol red is an indicator commonly used to measure pH in swimming pool test kits, see e.g. <span class="citation">[2]</span>. The goal of this <strong>colorSpec</strong> vignette is to reproduce the colors seen in such a test kit, for typical values of pool pH. Calculations like this one might make a good project for a college freshman chemistry class. Featured functions in this vignette are: <code>interpolate()</code> and <code>calibrate()</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>( colorSpec )
+<span class="kw">library</span>( spacesRGB )    <span class="co"># for functions plotPatchesRGB() and SignalRGBfromLinearRGB()</span></code></pre></div>
 <p><br></p>
 <div id="absorbance-spectra-at-different-ph-values" class="section level2">
 <h2>Absorbance Spectra at Different pH Values</h2>
@@ -104,8 +127,8 @@ phenolred =<span class="st"> </span><span class="kw">readSpectra</span>( path, <
 mat =<span class="st"> </span><span class="kw">apply</span>( <span class="kw">as.matrix</span>(wavesel), <span class="dv">1</span>, <span class="cf">function</span>( lambda ) { <span class="kw">as.numeric</span>(lambda <span class="op">==</span><span class="st"> </span>wave) } )
 <span class="kw">colnames</span>( mat ) =<span class="st"> </span><span class="kw">sprintf</span>( <span class="st">&quot;%g nm&quot;</span>, wavesel )
 mono =<span class="st"> </span><span class="kw">colorSpec</span>( mat, <span class="dt">wavelength=</span>wave, <span class="dt">quantity=</span><span class="st">'power'</span> )
-RGB =<span class="st"> </span><span class="kw">product</span>( mono, BT.<span class="fl">709.</span>RGB, <span class="dt">wavelength=</span>wave )
-colvec =<span class="st"> </span>grDevices<span class="op">::</span><span class="kw">rgb</span>( <span class="kw">DisplayRGBfromLinearRGB</span>( RGB <span class="op">/</span><span class="st"> </span><span class="kw">max</span>(RGB) ) )
+RGB =<span class="st"> </span><span class="kw">product</span>( mono, BT.<span class="fl">709.</span>RGB, <span class="dt">wavelength=</span>wave )  <span class="co"># this is *linear* RGB</span>
+colvec =<span class="st"> </span>grDevices<span class="op">::</span><span class="kw">rgb</span>( <span class="kw">SignalRGBfromLinearRGB</span>( RGB<span class="op">/</span><span class="kw">max</span>(RGB), <span class="dt">which=</span><span class="st">'scene'</span> )<span class="op">$</span>RGB )
 
 phenolsel =<span class="st"> </span><span class="kw">resample</span>( phenolred, wavesel )
 pH =<span class="st"> </span><span class="kw">as.numeric</span>( <span class="kw">sub</span>( <span class="st">'[^0-9]*([0-9]+)$'</span>, <span class="st">'</span><span class="ch">\\</span><span class="st">1'</span>, <span class="kw">specnames</span>(phenolred) ) )
@@ -152,7 +175,7 @@ RGB</code></pre></div>
 <span class="co"># recalibrate, but lower the background a little, to allow more 'headroom' for indicator colors</span>
 bglin =<span class="st"> </span><span class="fl">0.96</span>  <span class="co">#  graylevel for the background, linear</span>
 testkit =<span class="st"> </span><span class="kw">calibrate</span>( testkit, <span class="dt">response=</span>bglin )
-RGB =<span class="st"> </span><span class="kw">product</span>( phenolpool, testkit )
+RGB =<span class="st"> </span><span class="kw">product</span>( phenolpool, testkit )   <span class="co"># this is *linear* sRGB</span>
 RGB</code></pre></div>
 <pre><code>##                R         G         B
 ## pH=6.8 0.9871174 0.6566501 0.2169797
@@ -167,21 +190,21 @@ RGB</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df.RGB =<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">LEFT=</span><span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(RGB), <span class="dt">TOP=</span><span class="dv">0</span>, <span class="dt">WIDTH=</span><span class="dv">1</span>, <span class="dt">HEIGHT=</span><span class="dv">2</span> )
 df.RGB<span class="op">$</span>RGB =<span class="st"> </span>RGB
 <span class="kw">par</span>( <span class="dt">omi=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">0.3</span>,<span class="dv">0</span>,<span class="fl">0.3</span>,<span class="dv">0</span>) )
-<span class="kw">plotPatchesRGB</span>( df.RGB, <span class="dt">labels=</span>F, <span class="dt">background=</span>bglin )
+<span class="kw">plotPatchesRGB</span>( df.RGB, <span class="dt">space=</span><span class="st">'sRGB'</span>, <span class="dt">which=</span><span class="st">'scene'</span>, <span class="dt">labels=</span>F, <span class="dt">background=</span>bglin )
 <span class="kw">text</span>( (<span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(RGB)) <span class="op">+</span><span class="st"> </span><span class="fl">0.5</span>, <span class="dv">2</span>, <span class="kw">sprintf</span>(<span class="st">&quot;%.1f&quot;</span>,pHvec), <span class="dt">adj=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">1.2</span>), <span class="dt">xpd=</span><span class="ot">NA</span> )
 <span class="kw">title</span>( <span class="dt">main=</span><span class="st">'Calculated Colors for pH from 6.8 to 8.2'</span> )</code></pre></div>
 <p><img src="data:image/png;base64,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" /><!-- --> The background color is that of pure water, and is not the full RGB=(255,255,255).</p>
 <p>In the first figure above, the phenol red concentration and optical path length are unknown. Compared to a real test kit, the calculated colors look a little faded. An absorbance multiplier can easily tweak the unknown concentration, as follows.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tweak =<span class="st"> </span><span class="fl">1.2</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tweak =<span class="st"> </span><span class="fl">1.3</span>
 phenolpool =<span class="st"> </span><span class="kw">multiply</span>( phenolpool, tweak )
 df.RGB =<span class="st"> </span><span class="kw">data.frame</span>( <span class="dt">LEFT=</span><span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(RGB), <span class="dt">TOP=</span><span class="dv">0</span>, <span class="dt">WIDTH=</span><span class="dv">1</span>, <span class="dt">HEIGHT=</span><span class="dv">2</span> )
-df.RGB<span class="op">$</span>RGB =<span class="st"> </span><span class="kw">product</span>( phenolpool, testkit )
+df.RGB<span class="op">$</span>RGB =<span class="st"> </span><span class="kw">product</span>( phenolpool, testkit ) <span class="co"># this is *linear scene* sRGB</span>
 <span class="kw">par</span>( <span class="dt">omi=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="dt">mai=</span><span class="kw">c</span>(<span class="fl">0.3</span>,<span class="dv">0</span>,<span class="fl">0.3</span>,<span class="dv">0</span>) )
-<span class="kw">plotPatchesRGB</span>( df.RGB, <span class="dt">background=</span>bglin, <span class="dt">labels=</span>F )
+<span class="kw">plotPatchesRGB</span>( df.RGB, <span class="dt">space=</span><span class="st">'sRGB'</span>, <span class="dt">which=</span><span class="st">'scene'</span>, <span class="dt">background=</span>bglin, <span class="dt">labels=</span>F )
 <span class="kw">text</span>( (<span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(RGB)) <span class="op">+</span><span class="st"> </span><span class="fl">0.5</span>, <span class="dv">2</span>, <span class="kw">sprintf</span>(<span class="st">&quot;%.1f&quot;</span>,pHvec), <span class="dt">adj=</span><span class="kw">c</span>(<span class="fl">0.5</span>,<span class="fl">1.2</span>), <span class="dt">xpd=</span><span class="ot">NA</span> )
 main =<span class="st"> </span><span class="kw">sprintf</span>( <span class="st">'Calculated Colors for pH from 6.8 to 8.2 (absorbance multiplier=%g)'</span>, tweak )
 <span class="kw">title</span>( <span class="dt">main=</span>main )</code></pre></div>
-<p><img src="data:image/png;base64,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HVP8vZC57eehdFrIotRNlQUDqCqXLkYxzLyea0h/Cbu9yWUiT/L3FloaUB36+7WP8VK9+zvRr/ep+kBNVw5jD6KDc/n2ciVqOXCwh9VvAtB5Lal/lX4MHZzL6coOD6CPozH7TP+YOjiXQ8uf2/1u9NsAdO8vZx9Lx+ay8Q+WEeot6e0AQjVJbwcQqkl6O4BQTdLbAYRqkt4OIFST9HYAoZqktwMI1SS9HUCoJuntAEI1SW8HEKpJejuAUE3S2wGEapLeDiBUk/R2AKGapLcDCNUkezf+d6h+OVQ/H6r/Hqn/HKp/H6p/Hap/HioABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAABVAA/eMAitAjSHo7gFBN0tsBhGqS3g4gVJP0dgChmuS+bm8vIs/hl1FEzve7MInTOf766YejrL1/mX88HebbrOHpp4OMmRw2W2ssQmagsQjWWlMR5K5e01ylb68+u+McytSWnEuyNi3W2pKTrL1/mS2NLRgY3y5L5e4H1BozOWy21lwEY6C5CNpaWxHknk7vX5b5MH7+6n5Zhh4aM+2NedNHWXt7OavfWq1dFiBaAbWBHuVacxGMgeYiGGttRZB7Or19pybXIYC+vZzCDwcgFa05NS7I2tr49Oc2QFOg3zXuEsbasYA2F6Hgzr1FkHs6TZ9/fE2niiO2+CEkw9VtagN0sN2Hw6zN3jWcQY0xm8Nm1w7d4tuLsHXn3iLIXcPLPJqbJYuaT9Tzzhkq5SZa25qXrDmTbRgoa8vW1wZoMpblsNW19iIoAwcUIXfn7iLIPZ3GT3qGLXMj21Q/qpSLIwCdstS0nT6UtXGGsw3QZMzmsNm15iJoA+1FyN25vwhyTyd3OnEnlUNOjanqR2zxhqHG9XPjWxugqbfJYbtrrUUwBpqLkLvTUAS5p5Nz3R/zD1jz1FZ1AO5mhx9b+VTWxs1L0QZjJoft1lqLYAw0FyFzp6UIck+nb69LAH6GuWia1jy1jhzwmkmvSmPr+9nNGte0gipjJofN1pqLYAw0F8G601QEuavXchhzUVyOOIPqmd/+ol71bjwaZ9ZWNQGqjZkcNls79AzaXgRtra0Icl+3yX288u+72j4nZq/8x+avbMma35Sbvolo3y6NgBpj06Fpay7CoEvaXARlra0I0uIFQr+2pLcDCNUkvR1AqCbp7QBCNUlvBxCqSXo7gFBN0tsBhGqS3g4gVJP0dgChmqS3AwjVJL0dQKgm6e0AQjVJbwcQqkl6O4BQTdLbAYRqkt4OIFST9HYAoZqktwMI1SS9HUCoJuntAEI1SW8HEKpJejuAUE3S2wGEapLeDiBUk/R2AKGapLcDCNX0fxraOHWNR7wPAAAAAElFTkSuQmCC" /><!-- --> These colors are a better match to those in the test kit.</p>
+<p><img src="data:image/png;base64,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TUaOAI13JN7YVh2V5kF9raU28djMvlekY4p/FjK3/3oonRayKHVTZcEAqsqli1EMM6/nFtIfwm5vcpnIk/zeQssA6lIRXDl9Uf/b0S/3VfWFmu4cxj6ILs7ly+OdqOXCwT6sfhWALmtJ/Vvpj6GLcznd2eEB9ONozL6m/5i6OJdDy3+3+83o1wHo0f+c/Vi6NpeN/2EZod6S3g4gVJP0dgChmqS3AwjVJL0dQKgm6e0AQjVJbwcQqkl6O4BQTdLbAYRqkt4OIFST9HYAoZqktwMI1SS9HUCoJuntAEI1SW8HEKpJejuAUE1y9OA/l+rfl+pfl+qfV+ofl+rvl+pvl+qvlwpAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRAARRA/38ARegjSHo7gFBN0tsBhGqS3g4gVJP0dgChmuRct5dHkYfwxygit/MuTOJ0i39+9+NV1l6/LL8+XebbouHzzxcZMzlsttZYhMxAYxGstaYiyKle01Klb88+u+MSytSWnDlZm1ZrbclJ1l6/LJbGFgyMb/NaufOAWmMmh83WmotgDDQXQVtrK4Kc6fT6ZZ0P46ev7o916KEx096YN32VtZfHm/qr1dq8AtEKqA30Kteai2AMNBfBWGsrgpzp9PK9mlyXAPry+BR+uQCpaM2pcUHW1sbPv28DNAX6feMuYaxdC2hzEQrunC2CnOk0ffrpOZ0qrtjih5AMV7epDdDBdh8us7Z413AGNcZsDptdu3SLby/C3p2zRZBTw8sympslq5pP1MvOGSrlJlrbmpesOZNtGChr69bXBmgyluWw1bX2IigDFxQhd+d0EeRMp/E7PcPWuZFtqu9VysUVgE5ZatpOH8rauMDZBmgyZnPY7FpzEbSB9iLk7pwvgpzp5E4n7qRyyakxVf2KLd4w1Lh+7nxrAzT1Njlsd621CMZAcxFydxqKIGc6Odf9Mf+CNU9tVRfgbnb4sZVPZW3cXYo2GDM5bLfWWgRjoLkImTstRZAznb49rwH4GeaiaVrz1DpywTWTXpXG1vvZ3RrXtIIqYyaHzdaai2AMNBfButNUBDnVaz2MuSjmK86geua3X9Sr3o1H48zapiZAtTGTw2Zrl55B24ugrbUVQc51m9yXV/6+q+3rxOzKf2z+li1Z85ty03ci2re5EVBjbLo0bc1FGHRJm4ugrLUVQVq8QOiXlvR2AKGapLcDCNUkvR1AqCbp7QBCNUlvBxCqSXo7gFBN0tsBhGqS3g4gVJP0dgChmqS3AwjVJL0dQKgm6e0AQjVJbwcQqkl6O4BQTdLbAYRqkt4OIFST9HYAoZqktwMI1SS9HUCoJuntAEI1SW8HEKpJejuAUE3S2wGEapLeDiBUk/R2AKGa/gvdsDjFqFt4BAAAAABJRU5ErkJggg==" /><!-- --> These colors are a better match to those in the test kit.</p>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
@@ -204,7 +227,7 @@ main =<span class="st"> </span><span class="kw">sprintf</span>( <span class="st"
 <div id="session-information" class="section level2">
 <h2>Session Information</h2>
 <pre>
-R version 3.5.1 (2018-07-02)
+R version 3.5.2 (2018-12-20)
 Platform: i386-w64-mingw32/i386 (32-bit)
 Running under: Windows 7 (build 7601) Service Pack 1
 
@@ -221,15 +244,15 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] colorSpec_0.7-5
+[1] spacesRGB_1.3-1 colorSpec_0.8-3
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.19         digest_0.6.17        rprojroot_1.3-2     
- [4] MASS_7.3-50          backports_1.1.2      magrittr_1.5        
- [7] evaluate_0.11        rootSolve_1.7        stringi_1.1.7       
-[10] rmarkdown_1.10       tools_3.5.1          stringr_1.3.1       
-[13] yaml_2.2.0           compiler_3.5.1       microbenchmark_1.4-4
-[16] minpack.lm_1.2-1     htmltools_0.3.6      knitr_1.20          
+ [1] Rcpp_1.0.0           digest_0.6.18        spacesXYZ_1.0-4     
+ [4] MASS_7.3-51.1        magrittr_1.5         evaluate_0.12       
+ [7] stringi_1.2.4        rmarkdown_1.11       tools_3.5.2         
+[10] stringr_1.3.1        xfun_0.4             yaml_2.2.0          
+[13] compiler_3.5.2       microbenchmark_1.4-6 htmltools_0.3.6     
+[16] knitr_1.21          
 </pre>
 </div>
 

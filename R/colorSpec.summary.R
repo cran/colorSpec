@@ -200,19 +200,19 @@ integral  <-  function( x, method='rectangular' )
     n   = length(wavelength)
     
     #   do not bother to optimize for regular wavelength sequence
-    weight  = diff( wavelength, lag=2 ) / 2
-    
-    w.end   = c( wavelength[2] - wavelength[1], wavelength[n] - wavelength[n-1] )
-    if( tolower(method) == substr("trapezoidal",1,nchar(method)) )
-        w.end   = w.end / 2
-        
-    weight  = c( w.end[1], weight, w.end[2] )     
-    
+#    weight  = diff( wavelength, lag=2 ) / 2
+#    w.end   = c( wavelength[2] - wavelength[1], wavelength[n] - wavelength[n-1] )
+#    if( tolower(method) == substr("trapezoidal",1,nchar(method)) )
+#        w.end   = w.end / 2
+#    weight  = c( w.end[1], weight, w.end[2] )     
+ 
+    weight  = breakandstep( wavelength, method )$stepvec
+ 
     mat = as.matrix( x )
         
-    weight  = matrix( weight, nrow=nrow(mat), ncol=ncol(mat) )
+    #   weight  = matrix( weight, nrow=nrow(mat), ncol=ncol(mat) )
     
-    out = colSums( weight * mat )    
+    out = colSums( weight * mat )    # weight is auto-replicated to all columns
     
     return( out )
     }

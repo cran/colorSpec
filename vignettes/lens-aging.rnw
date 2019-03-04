@@ -92,16 +92,16 @@ So we'll take 32 years for the CIE 1931 standard observer as well.
 Featured functions in this vignette are: 
 \code{linearize()},
 \code{lensAbsorbance()},
-\code{RGBfromXYZ()},
 \code{extradata()},
 \code{applyspec()},
-\code{calibrate()},
-and \code{PlotPatchesRGB()}.
+and \code{calibrate()}.
 
 Start the \textbf{R} session and load the \textbf{colorSpec} package,
 
 <<packs, echo=TRUE, message=FALSE>>=
 library( colorSpec )
+library( spacesXYZ )    # for function standardXYZ()
+library( spacesRGB )    # for functions RGBfromXYZ() and plotPatchesRGB()
 @
 
 Compute and plot lens transmittance at 32 and 64 years using the model in \cite{Pokorny}.
@@ -155,19 +155,19 @@ D65.eye = product( D65.1nm, "artwork", xyz1931.1nm, wave=wavelength(lens.64) )
 #   calibrate so the perfect-reflecting-diffuser is the 'official XYZ'
 #   scale XYZ independently
 prd = neutralMaterial( 1, wavelength(lens.64) )
-D65.eye = calibrate( D65.eye, stimulus=prd, response=officialXYZ('D65'), method='scaling' )
+D65.eye = calibrate( D65.eye, stimulus=prd, response=standardXYZ('D65'), method='scaling' )
 @
 Calculate XYZ and then RGB:
 <<lee11, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=32' >>=
 XYZ = product( MacbethCC, D65.eye, wave=wavelength(lens.64) )
-RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+RGB = RGBfromXYZ( XYZ, space='sRGB', which='scene' )$RGB  # this is *signal* sRGB
 # add the rectangle data to RGB, so they can be plotted in proper places
 patches = extradata(MacbethCC)
 patches$RGB = RGB
 patches.first = patches   # save this reference object for later
 #  display in proper location, and use the sRGB display transfer function
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( patches, gamma='sRGB', back='gray20', labels=FALSE )
+plotPatchesRGB( patches, space='sRGB', which='signal', back='gray20', labels=FALSE )
 @
 This figure has the colors as perceived by the 1931 standard observer.
 
@@ -179,13 +179,13 @@ Make new responder by inserting the hypothetical pair of tinted glasses
 (defined by \code{lens.64} in Figure 2)
 between target and the eye, and then recalculate RGBs.
 
-<<lee20, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=64 without adaption' >>=
+<<lee20, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=64 without adaptation' >>=
 D65.eye.64 = applyspec( D65.eye, function(y) {lens.64 * y} )
 XYZ = product( MacbethCC, D65.eye.64, wave=wavelength(lens.64) )
 patches = extradata(MacbethCC)
-patches$RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+patches$RGB = RGBfromXYZ( XYZ, space='sRGB', which='scene' )$RGB  # this is *signal* sRGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( patches, gamma='sRGB', back='gray20', labels=FALSE )
+plotPatchesRGB( patches, space='sRGB', which='signal', back='gray20', labels=FALSE )
 @
 As expected, the result has a yellow tint.
 Now make a plot that compares the effective responsivities.
@@ -206,15 +206,15 @@ In electronic camera terms, there is no "white balance" yet.
 So now calibrate and adapt to D65 using the \emph{Bradford Method}.
 This method is regarded as being a good model for the way that the
 human eye and brain achieve \emph{color constancy}, see \cite{Lindbloom}.
-<<lee22, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=64 after chromatic adaption' >>=
+<<lee22, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=64 after chromatic adaptation' >>=
 prd = neutralMaterial( 1, wavelength(lens.64) )
-XYZ.D65 = officialXYZ('D65')
+XYZ.D65 = spacesXYZ::standardXYZ('D65')
 D65.eye.64 = calibrate( D65.eye.64, stimulus=prd, response=XYZ.D65, method='Bradford' )
 XYZ = product( MacbethCC, D65.eye.64, wave=wavelength(lens.64) )
 patches = extradata(MacbethCC)
-patches$RGB = RGBfromXYZ( XYZ, 'sRGB' )       # this is *linear* sRGB
+patches$RGB = RGBfromXYZ( XYZ, space='sRGB' )$RGB        # this is *signal* sRGB
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
-plotPatchesRGB( patches, gamma='sRGB', back='gray20', labels=FALSE )
+plotPatchesRGB( patches, space='sRGB', which='signal', back='gray20', labels=FALSE )
 @
 The tint is now gone.
 But it hard to compare colors in this figure with the ones way back in Figure 3.
@@ -223,23 +223,23 @@ by splitting each square into 2 triangles.
 <<lee23, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with both age=32 (Figure 3), and age=64 (Figure 6)' >>=
 par( omi=c(0,0,0,0), mai=c(0.2,0.2,0.2,0.2) )
 #  draw full squares from Figure 3
-plotPatchesRGB( patches.first, gamma='sRGB', back='gray20', labels=F )
+plotPatchesRGB( patches.first, space='sRGB', back='gray20', labels=F )
 #  overwrite the squares with triangles by setting shape= and add=
-plotPatchesRGB( patches, gamma='sRGB', labels=F, shape='bottomright', add=T )
+plotPatchesRGB( patches, space='sRGB', labels=F, shape='bottomright', add=T )
 @
 The top-left triangle has the color from Figure 3
 and the bottom-right triangle has the color from Figure 6.
 There are minor differences in the \textbf{Red} and \textbf{Magenta} patches,
 and some smaller differences in a few others.
 
-Here are the responsivity functions \emph{after} adaption:
+Here are the responsivity functions \emph{after} adaptation:
 <<lee30, echo=TRUE,  fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='comparison of effective responsivities' >>=
 par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
 plot( D65.eye,  lty=1, legend='top', main=FALSE )
 plot( D65.eye.64, lty=2, add=TRUE, legend='topright' )
 @
 So despite the fairly radical yellowing of the lens with age (in Figure 2),
-this adaption model shows that the perceived colors are not all that different.
+this adaptation model shows that the perceived colors are not all that different.
 Great !
 
 

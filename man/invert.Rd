@@ -27,6 +27,8 @@ in this package, computes the centroid of the set of all the metamers (if any).
 The centroid is computed in an infinite-dimensional context 
 and is expounded further in
 \cite{Davis}.
+The second available method is the Hawkyard method, see \cite{Hawkyard} and \cite{Bianco}.
+The methods are quite similar.
 
 The first argument to \code{invert()} is the responder \code{x},
 and the second is the matrix \code{response} of responses (e.g. XYZs).
@@ -36,6 +38,7 @@ The goal is to return a "good" spectrum for each response so that:
 \code{product( invert(x,response), x )} \eqn{~\cong~}{~=~} \code{response}
 }
 The error is returned as column \code{estim.precis}, see below.
+
 
 First consider the case where \code{x} has type \code{type='responsivity.material'}.
 If the response is on the object-color boundary (an \emph{optimal color})
@@ -179,6 +182,13 @@ pages 1868-1877.
 2010
 \url{https://www.osapublishing.org/josaa/abstract.cfm?uri=josaa-27-8-1868}.
 
+Hawkyard, C. J.
+Synthetic reflectance curves by additive mixing.
+\emph{Journal of the Society of Dyers and Colourists}.
+vol. 109. no. 10.
+Blackwell Publishing Ltd.
+pp. 323-329.
+1993.
 
 Koenderink, J.J.
 Color for the Sciences.

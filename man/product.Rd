@@ -315,7 +315,7 @@ scanner = product( A.1nm, bluebalancer, 'artwork', Flea2.RGB, wave='auto' )
 
 
 #  sequence 5.
-product( D65.1nm, Flea2.RGB )  # a 1x3 matrix, no materials
+product( D65.1nm, Flea2.RGB, wave='auto' )  # a 1x3 matrix, no materials
 product( D65.1nm, neutralMaterial(0.01), Flea2.RGB, wave='auto' ) # a 1x3 matrix, 1 material
 path = system.file( "extdata/sources/Lumencor-SpectraX.txt", package='colorSpec' )
 lumencor = readSpectra( path, wave=340:660 )

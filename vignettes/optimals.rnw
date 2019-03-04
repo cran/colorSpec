@@ -70,14 +70,17 @@ if(!file.exists("figs")) dir.create("figs")
 
 The goal of this vignette is to reproduce 2 figures in \cite{W&S},
 and to make similar ones.
-The key function from \textbf{colorSpec} used in this vignette is \code{probeOptimalColors()}.
+The featured function from \textbf{colorSpec} used in this vignette is 
+\code{sectionOptimalColors()}.
 But it requires some help from
-the functions \code{computeOptimals()} and \code{plotOptimals()}
-in the file \code{optimal-help.R}.
+the function \code{plotOptimals()} and others in the file \code{optimal-help.R}.
 
 <<packs, echo=TRUE, message=FALSE>>=
 library( colorSpec )
 source( "optimal-help.R" )
+
+# make vctor of levels to be used for all the plots
+Ylevel=c( seq( 0.10, 0.90, by=0.1 ), 0.95 ) 
 @
 
 
@@ -89,19 +92,18 @@ First, build the "material responder" from Illuminant A and standard CMFs:
 
 \setcounter{figure}{0}  
 <<lee10, echo=TRUE, message=FALSE >>=
-A.eye = product( A.1nm, "VARMATERIAL", xyz1931.1nm, wavelength='auto' )
+wave  = seq(380,800,by=5)
+A.eye = product( A.1nm, "material", xyz1931.1nm, wavelength=wave )
+white = product( neutralMaterial(1,wave=wave), A.eye )
+seclist = sectionOptimalColors( A.eye, normal=c(0,1,0), beta=white[2]*Ylevel )
 @
-Compute a data frame with 3600 rows. There are 10 gray levels and 360 angles for each level.
-<<lee11, echo=TRUE, message=FALSE >>=
-A.data = computeOptimals( A.eye, .angles=360 )
-@
-
 Now, make the plot:
 <<lee12, echo=TRUE, fig.pos="H", fig.height=6.5, out.width='1.0\\linewidth', fig.cap='MacAdam Limits for Illuminant A' >>=
 par( omi=rep(0,4), mai=c(0.5,0.6,0,0) )
-plotOptimals( A.eye, A.data )
+plotOptimals( seclist, Ylevel, xyz1931.1nm, white )
 @
 Compare this with Figure 3(3.7) from \cite{W&S}.
+
 
 
 \section*{Illuminant D65}
@@ -109,18 +111,21 @@ Compare this with Figure 3(3.7) from \cite{W&S}.
 First, build the "material responder" from Illuminant D65 and standard CMFs:
 
 <<lee20, echo=TRUE, message=FALSE >>=
-D65.eye = product( D65.1nm, "VARMATERIAL", xyz1931.1nm, wavelength='auto' )
+wave  = seq(380,800,by=5)
+D65.eye = product( D65.1nm, "material", xyz1931.1nm, wavelength=wave )
+white = product( neutralMaterial(1,wave=wave), D65.eye )
+seclist = sectionOptimalColors( D65.eye, normal=c(0,1,0), beta=white[2]*Ylevel )
 @
-Compute a data frame with 3600 rows. There are 10 gray levels and 360 angles for each level.
-<<lee21, echo=TRUE, message=FALSE >>=
-D65.data = computeOptimals( D65.eye, .angles=360 )
-@
-Now, make the plot:
+Make the plot:
 <<lee22, echo=TRUE, fig.pos="H", fig.height=6.5, out.width='1.0\\linewidth', fig.cap='MacAdam Limits for Illuminant D65' >>=
 par( omi=rep(0,4), mai=c(0.5,0.6,0,0) )
-plotOptimals( D65.eye, D65.data )
+plotOptimals( seclist, Ylevel, xyz1931.1nm, white )
 @
 Compare this with Figure 4(3.7) from \cite{W&S}.
+
+
+
+
 
 
 \section*{Illuminant C}
@@ -128,17 +133,17 @@ Compare this with Figure 4(3.7) from \cite{W&S}.
 First, build the "material responder" from Illuminant C and standard CMFs:
 
 <<lee40, echo=TRUE, message=FALSE >>=
-C.eye = product( C.5nm, "VARMATERIAL", xyz1931.1nm, wavelength='auto' )
-@
-Compute a data frame with 3600 rows. There are 10 gray levels and 360 angles for each level.
-<<lee41, echo=TRUE, message=FALSE >>=
-C.data = computeOptimals( C.eye, .angles=360 )
+wave  = seq(380,780,by=5)
+C.eye = product( C.5nm, "material", xyz1931.1nm, wavelength=wave )
+white = product( neutralMaterial(1,wave=wave), C.eye )
+seclist = sectionOptimalColors( C.eye, normal=c(0,1,0), beta=white[2]*Ylevel )
 @
 Now, make the plot:
 <<lee42, echo=TRUE, fig.pos="H", fig.height=6.5, out.width='1.0\\linewidth', fig.cap='MacAdam Limits for Illuminant C' >>=
 par( omi=rep(0,4), mai=c(0.5,0.6,0,0) )
-plotOptimals( C.eye, C.data )
+plotOptimals( seclist, Ylevel, xyz1931.1nm, white )
 @
+
 
 
 
@@ -153,23 +158,26 @@ $$ r = R/(R + G + B) ~~~~~~   g = G/(R + G + B)$$
 
 Make a scanner from a tungsten source and a Flea2 camera:
 <<lee30, echo=TRUE, message=FALSE >>=
-Flea2.scanner = product( A.1nm, "VARMATERIAL", Flea2.RGB, wavelength=420:680 )
-@
-Compute a data frame with 3600 rows. There are 10 gray levels and 360 angles for each level.
-<<lee31, echo=TRUE, message=FALSE >>=
-Flea2.data = computeOptimals( Flea2.scanner, .angles=360 )
+wave = seq(420,680,by=5)
+Flea2.scanner = product( A.1nm, "material", Flea2.RGB, wavelength=wave )
+white = product( neutralMaterial(1,wave=wave), Flea2.scanner )
+seclist = sectionOptimalColors( Flea2.scanner, normal=c(0,1,0), beta=white[2]*Ylevel )
 @
 Now, make the plot:
 <<lee32, echo=TRUE, fig.pos="H", fig.height=6.5, out.width='1.0\\linewidth', fig.cap='Approximate Output Limits for an RGB scanner' >>=
 par( omi=rep(0,4), mai=c(0.5,0.6,0,0) )
-plotOptimals( Flea2.scanner, Flea2.data )
+plotOptimals( seclist, Ylevel, Flea2.scanner, white )
 @
 The wavelengths have been trimmed at each end to avoid weak
 responsivities that wander around too much.
-Note that the chromaticity diagram is not convex.
-The system does not satisfy the 2-transition assumption,
-and the so-called "optimal colors" here are not necessarily optimal, see \cite{West}.
-The limits here can be regarded as the approximate output limits of the scanner.
+Even after trimming, the spectrum locus is not convex in the inverval
+from about 500 to 560 nm.
+This shows that the color solid does \emph{not} satisfy the 2-transition property.
+The optimal color chromaticity locii are convex, as they must be;
+and some optimal colors are outside the spectrum locus.
+See Figure 3 and more discussion in \cite{West}.
+
+% \Sexpr{knitr::knit_exit()}
 
 
 % \pagebreak

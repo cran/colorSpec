@@ -31,7 +31,7 @@ Otherwise the returned \code{data.frame} has the spectra in the columns.
 
 \value{
 If the returned \code{data.frame} has the spectra in the rows,
-then the spectra are in a \code{model.matrix} in the last column,
+then the spectra are in a matrix in the last column (with name \code{spectra}),
 and any existing \code{extradata} are also returned in the other columns.
 The wavelengths are only present in character form,
 as the \code{colnames} of the matrix.\cr

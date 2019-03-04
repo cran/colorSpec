@@ -55,6 +55,7 @@ returns a list with all the \bold{colorSpec} options.
 cs.options( loglevel="DEBUG", stop=FALSE )  # 'stop' partially matches 'stoponerror'
 cs.options( stop='TRUE' )                   # warns that value has the wrong type
 cs.options( stop=FALSE, "DEBUG" )           # warns that the 2nd argument has no name
+cs.options( loglevel="WARN" )               # back to default
 }
 
 

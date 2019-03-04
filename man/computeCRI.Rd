@@ -39,8 +39,7 @@ The final CRI is the average of these 8 CRI values.
 }
 
 \details{
-The CCT of \code{x} is computed by \code{computeCCT()} with \code{method='lm'};
-the package \bold{minpack.lm} is required.
+The CCT of \code{x} is computed by \code{computeCCT()} with default options.
 \cr
 If \code{adapt} is \code{TRUE} the 8 test \code{uv} points
 are chromatically adapted from the test illuminant to the reference illuminant
@@ -62,7 +61,7 @@ of intermediate calculations is attached to the returned number.
 
 \source{
 The test color reflectance spectra are taken from:\cr
-\url{http://www.lrc.rpi.edu/programs/nlpip/lightinganswers/lightsources/scripts/NLPIP_LightSourceColor_Script.m}
+http://www.lrc.rpi.edu/programs/nlpip/lightinganswers/lightsources/scripts/NLPIP_LightSourceColor_Script.m
 
 }
 
@@ -96,8 +95,8 @@ Appendix 7.
 }
 
 \examples{
-computeCRI( subset(Fs.5nm,'F2') )       # returns 64.15751
-computeCRI( subset(Fs.5nm,'F4') )       # returns 51.36485
+computeCRI( subset(Fs.5nm,'F2') )       # returns 64.15195
+computeCRI( subset(Fs.5nm,'F4') )       # returns 51.36348
 }
 
 

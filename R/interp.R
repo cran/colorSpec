@@ -108,7 +108,7 @@ interpQuad  <-  function( .quad, .point, .val )
             }
         else
             {
-            log.string( FATAL, "Internal error.  sum.cross=%d.", sum.cross )
+            log.string( FATAL, "Internal error.  sum.cross=%g.", sum.cross )
             return(NULL)
             }
         }

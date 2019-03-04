@@ -1,9 +1,57 @@
 
 library( colorSpec )
 
-#   reproduce Fig. 3(3.7) page 182 in Wyszecki & Stiles
+#   reproduce Fig. 3(3.7) page 182, and similar ones, in Wyszecki & Stiles
 
-plotChromaticityDiagram  <-  function( .xyz=xyz1931.1nm )
+
+
+
+#   .obj        the colorSpec responder    "responsivity.material"
+#   .data       as returned from computeOptimals()
+plotOptimals <- function( seclist, Ylevel, .obj, white )
+    {
+    plotChromaticityDiagram( .obj, white )
+    
+    for( k in 1:length(seclist) )
+        {
+        section = seclist[[k]]$section
+        
+        denom   = rowSums( section )
+        x   = section[ ,1] / denom
+        y   = section[ ,2] / denom
+        
+        polygon( x, y )
+        
+        idx     = which.min( x + y )
+        gray    = Ylevel[k]
+        if( gray < 1 )
+            # display as a percentage
+            gray = 100 * gray
+
+        text( x[idx], y[idx], sprintf( "%g", gray ), adj=c(-0.25,0), cex=0.6 )
+        }
+
+    plotWavelengthPoints( .obj )    
+
+    return( invisible(TRUE) )
+    }
+
+computeOptimals <- function( .obj, .Ylevel=c( seq( 0.10, 0.90, by=0.1 ), 0.95 ), .angles=360 )
+    {
+    theta   = seq( 0, 360, len=.angles+1 )
+    theta   = theta[ 1:.angles ] * pi/180
+    direction   = cbind( cos(theta), 0, sin(theta) )    #; print( direction )
+
+    out = NULL
+    for( Y in .Ylevel )
+        out = rbind( out, probeOptimalColors( .obj, Y, direction, aux=F ) )
+
+    #   print( str(out) )
+    
+    return( out )
+    }
+    
+plotChromaticityDiagram  <-  function( .xyz=xyz1931.1nm, white )
     {
     coredata    = coredata( .xyz )
     denom       = rowSums( coredata )
@@ -21,12 +69,15 @@ plotChromaticityDiagram  <-  function( .xyz=xyz1931.1nm )
     polygon( x, y, col='white' )
     
     #   put a black dot at white point
-    denom   = colSums( coredata )
-    xy      = denom[1:2] / sum(denom)
+    # denom   = sum( white )
+    xy      = white[1:2] / sum(white)
     points( xy[1], xy[2], pch=20 )
     
     return( TRUE )
     }
+
+    
+#   plot nice points, pch=21, at multiples of 20 nm
     
 plotWavelengthPoints <- function( .obj )
     {
@@ -46,7 +97,7 @@ plotWavelengthPoints <- function( .obj )
     dist    = sqrt( rowSums(dist*dist) )    #; print( dist )
     idx     = idx[ 0.75*strheight("560") < dist ]
     
-    points( x[idx], y[idx], pch=21, bg='white' )
+    points( x[idx], y[idx], pch=21, bg='white', cex=0.8 )
 
     for( j in idx )
         {    
@@ -58,50 +109,4 @@ plotWavelengthPoints <- function( .obj )
         }
         
     return(T)
-    }
-
-#   .obj        the colorSpec responder    "responsivity.material"
-#   .data       as returned from computeOptimals()
-plotOptimals <- function( .obj, .data )
-    {
-    plotChromaticityDiagram( .obj )
-
-    grayvec = sort( unique(.data$gray) )
-    
-    for( gray in grayvec )
-        {
-        data_sub    = .data[ .data$gray == gray, ]
-        
-        denom   = rowSums( data_sub$optimal )
-        x   = data_sub$optimal[ ,1] / denom
-        y   = data_sub$optimal[ ,2] / denom
-        
-        polygon( x, y )
-        
-        idx = which.min( x + y )
-        if( gray < 1 )
-            # display as a percentage
-            gray = 100 * gray
-
-        text( x[idx], y[idx], sprintf( "%g", gray ), adj=c(-0.25,0), cex=0.6 )
-        }
-        
-    plotWavelengthPoints( .obj )        
-    
-    return( invisible(TRUE) )
-    }
-
-computeOptimals <- function( .obj, .Ylevel=c( seq( 0.10, 0.90, by=0.1 ), 0.95 ), .angles=360 )
-    {
-    theta   = seq( 0, 360, len=.angles+1 )
-    theta   = theta[ 1:.angles ] * pi/180
-    direction   = cbind( cos(theta), 0, sin(theta) )    #; print( direction )
-
-    out = NULL
-    for( Y in .Ylevel )
-        out = rbind( out, probeOptimalColors( .obj, Y, direction, aux=F ) )
-
-    #   print( str(out) )
-    
-    return( out )
     }

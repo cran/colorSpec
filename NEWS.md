@@ -1,5 +1,22 @@
 # NEWS for **colorSpec** package
 
+### Changes for version 0.8-2  [2019-03-03]
+* moved most CCT-related functions to package `spacesXYZ`, which is now imported
+* in `probeOptimalColors()`, changed to zonohedral representation of the color solid.
+* added function `sectionOptimalColors()`
+* changed argument list for `plotOptimals3D()`
+* added function `plotOptimals2D()`
+* in `planckSpectra()` changed constant `c2` unit from nm*K to m*K to agree with the rest of the literature
+* moved RGB-related functions to package `spacesRGB`, which is now Suggested
+* package `minpack.lm` is no longer needed, or Imported
+* added function `computeSSI()`, requested by Alex Forsythe
+* add new theoretical camera `ACES.RGB` = ACES Reference Input Capture Device, from S-2008-001 Academy Color Encoding Specification.
+* added 2 bonus spectra from EBU TECH 3355 - Method for the Assessment of the Colorimetric Properties of Luminaires
+* add more keys to recognize CGATS files
+* fixed documentation error regarding `readSpectraCGATS()`
+* bug fix in `plot()`.  Spectra with NA values are now skipped.
+* in all calls to `sprintf()`, changed `%d` to `%g`, unless obviously integral. Bug found by Dean Attali.
+
 ### Changes for version 0.7-5  [2018-11-19]
 * add new function `invert()` plus new vignette **Estimating a Spectrum from its Response - Inverse Colorimetry**
 * add new function `rectangularMaterial()`

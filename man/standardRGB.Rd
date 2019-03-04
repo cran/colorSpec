@@ -49,6 +49,14 @@ In case of error the function returns \code{NULL}.
   
 }
 
+
+\section{WARNING}{
+This function is deprecated.
+New software should use \code{spacesRGB::RGBfromXYZ()} instead.
+The new function returns "signal RGB" instead of linear RGB.
+}
+
+
 \source{
 IEC 61966-2-1:1999.
 Multimedia systems and equipment - Colour measurement and management.

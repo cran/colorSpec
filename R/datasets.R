@@ -205,8 +205,8 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     rownames(P) = c('R','G','B')    
     Adobe.RGB  = ptransform( xyz1931.1nm, P, D65.1nm )  
     quantity(Adobe.RGB)    = "energy->electrical"        
-    desc    = "This is a theoretical RGB camera"
-    desc    = c( desc, "They acquire RGB components for display using Adobe RGB primaries." )
+    desc    = "This is a theoretical RGB camera."
+    desc    = c( desc, "It acquires RGB components for display using Adobe RGB primaries." )
     desc    = c( desc, "This theoretical camera satisfies the Maxwell-Ives condition, but has negative lobes." )
     metadata(Adobe.RGB,add=TRUE)    = list( header=desc )
     metadata(Adobe.RGB,add=TRUE)    = list( path=NULL )         # erase path      
@@ -214,8 +214,23 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     savevec = c( savevec, "Adobe.RGB" )
     
     
-    
-    
+    # ideal ACES.RGB camera that encompasses all possible colors, without negative lobes.  D60.ACES maps to RGB=(1,1,1)
+    P = matrix( c(0.73470,0.26530,NA,  0,1,NA,  0.00010,-0.07700,NA ), 3, 3, byrow=T )
+    rownames(P) = c('R','G','B') 
+    white = c(0.32168,0.33767)
+    white = c( white, 1-sum(white) ) / white[2]           # D60.ACES
+    ACES.RGB  = ptransform( xyz1931.1nm, P, white ) 
+    ACES.RGB  = calibrate( ACES.RGB, illuminantE(1,wavelength=wavelength(ACES.RGB)), 1, method='scaling' )    
+    quantity(ACES.RGB)    = "energy->electrical"        
+    desc    = "This is a theoretical RGB camera."
+    desc    = c( desc, "It acquires RGB components for display using ACES RGB primaries.")
+    desc    = c( desc, "S-2008-001. Academy Color Encoding Specification (ACES)  Annex C." )
+    desc    = c( desc, "This theoretical camera satisfies the Maxwell-Ives condition, and is everywhere non-negative." )
+    metadata(ACES.RGB,add=TRUE)    = list( header=desc )
+    metadata(ACES.RGB,add=TRUE)    = list( path=NULL )         # erase path      
+    organization(ACES.RGB)  = mostEfficientOrganization(ACES.RGB)         
+    savevec = c( savevec, "ACES.RGB" )
+
     
     ##---------------       materials     ----------------------------##    
     
@@ -251,18 +266,25 @@ savePrivateDatasets  <- function( .path="sysdata.rda" )
     {
     savevec = character(0)
         
+    if( FALSE )
+    {
+    #   these have been moved to package 'spacesXYZ'
     ##---------------       CCT table    ------------------------##
     path    = "../inst/extdata/illuminants/dataCCT.txt"
     dataCCT = read.table( path, sep='\t', header=T, stringsAsFactors=F )
     attr(dataCCT,"description") = readComments( path )
     savevec = c( savevec, "dataCCT" )
-
+    }
+    
     ##---------------       illuminants table    ------------------------##
     path    = "../inst/extdata/illuminants/illuminants.txt"
     dataIlluminants = read.table( path, sep='\t', header=T, stringsAsFactors=F )
     attr(dataIlluminants,"description") = readComments( path )
     savevec = c( savevec, "dataIlluminants" )
 
+    
+    
+    
     #---------------       spectra for CRI     ------------------------##
     path    = "../inst/extdata/targets/TCSforCRI.txt"
     TCSforCRI = readSpectra( path )

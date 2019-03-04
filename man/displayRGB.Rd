@@ -32,6 +32,13 @@ In case of error, the function returns the clamped input values.
 }
 
 
+\section{WARNING}{
+This function is deprecated.
+New software should use \code{spacesRGB::SignalRGBfromLinearRGB()} instead.
+}
+
+
+
 \source{
 Wikipedia.
 \bold{sRGB}.
