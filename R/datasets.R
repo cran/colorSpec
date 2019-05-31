@@ -102,7 +102,7 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     atmosphere2003  = solar.irradiance[ ,3] / solar.irradiance[ ,1]
     atmosphere2003  = colorSpec( atmosphere2003, wavelength(solar.irradiance), quantity='transmittance', specnames="AirMass.1.5" )
     desc    = "from ASTM G163-03"
-    desc    = c( desc, "Standard Tables for Reference Solar Spectral Irradiances: Direct Normal and Hemispherical on 37\u00B0 Tilted Surface" )     # degree symbol:  °
+    desc    = c( desc, "Standard Tables for Reference Solar Spectral Irradiances: Direct Normal and Hemispherical on 37-degree Tilted Surface" )     # \u00B0 degree symbol:  °
     desc    = c( desc, "transmittance of the atmosphere through Air Mass 1.5 is the quotient AM1.5/AM0" )    
     metadata(atmosphere2003)    = list( header=desc )
     #   print( summary(solar.transmittance) )

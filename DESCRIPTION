@@ -1,9 +1,9 @@
 Package: colorSpec
 Type: Package
 Title: Color Calculations with Emphasis on Spectral Data
-Version: 0.8-3
+Version: 0.9-1
 Encoding: UTF-8
-Date: 2019-03-04
+Date: 2019-05-31
 Author: Glenn Davis [aut, cre]
 Maintainer: Glenn Davis <gdavis@gluonics.com>
 Description: Calculate with spectral properties of light sources, materials, cameras, eyes, and scanners.
@@ -14,7 +14,7 @@ Description: Calculate with spectral properties of light sources, materials, cam
 License: GPL (>= 3)
 LazyLoad: yes
 LazyData: yes
-Depends: R (>= 2.15)
+Depends: R (>= 3.5.0)
 Imports: spacesXYZ, MASS
 Suggests: rootSolve, rgl, knitr, rmarkdown, spacesRGB, microbenchmark,
         arrangements
@@ -23,5 +23,5 @@ Repository: CRAN
 VignetteBuilder: knitr
 BuildVignettes: yes
 ByteCompile: no
-Packaged: 2019-03-04 03:57:55 UTC; Glenn
-Date/Publication: 2019-03-04 13:00:02 UTC
+Packaged: 2019-05-31 02:12:26 UTC; Glenn
+Date/Publication: 2019-05-31 04:40:23 UTC

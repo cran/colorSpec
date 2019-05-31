@@ -26,6 +26,11 @@ computeCCT.colorSpec   <- function( x, isotherms='robertson', locus='robertson',
         }     
     
     XYZ = product( radiometric(x), colorSpec::xyz1931.1nm, wavelength='auto' )
+    
+    #   suppress warning about denominator 0, during XYZ -> uv conversion
+    #   this happens when spectrum is all 0s
+    mask    = rowSums( abs(XYZ) ) == 0
+    XYZ[mask, ] = NA_real_
 
     out = spacesXYZ::CCTfromXYZ( XYZ, isotherms=isotherms, locus=locus, strict=strict  )    
 

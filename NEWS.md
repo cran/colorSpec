@@ -1,5 +1,10 @@
 # NEWS for **colorSpec** package
 
+### Changes for version 0.9-1  [2019-05-31]
+* restored missing .R files in folder /inst/doc
+* fixed NOTE:  "found 1 marked UTF-8 string"
+* in `computeCCT()` suppress warning when spectrum is all 0s
+
 ### Changes for version 0.8-2  [2019-03-03]
 * moved most CCT-related functions to package `spacesXYZ`, which is now imported
 * in `probeOptimalColors()`, changed to zonohedral representation of the color solid.

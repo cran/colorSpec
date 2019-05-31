@@ -1,0 +1,46 @@
+
+This appendix is a formal mathematical view of \emph{inverse colorimetry}.
+Let $Q^\infty$ be the space of all (measurable) functions from the interval 
+$[\lambda_1,\lambda_2]$ to $[0,1]$.
+Each function in $Q^\infty$ corresponds to the reflectance function of a material.
+A ``material responder" is a linear operator 
+$\Lambda : Q^\infty \to \mathbb{R}^3$,
+where points in $\mathbb{R}^3$ are tristimulus responses.
+Define $Z := \Lambda(Q^\infty)$; 
+$Z$ is a compact convex body - the \emph{object color solid} 
+(\emph{R{\"o}sch Farbk{\"o}rper}).
+Points in the boundary $\partial Z$ correspond to \emph{optimal colors}
+(\emph{Optimalfarben}).
+Non-optimal colors correspond to points in the interior $\operatorname{int}(Z)$.
+The centroid method for spectral reflectance estimation is a
+continuous function
+$\gamma : \operatorname{int}(Z) \to \operatorname{int}(Q^\infty)$ so that
+$$\text{the composition } \hspace{30pt} \operatorname{int}(Z) ~~
+{\overset{\gamma}\rightarrow} ~~
+\operatorname{int}(Q^\infty) ~~
+{\overset{\Lambda}\twoheadrightarrow}~~
+\operatorname{int}(Z) \hspace{30pt}  \text{ is the identity on } \operatorname{int}(Z).$$
+Whenever $\Lambda \circ \gamma = \operatorname{id}_{\operatorname{int}(Z)}$,
+$\gamma$ is said to be a \emph{right-inverse for} $\Lambda$
+(or a \emph{section of} $\Lambda$).
+Note that $\gamma$ is not defined for optimal colors in $\partial Z$.
+For more details on $\gamma$, see Davis \cite{Davis2018}.
+There are many other possible right-inverses.
+Assuming that $\Lambda$ has the property that
+every optimal color comes from a spectrum with $\le 2$ transitions (jumps),
+Alexander Logvinenko has constructed a right-inverse 
+that is defined on all of $Z$ (including $\partial Z$)
+and whose image is a 3D space of step functions 
+(the \emph{rectangle color atlas})
+that is the same for every such $\Lambda$, see \cite{Logvinenko2009}.
+
+There is a similar situation for a ``light responder" except that
+the domain $Q^\infty$ is replaced by the \emph{non-negative orthant} $L_+^1$,
+which is all integrable functions from the interval $[\lambda_1,\lambda_2]$ to $[0,\infty)$.
+Each function in $L_+^1$ represents the spectrum of a source of light.
+The image $C := \Lambda(L_+^1)$ is now an unbounded convex cone,
+see Logvinenko \cite{Logvinenko2015}.
+But in this unbounded case the centroid method right-inverse cannot 
+be defined on all of $C$, but only on a proper subset of $C$.
+For more about this situation see Davis \cite{Davis2018} Section 13.
+
