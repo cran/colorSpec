@@ -247,13 +247,13 @@ resampleXY <- function( .x, .y, .xnew, .method, .span )
     if( .method == 'spline' )
         {
         #   use simple spline
-        out = spline( .x, .y, xout=.xnew, method="natural" )$y
+        out = stats::spline( .x, .y, xout=.xnew, method="natural", ties=min )$y
         }
     else if( .method == 'loess' )
         {
         #   use loess smoother:
         #df = data.frame( X=.x, Y=.y )
-        xy.obj = try( loess( .y ~ .x, span=.span ) )     #, family="symmetric" )
+        xy.obj = try( stats::loess( .y ~ .x, span=.span ) )     #, family="symmetric" )
         
         if( class(xy.obj) == "try-error" )        
             {
@@ -261,11 +261,11 @@ resampleXY <- function( .x, .y, .xnew, .method, .span )
             return( rep(NA_real_,length(.xnew)) )       #return( resampleXY( .x, .y, .xnew, .span=0 ) )
             }
         
-        out = predict( xy.obj, .xnew )      # extrapolation will generate NAs, but these will be overwritten in extrapolate.mat()
+        out = stats::predict( xy.obj, .xnew )      # extrapolation will generate NAs, but these will be overwritten in extrapolate.mat()
         }
     else if( .method == 'linear' )
         {
-        out = approx( .x, .y, .xnew )$y     # extrapolation will generate NAs, but these will be overwritten in extrapolate.mat()
+        out = stats::approx( .x, .y, .xnew, ties=min )$y     # extrapolation will generate NAs, but these will be overwritten in extrapolate.mat()
         }
         
     return( out )

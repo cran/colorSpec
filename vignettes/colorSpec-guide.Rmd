@@ -67,6 +67,8 @@ required for building the vignettes</li>
 than **R**'s built-in timer</li>
 <li>**arrangements** @arrangements, makes the zonohedron calculations 
 for optimal colors a little bit faster</li>
+<li>**quadprog** @quadprog, may be used in `responsivityMetrics()` to determine whether the
+generators lie in an open linear halfspace</li>
 </ul>
 
 
@@ -671,6 +673,57 @@ These common radiant SI quantities
 - radiant power, irradiance, radiant exitance, radiant intensity, radiance -
 differ only in area and steradian.
 Time is now grouped with these 2 geometric units.
+
+
+<br>
+
+# Appendix F - Continuous vs Discrete
+
+In physics, wavelengths are in some interval of real numbers - an uncountable set.
+But in engineering, one is forced to use wavelengths taken from a finite table of values.
+Given a table of wavelengths and values, a software package must make some sort of choice
+of what the physical interpretation of this table really is.
+In **colorSpec** the choice is schizophrenic - there are multiple interpretations.
+
+With few exceptions, a table of wavelengths and values is interpreted as _step function_.
+Such functions are sometimes called _piecewise-constant_.
+This requires a lengthy explanation.
+Suppose `X` is a **colorSpec** object with $N$ wavelengths:
+$\lambda_1 < \lambda_2 < \ldots < \lambda_N$.
+Define $N$ intervals $I_i := [\beta_{i-1},\beta_i]$ 
+where
+\begin{equation}
+\beta_0 := \tfrac{3}{2}\lambda_1 - \tfrac{1}{2}\lambda_2 ~~~~~
+\beta_i := (\lambda_i + \lambda_{i+1})/2, ~ i{=}1,\ldots,N-1  ~~~~~
+\beta_N := \tfrac{3}{2}\lambda_N - \tfrac{1}{2}\lambda_{N-1}
+\end{equation}
+The intervals $I_i$ are a partition of $[\beta_0,\beta_N]$.
+Note that $[\beta_0,\beta_N]$ is slightly bigger than $[\lambda_1,\lambda_N]$ because the endpoints are extended.
+Define the $i'th$ step $\mu_i := \operatorname{length}(I_i), ~ i{=}1,\ldots,N$.
+If the sequence $\{\lambda_i\}$ is _regular_ ($\lambda_{i+1}-\lambda_i$ is constant), 
+then  $\mu_i$ is constant with the same value,
+and each $\lambda_i$ is the center of $I_i$.
+Now suppose `X` has $m$ spectra (channels) with vector values 
+$\mathbf{y}_i \in \mathbb{R}^m$.
+Then the physical function realization of `X` is a function
+$\mathbf{y}(\lambda) : [\beta_0,\beta_N] \to \mathbb{R}^m$ that takes the constant value $\mathbf{y}_i$ on $I_i$.
+If the sequence $\{\lambda_i\}$ is regular, then all $\mathbf{y}_i$ have the same weight,
+including the first and last.
+This is the step function interpretation used in
+`product()`, `interpolate()`, `bandSpectra()`, and many other places.
+
+The exceptions are `resample()` and `plot()`.
+In `resample()` the physical functions are piecewise-linear, piecewise-cubic, or piecewise-quintic,
+depending on the argument `method`  (a smoothing method is also available).
+In `plot()` the spectra are plotted as piecewise-linear using `lines()`,
+though plotting option for step functions might be added in the future.
+
+In lengthy calculations using both interpretations, there are inevitable numerical errors,
+which are certainly larger than the usual numerical roundoff.
+But we do not attempt carry the error analysis any further than that.
+
+
+
 
 <br><br>
 

@@ -46,6 +46,7 @@ S3method(actinometric,colorSpec)
 S3method(is.actinometric,colorSpec)
 S3method(photometric,colorSpec)
 S3method(probeOptimalColors,colorSpec)
+S3method(canonicalOptimalColors,colorSpec)
 S3method(sectionOptimalColors,colorSpec)
 S3method(plotOptimals3D,colorSpec)
 S3method(plotOptimals2D,colorSpec)
@@ -54,6 +55,8 @@ S3method(interpolate,colorSpec)
 S3method(ptransform,colorSpec)
 S3method(emulate,colorSpec)      
 S3method(invert,colorSpec)
+S3method(responsivityMetrics,colorSpec)
+S3method(bandRepresentation,colorSpec)
 
 S3method(as.colorSpec,default)     
 
@@ -97,6 +100,7 @@ export(numSpectra,
     is.actinometric,    
     photometric,
     probeOptimalColors,
+    canonicalOptimalColors,    
     sectionOptimalColors,    
     plotOptimals3D,
     plotOptimals2D,    
@@ -104,7 +108,9 @@ export(numSpectra,
     interpolate,
     ptransform,
     emulate,
-    invert
+    invert,
+    responsivityMetrics,
+    bandRepresentation    
     )
     
 #   functions that are already generic, for S3 classes    
@@ -137,6 +143,7 @@ export(
     erythemalSpectrum,
     neutralMaterial,
     rectangularMaterial,
+    bandMaterial,
     lensAbsorbance,
     planckSpectra,
     daylightSpectra,

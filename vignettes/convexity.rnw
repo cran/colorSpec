@@ -1,0 +1,409 @@
+% convexity.rnw
+% Time-stamp: "convexity.rnw"
+
+\documentclass[11pt]{article}
+
+% Set margins to be narrow
+\RequirePackage[left=1in,top=0.75in,right=1in,bottom=0.75in]{geometry}
+
+
+%\VignetteIndexEntry{Convexity and Transitions}
+%\VignetteEngine{knitr::knitr}
+
+\RequirePackage{color}
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{lightblue}{rgb}{0.2,0.2,0.9}
+\definecolor{darkred}{rgb}{0.6,0.0,0.0}
+\definecolor{red}{rgb}{0.7,0,0}
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
+\definecolor{darkorange}{rgb}{0.75, 0.45, 0}
+\definecolor{purple}{rgb}{0.65, 0, 0.75}
+\definecolor{goldenrod}{rgb}{0.80, 0.61, 0.11}
+\definecolor{lightyellow}{rgb}{0.98,0.94,0.83}
+
+
+\RequirePackage{fancyvrb}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{ae}       % ComputerModern Fonts
+\RequirePackage{fancyhdr}
+\RequirePackage{float}
+\RequirePackage{hyperref}
+\usepackage{lastpage}
+\usepackage{tikz-cd}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{enumitem}
+
+\pagestyle{fancy}
+\cfoot{page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+
+% \code mini environment ttfamily->texttt
+\newcommand\code{\bgroup\@codex}
+\def\@codex#1{{\color{darkred} \normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
+
+\newtheorem{theorem}{Theorem} 
+
+%strongly recommended
+\numberwithin{theorem}{section}
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+
+
+% This environment defines the look of R ouput
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{
+  fontsize=\small,
+  formatcom=\color{darkblue}
+}
+
+\begin{document}
+% \SweaveOpts{concordance=TRUE}
+
+\title{ {\Huge Convexity and Transitions} \\ {\Large a strict examination of the 1931 CIE inverted-U}}
+\author{Glenn Davis     \url{    <gdavis@gluonics.com>}}
+\maketitle
+% \thispagestyle{fancy}
+
+% Setup stuff.
+<<setup, echo=FALSE, results="hide">>=
+require("knitr",quietly=TRUE)
+opts_chunk$set(fig.path="figs/ag2-", fig.align="center",
+  fig.width=7, fig.height=7, comment="")
+knit_hooks$set(output = function(x, options) {
+  paste('\\begin{Soutput}\n', x, '\\end{Soutput}\n', sep = '')
+})
+options(width=90)
+if(!file.exists("figs")) dir.create("figs")
+@
+% ----------------------------------------------------------------------------
+\section{Introduction}
+
+In the fundamental paper \cite{Logvinenko2009},
+Logvinenko investigates the statement that 
+a color is optimal iff it comes from a (reflectance or transmittance) spectrum
+that only takes the values 0 and 1, and has 0 or 2 transitions.
+He calls this the \emph{two-transition assumption}.
+He plots chromaticity diagrams for the cone fundamentals of Govardovskii et al. (Figure 4)
+and of Stockman et Sharpe (Figure 7) and remarks that they are not convex.
+By a theorem in \cite{West}, there are optimal colors for these two sets of
+cone fundamentals whose transmittance spectra have more than 2 transitions.
+So the two-transition assumption is false in these two cases.
+He also plots the standard 1931 CIE chromaticity diagram (Figure 5) and remarks:
+\begin{quote}
+However, the completed spectral contour (in the unit plane) derived from
+the color matching functions adopted by the CIE as the
+standard colorimetric observer (Figure 5) is convex. 
+This indicates that for this observer the two-transition assumption holds true.  \emph{[page 5]}
+\end{quote}
+The goal of this vignette is to show that, from an extremely strict viewpoint,
+the standard 1931 CIE inverted-U is not convex either,
+and the two-transition assumption does not hold.
+
+To state this all precisely requires a lot of tedious mathematics,
+which is then followed by an analysis at both 5nm and 1nm.
+
+The featured functions from \textbf{colorSpec} used in this vignette are
+\code{responsivityMetrics()},
+\code{canonicalOptimalColors()}, and 
+\code{bandRepresentation()}.
+
+
+<<packs, echo=TRUE, message=FALSE>>=
+library( colorSpec )
+@
+
+
+
+
+\section{Wavelengths and Subintervals}
+
+Suppose we are given $N$ wavelengths:
+$\lambda_1 < \lambda_2 < \ldots < \lambda_N$.
+Define $N$ intervals $I_i := [\beta_{i-1},\beta_i]$ 
+where
+\begin{equation}
+\beta_0 := \tfrac{3}{2}\lambda_1 - \tfrac{1}{2}\lambda_2 ~~~~~
+\beta_i := (\lambda_i + \lambda_{i+1})/2, ~ i{=}1,\ldots,N-1  ~~~~~
+\beta_N := \tfrac{3}{2}\lambda_N - \tfrac{1}{2}\lambda_{N-1}
+\end{equation}
+The intervals $I_i$ are a partition of $[\beta_0,\beta_N]$.
+Note that $[\beta_0,\beta_N]$ is slightly bigger than $[\lambda_1,\lambda_N]$ because the endpoints are extended.
+Define the $i'th$ step $\mu_i := \operatorname{length}(I_i), ~ i{=}1,\ldots,N$.
+If the sequence $\{\lambda_i\}$ is \emph{regular} ($\mu_i$ is constant), 
+then  $\{\beta_i\}$ is regular with the same step,
+and each $\lambda_i$ is the center of $I_i$.
+
+\section{Band Functions}
+
+Let $B$ be the set of all functions on $[\beta_0,\beta_N]$ that take the values 0 or 1
+and have finitely many transitions (jumps).
+As in \cite{Centore2013}, we identify the endpoints $\beta_0$ and $\beta_N$ to form a circle,
+so if the values at $\beta_0$ and $\beta_N$ are different, then this is considered to be a transition.
+Equivalently $B$ is the set of all indicator functions $\mathbf{1}_S$
+where $S$ is a disjoint unit of finitely many arcs in the circle.
+We call these arcs \emph{bands}.
+For a given function $f \in B$, twice the number of the bands is the number of transitions,
+unless $S$ is the entire circle when there is 1 band and 0 transitions.
+In any case the number of transitions is even.
+We think of such an $f(\lambda)$ as a transmittance function of a filter,
+and a superposition of bandpass and bandstop filters.
+If the endpoints are in the interior of a band, then the band corresponds to a bandstop filter,
+and otherwise it corresponds to a bandpass filter.
+It is clear that a given $f$ has either 0 or 1 bandstop filters.
+
+Let $[0,1]^N$ denote the $N$-cube and define a function $p()$
+\begin{equation}\label{eqnp}
+p : B \twoheadrightarrow [0,1]^N  ~~~  \text{by} ~~~  p(f) := \mathbf{y} \equiv (y_1,\ldots,y_N)  ~~~ \text{where}  ~~~   y_i = {\mu_i}^{-1} \int_{I_i} f(\lambda) \, d\lambda
+\end{equation}
+Note that $y_i$ is the mean of $f$ on $I_i$.
+It is straightforward to show that $p()$ is surjective
+and it follows that $p()$ has a right-inverse (or \emph{section}),
+i.e. a function $p^+ : [0,1]^N \to B$ so that $p \circ p^+$ is the identity on $[0,1]^N$.
+Such a section is fairly easy to construct, but $p^+(\mathbf{y})$ is certainly not unique, except in special cases.
+If $\mathbf{v} \in [0,1]^N$ is a vertex of the cube, then $p^+(\mathbf{v})$ \emph{is} unique.
+Another important case is $\mathbf{y}_{ij}=(0,\ldots,0,y_i,1,\ldots,1,y_j,0,\ldots,0)$ and $y_i,y_j \in (0,1)$.
+There is a unique $f \in p^{-1}(\mathbf{y}_{ij})$ with 2 transitions (1 passband),
+but an arbitrarily large number of bands of $f$ in the intervals $I_i$ and $I_j$ can be created without changing
+the value of $p()$.
+In the extreme case where $\mathbf{y}$ is in the interior of the cube (all $y_i \in (0,1)$),
+there is a band function $f \in p^{-1}(\mathbf{y})$ with $\lceil N/2 \rceil$ bands.
+
+In \textbf{colorSpec} software, the function $p()$ is implemented as \code{bandMaterial()},
+and $p^+()$ is implemented as \code{bandRepresentation()}.
+In the latter case, the function tries to find a function with the minimum number of bands;
+see the corresponding man page for details.
+
+
+\section{Responsivity Function}
+
+Let $\mathbf{w} : [\beta_0,\beta_N] \to \mathbb{R}^3$ be a step function that take the constant value $\mathbf{w}_i$ on $I_i$.
+Define a function
+\begin{equation}
+\Gamma : B \to \mathbb{R}^3  ~~~  \text{by} ~~~ \Gamma(f) := \int_{\beta_0}^{\beta_N} f(\lambda) \mathbf{w}(\lambda) \, d\lambda
+~~=~~ \sum_i^N \left( \int_{I_i} f(\lambda)\, d\lambda \right) \mathbf{w}_i
+\end{equation}
+And define a similar function
+\begin{equation}\label{eqnGammaN}
+\Gamma^N : [0,1]^N \to \mathbb{R}^3  ~~~  \text{by} ~~~ \Gamma^N(y) ~=~ \Gamma^N(y_1,\ldots,y_N)  ~~:=~~  \sum_i^N y_i \mu_i \mathbf{w}_i
+\end{equation}
+By \ref{eqnp} it follows that $\Gamma^N(p(f)) = \Gamma(f)$.
+Define $Z := \Gamma^N([0,1]^N)$;
+since $Z$ is the linear image of a cube, $Z$ is a \emph{zonohedron}, see \cite{Centore2013}.
+We now have a commutative diagram in which all 3 maps are surjective:
+\begin{center}
+\begin{tikzpicture}[scale=2]
+\node (C) at (2,0.75) {$B$};
+\node (F) at (2,0) {$[0,1]^N$};
+\node (J) at (3.4,0) {$Z$};
+\draw [->>] (C) to  node[left]{$p$} (F);
+\draw [->>] (C) to  node[above]{$\Gamma$} (J);
+\draw [->>] (F) to  node[below]{$\Gamma^N$} (J);
+\end{tikzpicture}
+\end{center}
+If $f \in B$ has 0 or 2 transitions, then $\Gamma(f)$ is called a \emph{Schr{\"o}dinger color}, see \cite{West}.
+
+In \textbf{colorSpec} software, the function $\Gamma^N()$ is implemented in \code{product()},
+and is a simple matrix multiplication,
+see the corresponding man page for details.
+
+
+
+
+
+\section{Chromaticity Polygons}
+
+From this point on, we require that all $\mathbf{w}_i$, $i=1,\ldots,N$
+lie in some linear open halfspace in $\mathbb{R}^3$, except if $\mathbf{w}_i{=}0$.
+This means that there is a vector $\mathbf{u}$ so that all $\langle \mathbf{u}, \mathbf{w}_i \rangle > 0$,
+except if $\mathbf{w}_i{=}0$.
+If all responsivities are non-negative, which is the usual case, then we can take $\mathbf{u}{=}(1,1,1)$.
+We now define the vertices $\mathbf{v}_i := \mathbf{w}_i / \langle \mathbf{u}, \mathbf{w}_i \rangle$
+which are in the plane
+$\{ \mathbf{v} | \langle \mathbf{v},\mathbf{u} \rangle = 1\}$.
+These are the vertices of what we call the \emph{chromaticity polygon} $P$ in the previously mentioned plane.
+The CIE inverted-U is the classical example;
+where $\mathbf{w}_i$ is $(\bar{x},\bar{y},\bar{z})$ at $\lambda_i$,
+and $\mathbf{v}_i$ is the CIE chromaticity $(x,y)$ at $\lambda_i$
+(after the final coordinate $z$ of $\mathbf{v}_i$ is dropped).
+
+We also consider the central projection of $P$ onto the unit sphere $S^2$,
+and call this the \emph{spherical chromaticity polygon} $P_S$.
+It is clearly contained in the hemisphere centered at $u/\left| u \right|$.
+The internal angles of $P$ and $P_S$ may be different,
+but whether an internal angle $\theta$ is convex ($\theta < \pi$),
+straight ($\theta{=}\pi$),
+or concave|reflex ($\theta > \pi$),
+is the same in $P$ and $P_S$.
+
+If for all distinct indexes $i,j,k$, the vectors $\mathbf{w}_i,\mathbf{w}_j,\mathbf{w}_k$ are linearly independent
+we say that the responsivities are in \emph{general position}.
+If they are \emph{not} in general position, 
+then $\mathbf{w}_i,\mathbf{w}_j,\mathbf{w}_k$ are linearly dependent for some distinct $i,j,k$,
+which means that one of these 3 is a linear combination of the other 2.
+By re-indexing assume the one is $\mathbf{w}_i$ and the others are $\mathbf{w}_j$ and $\mathbf{w}_k$.
+There are 3 ways such a degeneracy can happen:
+
+\begin{enumerate}
+\item $\mathbf{w}_i = 0$  
+\item $\mathbf{w}_i = \alpha \mathbf{w}_j$, where $\alpha \ne 0$ and $\mathbf{w}_j \ne 0$  
+\item $\mathbf{w}_i = \alpha \mathbf{w}_j + \beta \mathbf{w}_k$, where $\alpha \ne 0$, $\beta \ne 0$, and $\mathbf{w}_j,\mathbf{w}_k$
+are linearly independent
+\end{enumerate}
+
+For the chromaticity polygon $P$, with 2D vertices $\mathbf{v}_i$, these translate to 3 polygon degeneracies:
+\begin{enumerate}[label=\arabic*$'$.]
+\item vertex $\mathbf{v}_i$ is undefined
+\item vertices $\mathbf{v}_i$ and $\mathbf{v}_j$ are identical
+\item vertices $\mathbf{v}_i$, $\mathbf{v}_j$, and $\mathbf{v}_k$ are distinct but collinear,
+with $\mathbf{v}_i$ between $\mathbf{v}_j$ and $\mathbf{v}_k$
+\end{enumerate}
+
+The chromaticity polygon $P$ is not simple in general; it is just a closed polygonal path.
+In the next section we discuss the case where $P$ is \emph{convex}, 
+which means that all internal angles are $\le \pi$.
+For convex $P$ we allow all 3 of these degeneracies.
+However, each group of identical vertices
+and each group of distinct collinear vertices must have contiguous indexes.
+A subset of $\{1,\ldots,N\}$ is \emph{contiguous} iff
+the indexes are consecutive, with wraparound from $N$ to $1$ allowed.
+So for this vignette, a convex $P$ is simple, except possibly for contiguous identical vertices.
+
+
+
+% ----------------------------------------------------------------------------
+
+\section{The Optimal Color Theorem}
+
+The preliminaries are done and we can finally state the main result from \cite{West}:
+
+\begin{theorem}\label{thm:main}
+With $\Gamma$,  $Z$,  and $P$ as defined above, the following are equivalent:
+\begin{enumerate}
+\item  for any $z \in Z$, $z \in \partial Z$ iff there is an $f \in \Gamma^{-1}(z)$ with 0 or 2 transitions 
+\item the chromaticity polygon $P$ is convex
+\end{enumerate}
+Moreover, in part 1, $p(f)$ is unique for all $z$ iff all vertices of $P$ are defined.
+\end{theorem}
+A point $z \in \partial Z$ is called an \emph{optimal color}.
+A corollary of the theorem is that if $P$ is not convex,
+then there are optimal colors that are not {Schr{\"o}dinger colors}.
+We explore examples of this in the next two sections.
+
+
+\section{The CIE xyz Responsivities with 5nm step}
+
+In \textbf{colorSpec} software, the CIE responsivities with 5nm step
+are stored in the object \code{xyz1931.5nm};
+whose values are taken from Table 1 in \cite{ASTM308}.
+The wavelengths range from 380 to 780 nm.
+
+Analyze the responsivities, and print the degeneracies.
+<<mets5, echo=TRUE, message=FALSE>>=
+mets = responsivityMetrics( xyz1931.5nm )
+mets$zeros
+@
+So the responsivity at $\lambda$=780 nm is 0.
+This is not a violation of the convexity of $P$.
+<<mets6, echo=TRUE, message=FALSE>>=
+mets$multiples
+@
+There are 3 groups of multiples:
+735 745 nm (not contiguous),
+755 760 nm (contiguous), and
+765 770 775 nm (contiguous).
+The non-contiguous group is a violation of the convexity of $P$.
+Now print the actual concavities in $P$.
+<<mets7, echo=TRUE, message=FALSE>>=
+mets$concavities
+@
+These are all violations too.  
+The column $\mathtt{extangle}$ is the external angle at the vertex (in radians)
+of the spherical chromaticity polygon $P_S$.
+The sum of internal and external angles is $\pi$,
+so when the external angle is negative, as these are,
+the internal angle is greater than $\pi$.
+In the vicinity of these wavelengths, we can find optimal colors with more than 2 transitions.
+As an example, we choose the canonical optimal color with wavelengths 580 and 585 nm.
+<<mets8, echo=TRUE, message=FALSE>>=
+wave  = wavelength(xyz1931.5nm)
+E.eye = product( illuminantE(1,wave=wave), '*', xyz1931.5nm )
+spec = canonicalOptimalColors( E.eye, c(580,585), spectral=TRUE ) 
+bandRepresentation( spec )[[1]]
+@
+So this spectrum is a superposition of 3 bandpass filters, and has 6 transitions.
+<<fig1, echo=TRUE, fig.pos="H", fig.height=3.5, out.width='1.0\\linewidth', fig.cap='An example of a transmittance spectrum that is optimal, but has more than 2 transitions' >>=
+par( omi=c(0,0,0,0), mai=c(0.5,0.6,0.2,0) )
+plot( spec, main=FALSE, legend=FALSE )
+@
+
+
+
+
+\section{The CIE xyz Responsivities with 1nm step}
+
+In \textbf{colorSpec} software, the CIE responsivities with 1nm step
+are stored in the object \code{xyz1931.1nm};
+whose values are taken from Table 1 in \cite{wyszecki2000color}.
+The wavelengths range from 360 to 830 nm.
+
+Analyze the responsivities, and print the degeneracies.
+<<mets10, echo=TRUE, message=FALSE>>=
+mets = responsivityMetrics( xyz1931.1nm )
+mets$zeros
+mets$multiples
+@
+So there are no wavelengths where the responsivity is 0.
+But all responsivities from 699 to 830 are multiples of each other 
+(with angular tolerance of about $10^{-6}$ radian).
+It is fairly obvious that they were extrapolated in this way intentionally.
+Since these wavelengths are contiguous, there are no convexity violations so far.
+Now examine the concavities in $P$.
+<<mets11, echo=TRUE, message=FALSE>>=
+nrow( mets$concavities )
+@
+This is too many concave vertices to print, so look at the first quartile of external angles instead.
+<<mets12, echo=TRUE, message=FALSE>>=
+fivenum( mets$concavities$extangle )
+mets$concavities[ mets$concavities$extangle <= -0.01606, ]
+@
+
+<<mets13, echo=TRUE, message=FALSE>>=
+wave  = wavelength(xyz1931.1nm)
+E.eye = product( illuminantE(1,wave=wave), '*', xyz1931.1nm )
+spec = canonicalOptimalColors( E.eye, c(407,409), spectral=TRUE ) 
+bandRepresentation( spec )[[1]]
+@
+So this spectrum is a superposition of 2 bandpass filters, and has 4 transitions.
+<<fig2, echo=TRUE, fig.pos="H", fig.height=3.5, out.width='1.0\\linewidth', fig.cap='An example of a transmittance spectrum that is optimal, but has more than 2 transitions' >>=
+par( omi=c(0,0,0,0), mai=c(0.5,0.6,0.2,0) )
+plot( spec, main=FALSE, legend=FALSE )
+@
+
+
+
+
+
+% \Sexpr{knitr::knit_exit()}
+
+
+% \pagebreak
+
+\bibliographystyle{alpha}
+\bibliography{bibliography}
+
+
+% ----------------------------------------------------------------------------
+
+
+\section*{Session Information}
+This document was prepared \today \quad with the following configuration:
+<<finish, echo=FALSE, results="asis">>=
+knit_hooks$set(output = function(x, options) { x })
+toLatex(sessionInfo(), locale=FALSE)
+@
+
+
+\end{document}

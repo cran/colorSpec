@@ -463,7 +463,7 @@ raytrace.zonogon <- function( x, base, direction )
 #       each row of the matrix is a point in the n-cube
 #       that maps to the point on the zonogon
 
-invertboundary.zonogon <- function( x, data, tol=NULL )     #1.e-9 )
+invertboundary.zonogon <- function( x, boundary, data=NULL, tol=NULL )     #1.e-9 )
     {
     ok  = is.data.frame(data)  &&  0<nrow(data)
     ok  = ok  &&  !is.null(data$boundary)  &&   !is.null(data$idx)  &&  !is.null(data$sign)  &&  !is.null(data$alpha)
@@ -722,53 +722,67 @@ plot.zonogon  <- function( x, interior=TRUE, ... )
     
 ##-------------------   helpers below       -------------------##
 
-#   A           a matrix, possibly with NAs
-#   tol         difference tolerance, consecutive in nature
-#   projective  2 rows that differ only in sign are considered the same
+#   A           a matrix, possibly with NAs or NaNs
+#   tol         difference tolerance, used to 'collapse' one column at a time
+#   projective  if TRUE, then 2 rows that differ only in sign are considered the same.
+#               Also, any row with L-inf norm less than tol is set to 0; probably a separate tolerance should be used for this.
 #
 #   returns a list with
 #       clusteridx  an integer vector with length(cluster) = nrow(A)
 #                   an index into cluster.  0 means this row is a trivial singleton cluster (most common).
-#       cluster     list of integer vectors, the non-trivial clusters
+#       cluster     list of integer vectors, the indexes of the rows of A forming the non-trivial clusters
 #
-#   a row with NAs is ignored, and always in a trivial cluster
+#   a row with an NA is always in its own singleton cluster
 #
-findRowClusters <- function( A, tol=1.e-9, projective=TRUE )
+findRowClusters <- function( A, tol, projective )
     {
-    if( projective )
-        {
-        #   extract the first non-zero entry in each row
-        first   = apply( A, 1, function(r) { r[ which(r!=0)[1] ] } )
-        first[ is.na(first) ] = 0   # change NAs to 0
-        A   = sign(first) * A     # vector sign(first) is auto-replicated to all columns
-        }
-    
-    if( ncol(A) == 3 )
-        #   most common
-        perm    = base::order( A[ ,1], A[ ,2], A[ ,3] )         
-        # perm    = statnet.common::order( A )  # ; print(perm)    
-    else if( ncol(A) == 2 )
-        perm    = base::order( A[ ,1], A[ ,2] )  # ; print(perm)
-    else
+    if( ! (ncol(A) %in% c(2,3) ) )
         {
         log.string( FATAL, "ncol(A)=%d is invalid.", ncol(A) )
         return(NULL)
-        }
-        
-    Asorted = A[ perm, ] 
+        }    
     
-    Adiff   = diff( Asorted )   #; print(Adiff)  # one fewer rows than A
+    if( projective )
+        {
+        #   set near 0 entries to exactly 0.  There should probably be a separate tolerance for this.
+        A[ abs(A) < tol ]   = 0
+        
+        #   extract the first non-zero entry in each row
+        first   = apply( A, 1, function(r) { r[ which(r!=0)[1] ] } )
+        first[ ! is.finite(first) ] = 0     # change NAs to 0
+        A   = sign(first) * A               # vector sign(first) is auto-replicated to all columns
+        }
+
+    #   cluster each column
+    Acollapsed  = matrix( NA_real_, nrow(A), ncol(A) )
+    for( j in 1:ncol(A) )
+        {
+        Acollapsed[ ,j]  = collapseClusters1D( A[ ,j], tol=tol )
+        }
+
+    #   order the columns lexicographically.  A row with an NA will be put last.
+    if( ncol(A) == 3 )
+        #   most common
+        perm    = base::order( Acollapsed[ ,1], Acollapsed[ ,2], Acollapsed[ ,3] )
+    else if( ncol(A) == 2 )
+        perm    = base::order( Acollapsed[ ,1], Acollapsed[ ,2] )  # ; print(perm)
+
+
+    Asorted = Acollapsed[ perm, ]    #; print( Asorted )
+    
+    Adiff   = diff( Asorted )                                   #; print(Adiff)  # one fewer rows than A
     jump    = .rowSums( abs(Adiff), nrow(Adiff), ncol(Adiff) )  #; print( sort(jump) )
     
-    
-    jump[ is.na(jump) ] = tol + 1
-    mask    = tol < jump
+    #   now look for positive jumps
+    jump[ ! is.finite(jump) ] = 1
+    mask    = 0 < jump      # tol < jump
     runidx  = findRunsFALSE( mask )
     
     out = list()      
     out$clusteridx  = integer( nrow(A) )    
     out$cluster     = vector( nrow(runidx), mode='list' )
-    out$diameter    = numeric( nrow(runidx) )
+    out$spread      = numeric( nrow(runidx) )
+    
     if( 0 < nrow(runidx) )
         {
         # perminv = order( perm )
@@ -778,26 +792,30 @@ findRowClusters <- function( A, tol=1.e-9, projective=TRUE )
         perm2    = order( as.integer( diff( t(runidx) ) ), decreasing=TRUE )    #  ; print( as.integer( diff( t(runidx) ) ) )
         runidx  = runidx[ perm2,  ,drop=FALSE]
         #print( runidx )
-        
+
         for( k in 1:nrow(runidx) )
             {
             run     = runidx[k,1]:(runidx[k,2]+1)   # add back the +1  !
             clust   = perm[ run ]  
             out$clusteridx[ clust ] = k
             out$cluster[[k]]        = clust
-            out$diameter[k]         = max( spread( Asorted[run, ] ) )
-            }
             
-
+            #   set spread to the L2-length of the diagonal of the bounding box of the points
+            edgevec         = bbedge( A[clust, ] )
+            out$spread[k]   = sqrt( sum(edgevec^2) )
+            }
         }
         
     return(out)
     }
     
     
-#   mat     an NxM matrix
-#   returns an M-vector.  i'th entry = spread of i'th column of mat    
-spread <- function( mat )
+#   mat     an NxM matrix, with points in R^M in the rows.
+#
+#   returns an M-vector, with the M lengths of the edges of the bounding box around these N point.
+#   i'th entry = total range of i'th column of mat    
+#
+bbedge <- function( mat )
     {
     as.numeric( diff( apply( mat, 2, range, na.rm=T ) ) )   
     }
@@ -825,3 +843,118 @@ findRunsFALSE <- function( mask )
         
     return( cbind( start=start, stop=stop-1L ) )
     }
+    
+    
+    
+findRunsTRUE <- function( mask, periodic=FALSE )
+    {
+    #   put sentinels on either end, to make things far simpler
+    dif = diff( c(FALSE,mask,FALSE) )
+    
+    start   = which( dif ==  1 )
+    stop    = which( dif == -1 )
+    
+    if( length(start) != length(stop) )
+        {
+        log.string( FATAL, "Internal error.  %d != %d", length(start), length(stop) )
+        return(NULL)
+        }
+        
+    stop    = stop - 1L
+    
+    if( periodic  &&  2<=length(start) )
+        {
+        m   = length(start)
+        
+        if( start[1]==1  &&  stop[m]==length(mask) )
+            {
+            #   merge first and last
+            start[1]    = start[m]
+            start   = start[ 1:(m-1) ]
+            stop    = stop[ 1:(m-1) ]
+            }
+        }
+        
+    return( cbind( start=start, stop=stop ) )
+    }
+    
+    
+crossproduct  <-  function( v, w )
+    {
+    out = c( v[2]*w[3] - v[3]*w[2], -v[1]*w[3] + v[3]*w[1], v[1]*w[2] - v[2]*w[1] )
+    
+    return( out )
+    }
+        
+    
+    
+#   idx     a vector of integers in 1:m, usually unique    
+#   m       the upper limit for values in idx
+#
+#   returns TRUE iff the values in idx are contiguous, including period wraparound
+contiguous  <-  function( idx, m )
+    {
+    if( length(idx) <= 1 )  return(TRUE)
+    
+    mask        = logical(m)
+    mask[idx]   = TRUE
+    
+    mat = findRunsTRUE( mask, periodic=TRUE )
+    
+    out = nrow(mat)==1
+    
+    #   if( ! out ) print(idx)
+    
+    return( out )
+    }
+
+    
+    
+    
+#   vec     numeric vector, possibly with NAs
+#   tol     numerical tolerance for cluster separation
+#
+#   find gaps larger than tol, and change the values of each remaining 'cluster' to
+#       *) the mean of that 'cluster'
+#       *) but if the cluster contains a single integer, then change to that integer
+#   return resulting vector of the same length    
+collapseClusters1D <- function( vec, tol  )
+    {
+    perm        = base::order( vec )    # any NAs are put *last*
+    
+    vecsorted   = vec[ perm ]    #; print( Asorted )
+    
+    jump   = diff( vecsorted )
+    
+    jump[ ! is.finite(jump) ] = tol + 1
+    mask    = tol < jump
+    runidx  = findRunsFALSE( mask )
+    
+    if( nrow(runidx) == 0 )
+        #   no clusters and no change
+        return( vec )
+
+    # perminv = order( perm )
+    #   sort by run size, in decreasing order    
+    #cat( "------------\n" )
+    #print( runidx )
+    #perm2    = order( as.integer( diff( t(runidx) ) ), decreasing=TRUE )    #  ; print( as.integer( diff( t(runidx) ) ) )
+    #runidx  = runidx[ perm2,  ,drop=FALSE]
+    #print( runidx )
+    
+    for( k in 1:nrow(runidx) )
+        {
+        run                 = runidx[k,1]:(runidx[k,2]+1)   # add back the +1  !
+        cluster             = vecsorted[run]
+        idx                 = which( floor(cluster) == cluster )
+        if( length(idx) == 1 )
+            value   = cluster[idx]
+        else
+            value   = mean( cluster )
+            
+        vec[ perm[run] ]    = value
+        }
+    
+    return( vec )
+    }
+    

@@ -62,7 +62,8 @@ probeOptimalColors.colorSpec <- function( x, gray, direction, aux=FALSE, spectra
     #   do not bother to optimize for regular wavelength sequence
     wave    = wavelength(x)
     #   n       = length(wave)    
-    step    = breakandstep(wave)$stepvec
+    bslist  = breakandstep( wave )    
+    step    = bslist$stepvec
     #step    = diff( wave, lag=2 ) / 2
     #step    = c( wave[2]-wave[1], step, wave[n]-wave[n-1] )     #; print(step)
     W       = step * as.matrix( x )  #;  print(W)    # step   is replicated to all columns of as.matrix(x)
@@ -103,15 +104,21 @@ probeOptimalColors.colorSpec <- function( x, gray, direction, aux=FALSE, spectra
 
     #   compute the optimal spectra
     #   these spectra are all 0-1,
-    #   except for a single alpha in 2D
-    #   and a pair of alphas in 2D
-    spectramat = invertboundary( zono, out )        #; print( str(spectramat) )
+    #   except for a single alpha in 1D, and a pair of alphas in 2D
+    spectramat = invertboundary( zono, out$boundary, out )$source     #; print( str(spectramat) )
     if( is.null(spectramat) )   return(NULL)        
     
     lambda  = matrix( NA_real_, nrow(spectramat), 2 )    
     for( i in 1:nrow(spectramat) )
-        lambda[i, ]  = compute_lambdas( spectramat[i, ], wave, step )
-    
+        {
+        # lambda[i, ]  = compute_lambdas( spectramat[i, ], wave, step )        
+        
+        lambdamat   = lambdasFromSpectrum( spectramat[i, ], wave, bslist )
+        if( ! is.null(lambdamat)  &&  nrow(lambdamat)==1 )
+            lambda[i, ] = lambdamat
+        }
+        
+        
     out$lambda  = lambda
     
     #   remove columns no longer needed: 'base',  'sign' 
@@ -219,6 +226,8 @@ sectionOptimalColors.colorSpec <- function( x, normal, beta )
     dim(beta) = NULL
     
     
+    x   = linearize(x)    
+    
     #   compute matrix W for zonotopes
     #   do not bother to optimize for regular wavelength sequence
     wave    = wavelength(x)
@@ -251,6 +260,386 @@ sectionOptimalColors.colorSpec <- function( x, normal, beta )
 
     return( invisible(out) )
     }
+    
+    
+#   x           a colorSpec object with type "responsivity.material"
+#   lambda      Mx2 matrix of wavelengths of x, each row defines a parallelogram on the boundary of the zonohedron
+#   spectral    logical, whether to return just a data.frame, or a colorSpec object of type "material"
+#               the spectra take value 1/2 at the 2 given wavelengths, and 0 or 1 elsewhere
+    
+canonicalOptimalColors.colorSpec <- function( x, lambda, spectral=FALSE )
+    {
+    theName = deparse(substitute(x))
+    
+    ok  = (numSpectra(x) == 3L)
+    if( ! ok )
+        {
+        log.string( ERROR, "numSpectra(%s) = %d  != 3.", theName, numSpectra(x) )     
+        return(NULL)
+        }        
+
+    if( type(x) != "responsivity.material" )
+        {
+        log.string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )        
+        return(NULL)
+        }    
+        
+    lambda  = prepareNxM( lambda, M=2 )
+    if( is.null(lambda) )   return(NULL)
+    
+                
+    wave    = wavelength(x)                
+    mask    = lambda %in% wave
+    ok  = all( mask )
+    if( ! ok )
+        {
+        log.string( ERROR, "In argument lambda, %d of %d wavelengths are not in the wavelength sequence of '%s'.", 
+                        sum(!mask), length(lambda), theName )     
+        return(NULL)
+        }        
+        
+    x   = linearize(x)    
+
+    
+    #   compute matrix W for zonotopes
+    #   do not bother to optimize for regular wavelength sequence
+
+    step    = breakandstep(wave)$stepvec
+    W       = step * as.matrix( x )  #;  print(W)    # step   is replicated to all columns of as.matrix(x)
+
+    #   white   = colSums( W )
+    
+    #   the tolerance here is for collinearity, which can be larger than the face normal differences
+    condlist    = condenseGenerators( W, tol=5.e-7 )
+    if( is.null(condlist) )    return(NULL)
+    
+    ncond   = nrow(condlist$Wcond)    
+    if( ncond < 3 )
+        {
+        log.string( ERROR, "Invalid number of condensed generators = %d < 3.", ncond )
+        return(NULL)
+        }
+        
+    n       = nrow(W)
+    m       = nrow(lambda)
+    
+    #   optimal             = matrix( NA_real_, m, 3 )
+    #   colnames(optimal)   = specnames(x)
+    spectra     = matrix( NA_real_, m, n )
+    transitions = rep( NA_integer_, m )
+    
+    tol2    = 5.e-10
+    
+    for( i in 1:m )
+        {
+        #   find the row indexes in W
+        idxpair = match( lambda[i, ], wave )    
+        if( any(is.na(idxpair)) )
+            {
+            log.string( FATAL, "bad logic for lambda=%g,%g.", lambda[i,1], lambda[i,2] )
+            return(NULL)
+            }
+        
+        #   print( idxpair ) ; print( condlist$groupidx[ idxpair ]  )
+        
+        #   find the row indexes in Wcond, in increasing order        
+        kdxpair = sort( condlist$groupidx[ idxpair ],  na.last=TRUE )  
+        
+        if( any(is.na(kdxpair)) )
+            #   the responsivity at one of these wavelengths is 0, so the parallelogram is degenerate
+            next
+            
+        if( kdxpair[1] == kdxpair[2] )
+            #   indexes are equal, so the parallelogram is degenerate
+            next            
+
+        #   print( kdxpair )
+        
+        #   collinear generators in W have already been identified, 
+        #   so the parallelogram is non-degenerate and the normal is non-zero
+        normal  = crossproduct( condlist$Wcond[kdxpair[1], ],  condlist$Wcond[kdxpair[2], ] )
+        normal  = normal / sqrt( sum(normal*normal) )   # unitize
+        #   print( normal )
+        
+        functional          = as.numeric( condlist$Wcond %*% normal )
+        names(functional)   = rownames(condlist$Wcond)
+        
+        #   make useful logical masks
+        between = kdxpair[1]<(1:ncond)  &  (1:ncond)<kdxpair[2]
+        outside = ! between
+        outside[ kdxpair ]  = FALSE
+        
+        #   coplanar generators certainly include kdxpair[1] and kdxpair[2], but maybe others
+        coplanar    = abs(functional) < tol2
+        
+        #   all values in pcube are 0,1, or 1/2
+        pcube   = (sign(functional) + 1)/2
+        pcube[ kdxpair ] = 0.5  # override
+        # print( pcube )
+        
+        if( sum(between) < sum(outside) )
+            {
+            #   count the number of 0s and 1s outside the band
+            mask    = outside  &  !coplanar
+            zeros   = sum( pcube[mask] == 0 )
+            ones    = sum( pcube[mask] == 1 )
+            bandstop    = (zeros < ones)    # this means that pcube is more like bandstop than a bandpass
+            }
+        else
+            {
+            #   count the number of 0s and 1s between the wavelengths (inside the band)
+            mask    = between  &  !coplanar
+            zeros   = sum( pcube[mask] == 0 )
+            ones    = sum( pcube[mask] == 1 )
+            bandstop    = (ones < zeros)    # this means that pcube is more like bandstop than a bandpass
+            }
+            
+        if( bandstop )  
+            # flip it so the spectrum is more like a bandpass
+            pcube = 1 - pcube
+            
+        #   change the coplanars outside to 0
+        pcube[ coplanar & outside ] = 0
+        
+        #   change the coplanars between to 1
+        pcube[ coplanar & between ] = 1
+                
+        if( lambda[i,2] < lambda[i,1] )
+            #   change bandpass to bandstop
+            pcube   = 1 - pcube
+                
+        #   only 2 values in pcube are 1/2, and the rest are 0 or 1
+        #  print( pcube )
+        
+        spectra[i, ]    = expandcanonical( condlist, idxpair, pcube  )
+            
+        transitions[i]  = counttransitions( spectra[i, ] )
+        }
+        
+    rnames  = rownames(lambda)
+    if( is.null(rnames) )   rnames = 1:m
+    
+    df  = data.frame( row.names=rnames )
+    df$lambda       = lambda
+    df$optimal      = spectra %*% W
+    df$transitions  = transitions
+    
+    if( spectral )
+        {
+        out = colorSpec( t(spectra), wavelength=wave, quantity='transmittance', organization='df.row', specnames=rownames(df) )
+        extradata(out)  = df
+        }
+    else
+        out = df
+        
+        
+    count   = sum( is.na(transitions) )
+    if( 0 < count )
+        {
+        log.string( WARN, "%d of %d colors could not be computed, because the pair of wavelengths is invalid.",
+                            count, length(transitions) )
+        }
+    
+    return(out)
+    }
+    
+    
+    
+
+#   x           a colorSpec object with type "responsivity.material"
+#   lambda      2 wavelengths from x
+plotfunctional <- function( x, lambda, gamma )
+    {    
+    wave        = wavelength(x)                
+    
+    idxpair   = match( lambda, wave )
+    if( length(lambda)!=2  ||  any( is.na(idxpair) ) )
+        {
+        log.string( ERROR, "lambda='%s' is invalid.", as.character(lambda) )
+        return(FALSE)
+        }
+    
+    #   compute matrix W for zonotopes
+    #   do not bother to optimize for regular wavelength sequence
+
+    step    = breakandstep(wave)$stepvec
+    W       = step * as.matrix( x )  #;  print(W)    # step   is replicated to all columns of as.matrix(x)
+
+    #   white   = colSums( W )
+    
+    #   the tolerance here is for collinearity, which can be larger than the face normal differences
+    condlist    = condenseGenerators( W, tol=5.e-7 )
+    if( is.null(condlist) )    return(FALSE)
+    
+    ncond   = nrow(condlist$Wcond)    
+    if( ncond < 3 )
+        {
+        log.string( ERROR, "Invalid number of condensed generators = %d < 3.", ncond )
+        return(FALSE)
+        }
+
+    kdxpair = sort( condlist$groupidx[ idxpair ],  na.last=TRUE )  
+    
+    if( any(is.na(kdxpair)) )
+        #   the responsivity at one of these wavelengths is 0, so the parallelogram is degenerate
+        return(FALSE)
+        
+    if( kdxpair[1] == kdxpair[2] )
+        #   indexes are equal, so the parallelogram is degenerate
+        return(FALSE)
+
+    #   print( kdxpair )
+    
+    #   collinear generators in W have already been identified, 
+    #   so the parallelogram is non-degenerate and the normal is non-zero
+    normal  = crossproduct( condlist$Wcond[kdxpair[1], ],  condlist$Wcond[kdxpair[2], ] )
+    normal  = normal / sqrt( sum(normal*normal) )   # unitize
+    #   print( normal )
+    
+    functional  = as.numeric( condlist$Wcond %*% normal )
+        
+    functional[kdxpair] = 0     # make near 0 exactly 0
+    
+    if( nrow(condlist$Wcond) < nrow(W) )
+        {
+        #   expand functional
+        funsaved    = functional
+        functional  = rep( NA_real_, nrow(W) )
+        for( k in 1:length(funsaved) )
+            {
+            group   = condlist$group[[k]]
+            functional[ group ]   = funsaved[k]        
+            }
+        }
+        
+    names(functional)   = as.character(wave)
+    # print( functional )
+        
+    #   ready to plot
+    y   = powodd(functional,1/gamma)
+    
+    xlim    = range(wave)
+    ylim    = range(y,na.rm=TRUE)
+    ylab    = sprintf( "functional^(1/%g)", gamma )
+    plot( xlim, ylim, type='n', xlab="wavelength (nm)", ylab=ylab )
+    grid( lty=1 )
+    abline( h=0 )
+    points( wave, y )
+    points( wave[idxpair], y[idxpair], pch=20 )
+        
+    return(TRUE)
+    }
+    
+    
+    
+    
+    
+#   condlist    a list with W, Wcond, group, groupidx
+#   idxpair     defining canonical optimal, idxpair[1] != idxpair[2] 
+#   pcube       point in the condensed cube, thought of as a reflectance spectrum
+#               all values are 0 or 1, except at condlist$groupidx[ idxpair ] where the value is 0.5
+
+expandcanonical <- function( condlist, idxpair, pcube )
+    {
+    if( length(pcube) != nrow(condlist$Wcond) )
+        {
+        log.string( FATAL, "mismatch %d != %d", length(pcube), nrow(condlist$Wcond) )
+        return(NULL)
+        }
+   
+    n   = nrow(condlist$W)  #; print(n)
+    if( nrow(condlist$Wcond) == n )    return( pcube )     # no condensation
+
+    #   1<= kdxpair[1] < kdxpair[2] <= nrow(Wcond)        
+    kdxpair = condlist$groupidx[ idxpair ]
+
+    pdrop   = pcube[ -kdxpair ] 
+    ok  = all( pdrop==0  |  pdrop==1 )
+    if( ! ok )
+        {
+        log.string( FATAL, "pcube is invalid, because values not at %d and %d are not 0 or 1.", 
+                                kdxpair[1], kdxpair[2] )
+        return(NULL)
+        }
+        
+    ok  = all( pcube[kdxpair] == 0.5 )
+    if( ! ok )
+        {
+        log.string( FATAL, "pcube is invalid, because values at %d and %d are not 1/2.", 
+                                kdxpair[1], kdxpair[2] )
+        return(NULL)
+        }
+
+    knext   = c( 2:length(pcube), 1 )
+    kprev   = c( length(pcube), 1:(length(pcube)-1) )
+        
+    out = numeric( n )
+    
+    
+    #   examine the non-trivial groups
+    for( k in 1:length(pcube) )
+        {
+        group   = condlist$group[[k]]
+        alpha   = pcube[k]        
+        
+        if( length(group)==1  ||  alpha==0  ||  alpha==1 )
+            {
+            #   trivial cases
+            out[ group ]   = alpha
+            next
+            }
+       
+        #   condlist$group[[k]] is a nontrivial splitting
+        #   and since alpha is neither 0 nor 1, k should be one of kdxpair[1] or kdxpair[2]
+        #   check this
+        j   = match( k, kdxpair )
+        if( is.na(j) )
+            {
+            log.string( FATAL, "k=%d is not in the pair (%d,%d).", k, kdxpair[1], kdxpair[2] )
+            return(NULL)
+            }
+            
+        #   another check
+        ok  = idxpair[j] %in% group
+        if( ! ok )
+            {
+            log.string( FATAL, "idxpair[%d]=%d is not in the proper group '%s'.", 
+                                    j, idxpair[j], paste( group, collapse=' ' ) )
+            return(NULL)
+            }
+            
+        m           = length(group)        
+        alphasplit  = numeric(m)            
+        alphasplit[ group == idxpair[j] ]    = 0.5
+            
+        #   choose output form to minimize the number of transitions
+        if( pcube[kprev[k]]  >  pcube[knext[k]] )
+            #   output form is 1111...1/2...00000...
+            alphasplit[ group < idxpair[j] ]    = 1
+        else
+            #   output form is 0000...1/2....11111...            
+            alphasplit[ idxpair[j] < group ]  = 1            
+            
+        #   print( alphasplit )
+            
+        out[ group ]    = alphasplit
+        }
+        
+    #    now examine the 0-generators.  
+    #   They can be assigned any coefficient, but assign to minimize # of transitions.
+    idx     = which( is.na(condlist$groupidx) )
+    inext   = c( 2:n, 1 )
+    iprev   = c( n, 1:(n-1) )
+    for( i in idx )
+        {
+        if( out[iprev[i]]==1  ||  out[inext[i]]==1 )
+            out[i]  = 1
+        }
+        
+    #   print( out )
+
+    return( out )
+    }    
     
     
     
@@ -443,6 +832,12 @@ sectionOptimalColors <- function( x, normal, beta )
     {
     UseMethod("sectionOptimalColors")
     }
+    
+canonicalOptimalColors <- function( x, lambda, spectral=FALSE )
+    {
+    UseMethod("canonicalOptimalColors")
+    }
+    
                   
 computeADL <- function( x, response )
     {

@@ -269,7 +269,14 @@ transitionMatrix <- function( vec )
     return( out )
     }
     
-#   a simpleminded approach here    
+#   wavelength      numeric vector of length n
+#    
+#   computes parameters for n bins, roughly centered at the wavelengths
+#
+#   returns a list with numeric vectors
+#       breakvec    breaks between n bins, the length is n+1
+#       stepvec     width of the bins, the length is n
+#
 breakandstep <- function( wavelength, method='rectangular' )
     {    
     n   = length(wavelength)
@@ -354,25 +361,69 @@ roundAffine  <- function( .x, .digits )
     return( out / n )
     }
 
-angleBetween  <-  function( .vec1, .vec2 )
+#   .vec1 and .vec2     non-zero vectors of the same dimension    
+#
+angleBetween  <-  function( .vec1, .vec2, eps=5.e-14 )
     {
-    denom = sqrt( sum(.vec1^2) * sum(.vec2^2) )
+    len1    = sqrt( sum(.vec1^2) )
+    len2    = sqrt( sum(.vec2^2) )     #;    print( denom )
     
-    if( denom == 0 )    return( as.numeric(NA) )
+    denom   = len1 * len2
     
-    return( acos( sum( .vec1*.vec2 ) / denom ) )
+    if( abs(denom) < eps )    return( NA_real_ )
+    
+    q   = sum( .vec1*.vec2 ) / denom  #; print(q)
+        
+    if( abs(q) < 0.99 )
+        {
+        #   the usual case uses acos
+        out = acos(q)
+        }    
+    else
+        {
+        #   use asin instead
+        .vec1   = .vec1 / len1
+        .vec2   = .vec2 / len2
+        
+        if( q < 0 ) .vec2 = -.vec2
+        
+        d   = .vec1 - .vec2
+        d   = sqrt( sum(d*d) )
+        
+        out = 2 * asin( d/2 )
+        
+        if( q < 0 ) out = pi - out
+        }
+
+    return(out)
     }
 
+    
+#   x   numeric vector
+#   y   positive number
+#
+#   returns x^y, with extension for negative x to make an odd function
+powodd <- function( x, y )
+    {
+    ok  = is.numeric(x)  &&  is.numeric(y)  &&  length(y)==1  &&  0<y  
+    if( ! ok )  return(NULL)
+    
+    s   = sign(x)
+    
+    return( s * (s*x)^y )
+    }
     
 ###########     argument processing     ##############
 #
 #   A   a non-empty numeric NxM matrix, or something that can be converted to be one
 #
+#   Nmin    the minimum allowed number of rows
+#
 #   returns such a matrix, or NULL in case of error
 #
-prepareNxM  <-  function( A, M=3 )
+prepareNxM  <-  function( A, M=3, Nmin=1 )
     {
-    ok  = is.numeric(A) &&  0<length(A)  &&  (length(dim(A))<=2)  # &&  (0<M) 
+    ok  = is.numeric(A) &&  M*Nmin<=length(A)  &&  (length(dim(A))<=2)  # &&  (0<M) 
     
     ok  = ok  &&  ifelse( is.matrix(A), ncol(A)==M, ((length(A) %% M)==0)  )
     
@@ -381,16 +432,16 @@ prepareNxM  <-  function( A, M=3 )
         #print( "prepareNx3" )
         #print( sys.frames() )
         mess    = substr( paste0(as.character(A),collapse=','), 1, 10 )
-        #arglist = list( ERROR, "A must be a non-empty numeric Nx3 matrix (with N>0). A='%s...'", mess )
+        #arglist = list( ERROR, "A must be a non-empty numeric Nx3 matrix (with N>=%d). A='%s...'", mess )
         #do.call( log.string, arglist, envir=parent.frame(n=3) )
         #myfun   = log.string
         #environment(myfun) = parent.frame(3)
         
         Aname = deparse(substitute(A))        
         
-        #   notice hack to make log.string() print name of parent function
-        log.string( c(ERROR,2L), "Argument '%s' must be a non-empty numeric Nx%d matrix (with N>0). %s='%s...'", 
-                                    Aname, M, Aname, mess )
+        #   notice hack with 2L to make log.string() print name of parent function
+        log.string( c(ERROR,2L), "Argument '%s' must be a non-empty numeric Nx%d matrix (with N>=%d). %s='%s...'", 
+                                    Aname, M, Nmin, Aname, mess )
         return(NULL)
         }
     

@@ -39,7 +39,7 @@ interpolate.colorSpec   <- function( x, p, pout, pname=deparse(substitute(p)) )
             log.string( FATAL, "%d != %d", length(v), length(p) )   # internal error
             return( out )
             }    
-        return( spline( p, v, xout=pout, method="natural" )$y )
+        return( stats::spline( p, v, xout=pout, method="natural" )$y )
         }
     
     mat = apply( as.matrix(x), 1, myfun )     #; print( str(mat) )

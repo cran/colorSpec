@@ -1,5 +1,13 @@
 # NEWS for **colorSpec** package
 
+### Changes for version 1.0-1  [2019-06-24]
+* added new vignette **Convexity and Transitions - a strict examination of the CIE inverted-U**
+* added new functions `bandMaterial()` and `bandRepresentation()`
+* added new function `canonicalOptimalColors()`
+* added new function `responsivityMetrics()`
+* more efficient computation of zonohedra
+* now Suggests package `quadprog`
+
 ### Changes for version 0.9-1  [2019-05-31]
 * restored missing .R files in folder /inst/doc
 * fixed NOTE:  "found 1 marked UTF-8 string"
@@ -26,7 +34,7 @@
 * add new function `invert()` plus new vignette **Estimating a Spectrum from its Response - Inverse Colorimetry**
 * add new function `rectangularMaterial()`
 * in `computeCCT()` etc., add new `method` `'mccamy'`
-* now Imports package `rootSolve`
+* now Suggests package `rootSolve`
 
 ### Changes for version 0.7-3  [2018-04-01]
 * add new function `actinometric()`

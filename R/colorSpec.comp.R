@@ -222,8 +222,7 @@ rectangularMaterial <- function( lambda, alpha=1, wavelength=380:780 )
         #lambda_min  = min(lam)
         #lambda_max  = max(lam)
         
-        #y   = as.numeric( lambda_min <= mid  &  mid < lambda_max )
-        #y   = approx( mid, y, xout=wavelength, rule=2 )$y 
+
         
         #   compute spectrum for lam[1]
         spec1   = grayvec
@@ -295,7 +294,583 @@ rectangularMaterial <- function( lambda, alpha=1, wavelength=380:780 )
     }
     
     
+#   lambda  an Mx2 matrix defining waveband intervals, or a list of such matrices
+bandMaterial <- function( lambda, wavelength=380:780 )
+    {     
+    if( is.numeric(lambda) )
+        lambdalist  = list(lambda=lambda)
+    else if( is.list(lambda)  &&  0<length(lambda) )
+        lambdalist  = lambda
+    else
+        {
+        log.string( ERROR, "Argument 'lambda' is invalid." )
+        return(NULL)
+        }
+        
+    n   = length(lambdalist)        
+    for( j in 1:n )
+        {
+        lambdalist[[j]] = prepareNxM( lambdalist[[j]], M=2, Nmin=0 )
+        if( is.null(lambdalist[[j]]) )   return(NULL)
+        }
+        
+        
+    bslist  = breakandstep(wavelength)
+    if( is.null(bslist) )   return(NULL)
     
+
+    #   check that every item in the list is a valid matrix
+    valid   = sapply( lambdalist, validLambdaMat, wavelength, bslist )
+    idx     = which( ! valid )
+    if( 0 < length(idx) )
+        {
+        log.string( ERROR, "List item %d is invalid.", idx[1] )
+        return(NULL)
+        }
+        
+
+    mat = matrix( NA_real_, length(wavelength), n )
+    
+    for( j in 1:n )
+        {
+        mat[ ,j]    = spectrumFromLambdas( lambdalist[[j]], wavelength, bslist )
+        }
+    
+    specnames   = names(lambdalist)
+    if( is.null(specnames) )  specnames = sprintf( "bandmat_%d", 1:n )
+    
+    colnames(mat) = specnames
+        
+    out = colorSpec( mat, wavelength=wavelength, quantity='transmittance', organization='matrix' )
+    
+    return( out )
+    }
+    
+
+
+    
+bandRepresentation.colorSpec  <-  function( x )
+    {
+    if( type(x) != "material" )
+        {
+        log.string( ERROR, "type(x)='%s' is invalid.", type(x) )
+        return(NULL)
+        }
+    
+    m       = numSpectra(x)
+
+    out = vector( m, mode='list' )
+    names(out)  = specnames(x)
+    
+    if( m == 0 )    return(out)
+    
+    mat     = as.matrix(x)
+    
+    wave    = wavelength(x)
+    bslist  = breakandstep(wave)    
+    
+    for( k in 1:m )
+        {
+        out[[k]]    = lambdasFromSpectrum( mat[ ,k], wave, bslist )
+        }
+    
+    return(out)
+    }
+    
+    
+#   lambdamat   Mx2 matrix defining M closed intervals of wavelengths, with at most being a "wrap-around"    
+#               It checks that all intervals are inside the valid range, and are disjoint.
+#
+#   returns     TRUE or FALSE
+ 
+validLambdaMat  <- function( lambdamat, wavelength, bslist=NULL )
+    {
+    ok  = is.matrix(lambdamat)  &&  ncol(lambdamat)==2
+    if( ! ok )
+        {
+        log.string( ERROR, "lambdamat is not an Mx2 matrix."  )
+        return(FALSE)
+        }
+    
+    if( nrow(lambdamat) == 0 )  return(TRUE)
+    
+    if( is.null(bslist) )   bslist  = breakandstep(wavelength)
+    
+    lambdarange = range( bslist$breakvec )
+    inside      = all( lambdarange[1] <= lambdamat  &  lambdamat <= lambdarange[2] )
+    if( ! inside )
+        {
+        log.string( ERROR, "Not all lambda's are in the interval [%g,%g].", lambdarange[1], lambdarange[2] )
+        return(FALSE)
+        }
+        
+    bandpass <- function( lambda )
+        {
+        if( lambda[1] < lambda[2] )
+            return(TRUE)
+        else if( lambda[2] < lambda[1] )
+            return(FALSE)
+        else
+            return(NA)
+        }
+        
+    bpmask  = apply( lambdamat, 1, bandpass )
+    if( any(is.na(bpmask)) )
+        {
+        k   = which( is.na(bpmask)[1] )
+        log.string( ERROR, "Interval [%g,%g] is empty.", lambdamat[k,1], lambdamat[k,2] )
+        return(FALSE)
+        }
+        
+    #   count the number of bandstops
+    idxbs   = which( ! bpmask )
+    if( 1 < length(idxbs) )
+        {
+        log.string( ERROR, "There are %d > 1 bandstops.", length(idxbs) )
+        return(FALSE)
+        }
+        
+    lambdabs    = NULL
+    if( length(idxbs) == 1 )
+        {
+        #   extract the single bandstop
+        lambdabs    = lambdamat[idxbs, ]
+        
+        #   and now remove it from lambdamat
+        lambdamat   = lambdamat[-idxbs, , drop=FALSE]
+        }
+        
+    #   lambdamat now has only bandpass intervals
+    #   check that they are disjoint
+    m   = nrow(lambdamat) 
+    if( 1 < m )
+        {
+        #   sort rows by the lower endpoints
+        perm        = order( lambdamat[ ,1] )
+        lambdamat   = lambdamat[perm, ]
+        
+        #   check that all lower endpoints are distinct
+        dif     = diff( lambdamat[ ,1] )
+        idx     = which( dif==0 )
+        if( 1 <= length(idx) )
+            {
+            log.string( ERROR, "Two intervals have the same lower endpoint = %g.", lambdamat[idx[1],1] )
+            return(FALSE)
+            }
+        
+        #   check that each upper endpoint is less than the next lower endpoint
+        dif = lambdamat[ 2:m, 1 ]  -  lambdamat[ 1:(m-1), 2 ]
+        idx     = which( dif<0 )
+        if( 1 <= length(idx) )
+            {
+            log.string( ERROR, "Interval [%g,%g] intersects another interval.", lambdamat[idx[1],1],  lambdamat[idx[1],2] )
+            return(FALSE)
+            }
+        }
+    
+    if( ! is.null(lambdabs)  &&  0<m  )
+        {
+        #   lambdabs is a bandstop interval
+        #   check that it does not intersect one of the others
+        ok  = lambdamat[m,2] < lambdabs[1]  &&  lambdabs[2] < lambdamat[1,1]
+        if( ! ok )
+            {
+            log.string( ERROR, "Bandstop interval [%g,%g] intersects another interval.", lambdabs[1], lambdabs[2] )
+            return(FALSE)
+            }
+        }
+        
+    return(TRUE)
+    }
+    
+    
+        
+#   lambdamat   Mx2 matrix defining bandpass filters, and at most 1 bandstop wrap-around filter
+#               for bandpass lambda1 < lambda2 and for bandstop lambda1 > lambda2
+#               for lambda1 the transition is from 0 to 1, and lambda2 from 1 to 0.
+#               there must be no overlap, but this is NOT checked, it's up to the caller.
+#               Also lambda1 != lambda2 is not checked.
+#               the bandstop should come in row #1, by convention.
+#
+#   value   a transmittance spectrum parameterized by wavelength.
+#           it is a point in the unit n-cube
+    
+spectrumFromLambdas <- function( lambdamat, wavelength, bslist=NULL )
+    {
+    n   = length(wavelength)
+    
+    if( is.null(bslist) )   bslist  = breakandstep(wavelength)
+    
+    breakvec    = bslist$breakvec       # strictly increasing
+    stepvec     = bslist$stepvec        # these are all positive
+        
+    out = numeric(n)
+    names(out)  = as.character(wavelength)
+  
+    if( is.matrix(lambdamat) &&  nrow(lambdamat)==0 )    return(out)
+    
+    lambdamat   = prepareNxM( lambdamat, 2 )
+    if( is.null(lambdamat) )   return(NULL)
+
+    m   = nrow(lambdamat)      
+    
+    for( i in 1:m )
+        {
+        lam     = lambdamat[i, ]
+        lambda  = sort( lam )   # now lambda[1] < lambda[2]
+        
+        idx = findInterval( lambda, breakvec )  #; print(idx)
+        
+        spectrum = numeric(n)        
+        
+        if( idx[1] == idx[2] )
+            {
+            #   both transitions inside the same bin
+            spectrum[ idx[1] ]  = (lambda[2] - lambda[1]) / stepvec[ idx[1] ]
+            }
+        else
+            {
+            #   transitions in 2 different bins
+            spectrum[ idx[1] ]  = (breakvec[ idx[1]+1 ] - lambda[1]) / stepvec[ idx[1] ]
+            
+            if( idx[2] <= n )
+                spectrum[ idx[2] ]  = (lambda[2] - breakvec[ idx[2] ]) / stepvec[ idx[2] ] 
+            
+            if( idx[1]+1 <= idx[2]-1 )
+                spectrum[ (idx[1]+1) : (idx[2]-1) ] = 1
+            }
+            
+        if( lam[2] < lam[1] )
+            #   convert from bandpass to bandstop
+            spectrum    = 1 - spectrum
+        
+        out = out + spectrum
+        }
+        
+    return( out )
+    }
+    
+    
+# spectrum      a transmittance spectrum parameterized by wavelength.
+#               it is a point in the unit n-cube.    
+# wavelength    increasing wavelengths of length n
+#
+# returns   an Mx2 matrix defining a superposition of bandpass and bandstop filters
+#           there is at most 1 bandstop, and if present it is put in the first row
+#
+# It is known that every point in the image of the cube is the image of a characteristic function on the wavelength interval.
+# The returned matrix essentially defines such a characteristic function.
+# In this case the responsivities are step functions and the set is a finite union of intervals,
+# or considered circularly, as arcs on the circle.
+
+lambdasFromSpectrum <- function( spectrum, wavelength, bslist=NULL )
+    {
+    n   = length(spectrum)
+    if( n <= 1 )    return( matrix(0,0,2) )
+    
+    if( any( is.na(spectrum) ) )
+        {
+        out = matrix( NA_real_, 1, 2 )
+        colnames(out)   = c('lambda1','lambda2')            
+        return( out )
+        }
+    
+    
+    if( is.null(bslist) )
+        bslist  = breakandstep(wavelength)
+
+    # print( bslist )
+    
+    
+    breakvec    = bslist$breakvec       # strictly increasing        
+    #   stepvec     = bslist$stepvec        # these are all positive    
+    
+
+    interior    = 0<spectrum  &  spectrum<1
+    if( all(interior) )
+        {
+        rows    = floor( n/2 )
+        
+        out     = matrix( NA_real_, rows, 2 )
+        colnames(out)   = c('lambda1','lambda2')
+        
+        odd     = seq(1,n-1,by=2)
+        even    = odd+1L
+        alpha   = spectrum[ odd ]
+        out[ ,1]    = alpha*breakvec[odd]  +  (1-alpha)*breakvec[even]
+        alpha   = spectrum[ even ]
+        out[ ,2]    = (1-alpha)*breakvec[even]  +  alpha*breakvec[even+1L]
+            
+        if( n %% 2 == 1 )
+            {
+            #   if n is odd, there is 1 more bandpass
+            #   there is no unique way to do this, so just center it in the bin
+            step    = breakvec[n+1]  -  breakvec[n]
+            s       = step * (1 - spectrum[n])/2
+            lambda1 = breakvec[n]   + s
+            lambda2 = breakvec[n+1] - s
+            
+            out = rbind( out, c(lambda1,lambda2) )
+            }
+            
+        return(out)
+        }
+    
+    out = matrix( 0, 0, 2 )
+    colnames(out)   = c('lambda1','lambda2')    
+    
+    if( all(spectrum==0) )
+        #   special case
+        return( out )
+    else if( all(spectrum==1) )
+        {
+        #   2 transitions
+        out = rbind( out, breakvec[ c(1,n+1) ] )
+        return( out )
+        }
+        
+    
+    inverted    = all( 0<spectrum )
+    if( inverted )  spectrum    = 1 - spectrum
+    
+    
+    #   find runs of nonzero coords
+    mat     = findRunsTRUE( 0<spectrum, periodic=TRUE )
+    if( nrow(mat) == 0 )
+        {
+        log.string( FATAL, "Found 0 runs of non-zero coords, impossible!" )
+        return(NULL)
+        }
+        
+
+        
+    for( k in 1:nrow(mat) )
+        {
+        start   = mat[k,1]
+        stop    = mat[k,2]
+        
+        # make sequence from start to stop
+        if( start <= stop )
+            iseq    = start:stop
+        else
+            iseq    = c( start:n, 1:stop )
+            
+        if( length(iseq) == 1 )
+            {
+            #   special case, center this bandpass in the bin
+            step    = breakvec[iseq+1]  -  breakvec[iseq]
+            s       = step * (1 - spectrum[iseq])/2
+            lambda1 = breakvec[iseq]   + s
+            lambda2 = breakvec[iseq+1] - s
+            
+            out = rbind( out, c(lambda1,lambda2) )
+
+            next
+            }
+            
+        val = 0
+        for( i in iseq )
+            {
+            #   cat( "------------- i=", i, "  val=", val, "--------\n" )
+            
+            alpha   = spectrum[i]            
+            
+            lambda2 = NA_real_
+                        
+            if( val == 0 )
+                {                
+                lambda1 = alpha*breakvec[i]  +  (1-alpha)*breakvec[i+1L] #; print( lambda1 )
+                val = 1
+                
+                if( i == iseq[length(iseq)] )
+                    {
+                    #   the last i, so clean up
+                    #print( i )
+                    lambda2 = breakvec[i+1]
+                    val = 0 # not really necessary
+                    }                
+                }
+            else
+                {
+                #   val must be 1
+                if( alpha == 1 )
+                    {
+                    #print( iseq )
+                    if( i == iseq[length(iseq)] )
+                        {
+                        #   the last i
+                        #   print( i )
+                        lambda2 = breakvec[i+1]
+                        val = 0 # not really necessary
+                        }
+                    }
+                else
+                    {
+                    lambda2 = (1-alpha)*breakvec[i]  +  alpha*breakvec[i+1L]                    
+                    val = 0
+                    }
+                }
+                
+            if( is.finite(lambda2) )            
+                out = rbind( out, c(lambda1,lambda2) )                
+            }
+        }
+
+    if( inverted )
+        {
+        #   fix output
+        unshape = as.numeric( t(out) )
+        unshape = unshape[ c( 2:length(unshape), 1 ) ]  # shift 1
+        out     = matrix( unshape, length(unshape)/2, 2, byrow=TRUE )        
+        colnames(out)   = c('lambda1','lambda2')    
+        }
+        
+    #   if there is a bandstop, ensure that it is in the first row, and is unique
+    bandstop    = which( out[ ,2] < out[ ,1] )
+    count       = length(bandstop)
+    if( 1 < count )
+        {
+        log.string( FATAL, "There are %d > 1 bandstops.", count )
+        return(NULL)
+        }    
+
+    if( count==1  &&  1<bandstop  )
+        {
+        #   rotate into position
+        perm    = c( bandstop:nrow(out), 1:(bandstop-1) )
+        out     = out[ perm, , drop=FALSE]
+        }
+        
+    rownames(out)   = 1:nrow(out)
+        
+    if( count==1 )
+        {
+        rownames(out)[1]    = "BS"
+        }
+        
+    bandpass    = which( out[ ,1] < out[ ,2] )
+    if( 0 < length(bandpass) )
+        rownames(out)[bandpass] = sprintf( "BP%d", 1:length(bandpass) )
+    
+    return(out)
+    }
+    
+    
+#   test that spectrum -> lambdas -> spectrum is identity    
+testSpecLamRoundTrip <- function( n, samples, sd=5, scale=100, tol=5.e-12 )
+    {
+    set.seed(0)
+    
+    wave    = 400:(400+n-1)
+    
+    delta   = numeric(samples)
+    
+    transmax    = 0
+    transmin    = Inf
+    
+    for( i in 1:samples )
+        {
+        spec    = randomSpectrum( n, sd=sd, scale=scale )  # ; print( spec )
+        
+        lambdas = lambdasFromSpectrum( spec, wave )
+        
+        spec.back   = spectrumFromLambdas( lambdas, wave )
+        
+        delta[i]    = max( abs(spec - spec.back) )
+        
+        if( tol < delta[i] )
+            {
+            cat( "----------------\n" )
+            print( spec )
+            print( lambdas )
+            print( spec.back )
+            }
+            
+        transmin    = min( length(lambdas), transmin )
+        transmax    = max( length(lambdas), transmax )
+        }
+    
+    count   = sum( tol < delta )
+    mess    = sprintf( "%d violations of %d samples (delta > %g).    max(delta)=%g", 
+                                count, samples, tol, max(delta) )
+    cat( mess, '\n' )
+    mess    = sprintf( "transition range: %d to %d.", transmin, transmax )
+    cat( mess, '\n' )
+    
+    return( count == 0 )
+    }
+    
+#   n       dimension of n-cube
+#   sd      standard-deviation of smoothing filter
+#   scale   bigger means more 0's and 1's
+#    
+#   returns a random point in the n-cube, with emphasis on lots of 0's and 1's    
+#
+#   to get no 0's and 1's set sd=0 and scale=1
+randomSpectrum  <-  function( n, sd=5, scale=100 )
+    {
+    out = runif( n )
+    
+    if( 0 < sd )
+        {
+        kern    = stats::dnorm( seq(-3*sd,3*sd,len=n/2+1), sd=sd )
+        kern    = kern / sum(kern)
+        #   out = out[ is.finite(out) ] not needed when circular        
+        out = stats::filter( out, kern, circular=TRUE ) #; print(out)
+        out = as.numeric(out)
+        }
+
+    out = pmin( pmax( scale*(out-0.5) + 0.5, 0 ), 1 )
+    
+    return( out )
+    }
+    
+
+#   age     vector of ages, between 20 and Inf
+#   return absorbance of human lens
+
+lensAbsorbance  <-  function( age=32, wavelength=400:700 )
+    {
+    lens    =  LensAbsorbance1987       # colorSpec::LensAbsorbance1987
+
+    #   we know lens[] is a matrix
+    TL1     = lens[ , 'TL1' ]
+    TL2     = lens[ , 'TL2' ]
+    
+    out = matrix( NA_real_, numWavelengths(lens), length(age) )
+    
+    for( k in seq_len( length(age) ) )
+        {
+        A = age[k]
+        
+        if( A < 20 )    next
+        
+        if( A < 60 )
+            out[ ,k] = (1 + 0.02*(A - 32)) * TL1  +  TL2
+        else
+            out[ ,k] = (1.56 + 0.06667*(A - 60)) * TL1  +  TL2
+        }
+        
+    colnames( out ) = sprintf( "age%g", age )
+        
+    out = colorSpec( out, wavelength(lens), quantity=quantity(lens) )
+    
+    out = resample( out, wavelength )
+    
+    return( out )
+    }
+    
+    
+#--------       UseMethod() calls           --------------#            
+              
+bandRepresentation <- function( x )
+    {
+    UseMethod("bandRepresentation")
+    }        
+    
+    
+    
+#--------       obsolete below              --------------#            
 
 #   input the spectrum
 #   Use the the alphas to tweak the endpoint wavelengths from spectramat (usually integer values)
@@ -474,46 +1049,4 @@ compute_lambdas <- function( spectrum, wave, step=NULL )
 
     return( lambda )
     }
-    
-        
-    
-    
-    
-    
-    
-    
-
-#   age     vector of ages, between 20 and Inf
-#   return absorbance of human lens
-
-lensAbsorbance  <-  function( age=32, wavelength=400:700 )
-    {
-    lens    =  LensAbsorbance1987       # colorSpec::LensAbsorbance1987
-
-    #   we know lens[] is a matrix
-    TL1     = lens[ , 'TL1' ]
-    TL2     = lens[ , 'TL2' ]
-    
-    out = matrix( NA_real_, numWavelengths(lens), length(age) )
-    
-    for( k in seq_len( length(age) ) )
-        {
-        A = age[k]
-        
-        if( A < 20 )    next
-        
-        if( A < 60 )
-            out[ ,k] = (1 + 0.02*(A - 32)) * TL1  +  TL2
-        else
-            out[ ,k] = (1.56 + 0.06667*(A - 60)) * TL1  +  TL2
-        }
-        
-    colnames( out ) = sprintf( "age%g", age )
-        
-    out = colorSpec( out, wavelength(lens), quantity=quantity(lens) )
-    
-    out = resample( out, wavelength )
-    
-    return( out )
-    }
-        
+            
