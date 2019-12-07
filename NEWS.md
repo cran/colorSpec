@@ -1,5 +1,8 @@
 # NEWS for **colorSpec** package
 
+### Changes for version 1.1-1  [2019-12-07]
+* added fix to `rotateOrganization()` in file `test-organization.R`; for upcoming change to `class(a matrix)` in R v 4.0, and when environment variable _R_CLASS_MATRIX_ARRAY_ is set to non-empty
+
 ### Changes for version 1.0-1  [2019-06-24]
 * added new vignette **Convexity and Transitions - a strict examination of the CIE inverted-U**
 * added new functions `bandMaterial()` and `bandRepresentation()`

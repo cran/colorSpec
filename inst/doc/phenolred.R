@@ -1,8 +1,8 @@
-## ---- echo=TRUE, message=FALSE-------------------------------------------
+## ---- echo=TRUE, message=FALSE------------------------------------------------
 library( colorSpec )
 library( spacesRGB )    # for functions plotPatchesRGB() and SignalRGBfromLinearRGB()
 
-## ----fig.width=7, fig.height=4,  fig.show='hold', dev='png'--------------
+## ----fig.width=7, fig.height=4,  fig.show='hold', dev='png'-------------------
 path = system.file( "extdata/stains/PhenolRed-Fig7.txt", package="colorSpec" )
 wave = 350:650
 phenolred = readSpectra( path, wavelength=wave )
@@ -35,7 +35,7 @@ phenolpool = interpolate( phenolred, pH, pHvec )
 par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.4,0.2) )
 plot( phenolpool, main="Absorbance Spectra of Phenol Red at Swimming Pool pH Values" )
 
-## ---- echo=TRUE,  message=TRUE-------------------------------------------
+## ---- echo=TRUE,  message=TRUE------------------------------------------------
 # create an uncalibrated 'material responder'
 testkit = product( D65.1nm, 'solution', BT.709.RGB, wave=wave )
 # now calibrate so that fully transparent pure water has response RGB=c(1,1,1)
@@ -43,7 +43,7 @@ testkit = calibrate( testkit, response=1 )
 RGB = product( phenolpool, testkit )
 RGB
 
-## ---- echo=TRUE,  message=TRUE-------------------------------------------
+## ---- echo=TRUE,  message=TRUE------------------------------------------------
 testkit = product( D65.1nm, 'solution', BT.709.RGB, wave=wave )
 # recalibrate, but lower the background a little, to allow more 'headroom' for indicator colors
 bglin = 0.96  #  graylevel for the background, linear
@@ -51,7 +51,7 @@ testkit = calibrate( testkit, response=bglin )
 RGB = product( phenolpool, testkit )   # this is *linear* sRGB
 RGB
 
-## ---- echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'-----------
+## ---- echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'----------------
 df.RGB = data.frame( LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
 df.RGB$RGB = RGB
 par( omi=c(0,0,0,0), mai=c(0.3,0,0.3,0) )
@@ -59,7 +59,7 @@ plotPatchesRGB( df.RGB, space='sRGB', which='scene', labels=F, background=bglin 
 text( (1:nrow(RGB)) + 0.5, 2, sprintf("%.1f",pHvec), adj=c(0.5,1.2), xpd=NA )
 title( main='Calculated Colors for pH from 6.8 to 8.2' )
 
-## ---- echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'-----------
+## ---- echo=TRUE, fig.width=7, fig.height=2.5,  fig.show='hold'----------------
 tweak = 1.3
 phenolpool = multiply( phenolpool, tweak )
 df.RGB = data.frame( LEFT=1:nrow(RGB), TOP=0, WIDTH=1, HEIGHT=2 )
@@ -70,6 +70,6 @@ text( (1:nrow(RGB)) + 0.5, 2, sprintf("%.1f",pHvec), adj=c(0.5,1.2), xpd=NA )
 main = sprintf( 'Calculated Colors for pH from 6.8 to 8.2 (absorbance multiplier=%g)', tweak )
 title( main=main )
 
-## ---- echo=FALSE, results='asis'-----------------------------------------
+## ---- echo=FALSE, results='asis'----------------------------------------------
 sessionInfo()
 
