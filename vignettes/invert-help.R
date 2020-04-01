@@ -3,7 +3,7 @@
 
 #   .data   a list of colorSpec objects - with the same specnames() and same number of spectra
 #   the first one is supposed to be the original (the "true") spectrum
-#   and the rest are estimates
+#   and the rest are estimates.    length(.data) <= 4.
 #
 plotOriginalPlusEstimates  <-  function( .data, mfrow=c(2,3), ymax=1 )
     {
@@ -48,7 +48,7 @@ plotOriginalPlusEstimates  <-  function( .data, mfrow=c(2,3), ymax=1 )
         specnames(.data[[1]]) = sprintf( "%d:  %s", .data[[1]]$SAMPLE_ID, specnames(.data[[1]]) )
     
     ltype   = c( 'solid', '42', '11', '22' )    
-    lwid    = c( 1.5, 1.5, 2, 1 )
+    lwid    = c( 0.75, 1.5, 2, 1 )
     for( k in 1:plots )
         {
         #plot.default( xlim, c(0,1), type='n', las=1, xlab='', ylab='', lab=c(10,8,7), tcl=0, mgp=c(3, 0.25, 0) )
@@ -255,7 +255,7 @@ plotReparam3 <- function( .obj, .alpha=1 )
     title( ylab=expression(omega ~ '(reparameterized wavelength)'), line=2 )
     title( xlab='Wavelength (nm)', line=1.5 )      
     # title( main="Equalized Wavelength Reparameterization" )
-    grid( lty=1 )
+    grid( lty=1, lwd=0.5 )
     abline( h=0, v=0 )
     #print( str(wave) )
     #print( str(theList$omega) )
@@ -270,7 +270,7 @@ plotReparam3 <- function( .obj, .alpha=1 )
     title( xlab=expression(omega ~ '(reparameterized wavelength)'), line=1.5 )
     title( ylab='Wavelength (nm)', line=2 )      
     # title( main="Equalized Wavelength Reparameterization" )
-    grid( lty=1 )
+    grid( lty=1, lwd=0.5 )
     abline( h=0, v=c(0,1) )
     lines( theList$omega, wave, col='red'  )
     legend( 'topleft', expression( lambda ~ '=' ~ varphi(omega) ), lty=1, bty='n', col='red', inset=c(0.1,0.1) )
@@ -306,7 +306,7 @@ plotReparam3 <- function( .obj, .alpha=1 )
                              tcl=0, mgp=c(3, 0.25, 0) )
     title( xlab=expression(omega ~ '(reparameterized wavelength)' ), line=1.5 )
     title( ylab='Responsivity (reparameterized)', line=2 )                             
-    grid( lty=1 )
+    grid( lty=1, lwd=0.5 )
     abline( h=0, v=0 )
 
     for( j in 1:spectra )

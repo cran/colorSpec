@@ -4,11 +4,14 @@ of spectral estimates for the Macbeth ColorChecker.
 % These reflectances are included in \textbf{colorSpec} as kindly provided by Pascale \cite{Pascale}.
 Figure 13 is an imitation of their Figure 7
 (although the 24 original reflectances seem to be a little different).
-<<fig13, echo=TRUE, fig.pos="H", fig.height=12, fig.width=9, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle; the estimate is dashed. In each plot the two spectra are metameric for Illuminant E.' >>=
+<<fig13, echo=TRUE, fig.pos="H", fig.height=12, fig.width=9, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle, the centroid-based estimate is dashed, and the TLSS-based estimate is dotted. In each plot the 3 spectra are metameric for Illuminant E.' >>=
+wave = seq( 400, 700, by=5 )
+E.eye = product( illuminantE(1,wave), "material", xyz1931.1nm, wavelength=wave )
 path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec' )
 MacbethCC = readSpectra( path, wavelength=wave )
 MacbethCC = subset( MacbethCC, c( 21:24, 17:20, 13:16, 9:12, 5:8, 1:4 ) )
 XYZ = product( MacbethCC, E.eye, wavelength=wave )
-est.eq   = invert( E.eye, XYZ, method='centroid', alpha=1 )
-plotOriginalPlusEstimates( list(MacbethCC,est.eq), ymax=NA, mfrow=c(6,4) )
+est.ce   = invert( E.eye, XYZ, method='centroid', alpha=1 )
+est.tl   = invert( E.eye, XYZ, method='TLSS' )
+plotOriginalPlusEstimates( list(MacbethCC,est.ce,est.tl), ymax=NA, mfrow=c(6,4) )
 @

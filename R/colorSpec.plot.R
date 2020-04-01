@@ -20,20 +20,8 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
         
     vararg  = list(...)
     
-    xlim    = vararg$xlim
-    if( is.null(xlim) ) xlim=c(NA,NA)
-    
-    ylim    = vararg$ylim
-    if( is.null(ylim) ) ylim=c(NA,NA)
-    
-    ylab    = vararg$ylab
-    if( is.null(ylab) ) ylab=NA
-    
-    log     = vararg$log
-    if( is.null(log) )  log=''
-    
-    pch     = vararg$pch
-    
+
+
     wave    = wavelength(x)
   
     color_vec = color
@@ -122,9 +110,27 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
         return( invisible(FALSE) )                
         }              
         
+    m   = ncol(mat)
+            
+        
         
     if( ! add )
         {
+        #   get arguments needed for a new plot
+        
+        xlim    = vararg$xlim
+        if( is.null(xlim) ) xlim=c(NA,NA)
+        
+        ylim    = vararg$ylim
+        if( is.null(ylim) ) ylim=c(NA,NA)
+        
+        ylab    = vararg$ylab
+        if( is.null(ylab) ) ylab=NA
+        
+        log     = vararg$log
+        if( is.null(log) )  log=''
+    
+    
         #   init for just the subset
         if( ! initPlot.colorSpec( x.sub, xlim, ylim, ylab, log ) ) return(FALSE)
         
@@ -148,18 +154,54 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
         
     
     color_vec   =   x.sub$color
-        
-    lty = suppressWarnings( rep( vararg$lty, len=ncol(mat) ) )
-    lwd = suppressWarnings( rep( vararg$lwd, len=ncol(mat) ) )
-
-    for( j in 1:ncol(mat) )
+    
+    type    = vararg$type
+    if( is.null(type) ) type = 'l'
+    
+    lty = vararg$lty
+    lwd = vararg$lwd
+    
+    if( type == 'step' )
         {
-        lines.default( wave, mat[ ,j], col=color_vec[j], lty=lty[j], lwd=lwd[j] )      # lwd=0.5
+        #   use segments()
+        xvec    = breakandstep(wave)$breakvec
+        n       = length(wave)
         
-        if( is.numeric(pch) )
-            points.default( wave, mat[ ,j], col=color_vec[j], pch=pch )
+        if( is.null(lwd) )  lwd = 1
+        
+        if( is.null(lty) )  lty = 1
+        
+        if( length(lty) == 1 )  lty = rep(lty,2)
+        
+        for( j in 1:m )
+            {
+            y   = mat[ ,j]
+            
+            #   draw n horizontal segments, using lwd[1] and lty[1]
+            segments( xvec[1:n], y, xvec[2:(n+1)], y, col=color_vec[j], lwd=lwd[1], lty=lty[1], lend='butt' )
+            
+            if( 2 <= length(lwd)  &&  ! is.na(lwd[2]) )
+                #   draw n-1 vertical segments, using lwd[2] and lty[2]
+                segments( xvec[2:(n+1)], y[1:(n-1)], xvec[2:(n+1)], y[2:n], col=color_vec[j], lwd=lwd[2], lty=lty[2], lend='round' )
+            }
+            
+        lty.legend  = lty[1]    # for possible use in legend() below.  All spectra will get the same lty.
         }
+    else
+        {
+        #   use lines()
+        lty = suppressWarnings( rep( lty, len=m ) )
+        lwd = suppressWarnings( rep( lwd, len=m ) )
         
+        pch = suppressWarnings( rep( vararg$pch, len=m ) )
+        
+        for( j in 1:m )
+            {
+            lines.default( wave, mat[ ,j], type=type, col=color_vec[j], lty=lty[j], lwd=lwd[j], pch=pch[j] )
+            }
+            
+        lty.legend  = lty       # for possible use in legend() below
+        }
         
     #   the legend
     if( is.logical(legend) && legend )  
@@ -183,7 +225,7 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
         else
             lwd = 11    # thicker so we can see colors instead
         
-        legend( location, legend, col=color_vec, bty='n', lty=vararg$lty, lwd=lwd, seg.len=4 )        
+        legend( location, legend, col=color_vec, bty='n', lty=lty.legend, lwd=lwd, seg.len=4 )        
         }
 
         
@@ -287,7 +329,7 @@ initPlot.colorSpec  <- function( .x, .xlim=c(NA,NA), .ylim=c(NA,NA), .ylab=NA, .
     line_count = lines_for_ylab( as.character( axTicks(2) ) ) + 0.5   #; print( line_count )
     
     title( ylab=.ylab, line=line_count )  # or 2.5 or 2.0
-    grid( lty=1, equilogs=F )
+    grid( lty=1, lwd=0.5, equilogs=F )
     abline( h=0 )    
     
     return( invisible(TRUE) )

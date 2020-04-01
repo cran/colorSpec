@@ -140,11 +140,16 @@ For the finite-dimensional spaces, it takes the full sequence of wavelengths and
 In this case all 4 vector spaces are isomorphic (since
 they are the same dimension), but we still take the mathematical point of view that they are not the _same_ space.
 
-The last `type = 'responsivity.material'` is perhaps the least common.
+The last `type='responsivity.material'` is the least common.
 There is an example in @giorgianni2009digital
 (Figure 10.11a, page 141) of a scanner,
-where the 3 spectra are called the _effective spectral responsivities_.
-There is also a standard scanner from SMPTE, see @7292043.
+where the 3 spectra are called the _effective spectral responsivities_ of that scanner.
+They are the pointwise product of the scanner light source and
+the responsitivies of the scanner's RGB sensor; see also pages 146-147.
+On page 335, in equation (B.4), there is a more general product.
+In **colorSpec**, both of these products and more are peformed in the function `product()`.
+Another example of effective spectral responsivities are those of a
+reference scanner from SMPTE, see @7292043.
 
 Every **colorSpec** object has one of these types, but it is not stored with the object. 
 The object stores a `quantity` which then determines the `type`;
@@ -169,9 +174,11 @@ wavelength (and the material).
 If the light power were divided into N bins, the transmitted power spectrum
 would be a diagonal NxN matrix times the incoming spectrum.
 
-A reflectance spectrum is mathematically the same as a transmittance spectrum, except we compare the
+A reflectance spectrum is mathematically the same as a transmittance spectrum,
+except we compare the
 outgoing light spectrum to that of a _perfect reflecting diffuser_. 
-Such a material does not exist, like many concepts in physics, but it is a very useful idealization.
+Such a material does not exist, like many concepts in physics,
+but it is a very useful idealization.
 
 <br>
 
@@ -575,7 +582,7 @@ them instead as simple vectors – the entries along the diagonal.
 The above products with diagonal matrices then become the much simpler entrywise or Hadamard product.
 This is how it is done in **colorSpec**, using R's built-in entrywise product operation.
 
-The first 4 products can be strung together to get an associative product:
+The first 4 products can be strung together to get a product:
 $$L \times M_1 \times ... \times M_m \times L^* \to R$$
 It is not hard to show that this product is _multilinear_.
 This means that if one fixes all terms except the $i^{th}$ material location, then the composition:
@@ -589,6 +596,7 @@ This special method of creating a material responder - a spectrum in $M^*$ - plu
 products in the above table, 
 are available in the function `product()` in **colorSpec**.
 See that help page for examples.
+Compare the previous equation with equation (B.4) (page 335) in @giorgianni2009digital.
 
 The right-hand term $R$ can be thought of as standing for _Response_ or _Real numbers_.
 In **colorSpec** the light responders can have _multiple_ channels, 
@@ -685,7 +693,7 @@ Given a table of wavelengths and values, a software package must make some sort 
 of what the physical interpretation of this table really is.
 In **colorSpec** the choice is schizophrenic - there are multiple interpretations.
 
-With few exceptions, a table of wavelengths and values is interpreted as _step function_.
+With few exceptions, a table of wavelengths and values is interpreted as a _step function_.
 Such functions are sometimes called _piecewise-constant_.
 This requires a lengthy explanation.
 Suppose `X` is a **colorSpec** object with $N$ wavelengths:
@@ -715,8 +723,12 @@ This is the step function interpretation used in
 The exceptions are `resample()` and `plot()`.
 In `resample()` the physical functions are piecewise-linear, piecewise-cubic, or piecewise-quintic,
 depending on the argument `method`  (a smoothing method is also available).
-In `plot()` the spectra are plotted as piecewise-linear using `lines()`,
-though plotting option for step functions might be added in the future.
+In `plot()` the spectra are plotted as piecewise-linear (using `lines()`) by default,
+but an option to plot as step functions (using `segments()`) was added in v. 1.2-0.
+
+The function `product()` often takes the product of spectra.
+Note that the product of piecewise-linear functions is not piecewise-linear,
+but the product of step functions is still a step function.
 
 In lengthy calculations using both interpretations, there are inevitable numerical errors,
 which are certainly larger than the usual numerical roundoff.

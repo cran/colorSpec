@@ -1,5 +1,11 @@
 # NEWS for **colorSpec** package
 
+
+### Changes for version 1.2-1  [2020-04-01]
+* in function `invert()` added new `method='TLSS'`, and updated the vignette **Estimating a Spectrum from its Response - Inverse Colorimetry**
+* in function `plot()` added new argument `type`, with custom option `type='step'`, and updated the vignette **Convexity and Transitions**
+* added a README file
+
 ### Changes for version 1.1-1  [2019-12-07]
 * added fix to `rotateOrganization()` in file `test-organization.R`; for upcoming change to `class(a matrix)` in R v 4.0, and when environment variable _R_CLASS_MATRIX_ARRAY_ is set to non-empty
 

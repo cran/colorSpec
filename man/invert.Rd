@@ -11,12 +11,14 @@ Given a light responder (e.g. an eye or a camera),
 two light spectra that produce the same response from the responder
 are called \emph{metamers} for that responder.
 Similarly, given a material responder (e.g. a scanner),
-two materials that produce the same response from the responder
+two reflectance spectra that produce the same response from the responder
 are called \emph{metamers} for that responder.
 
 For a given responder and response, 
 there are typically infinitely many \emph{metamers}.
-The goal of the function \code{invert()} is to calculate a "good" metamer from a response.
+The set of all of them is often called the \emph{metameric suite}.
+The goal of the function \code{invert()} is to calculate a "good" metamer
+in the "suite".
 \cite{Koenderink} calls this topic \emph{inverse colorimetry}.
 In the case that the estimated spectrum is a reflectance spectrum,
 the topic is often called \emph{reflectance estimation} or \emph{reflectance recovery},
@@ -27,11 +29,24 @@ in this package, computes the centroid of the set of all the metamers (if any).
 The centroid is computed in an infinite-dimensional context 
 and is expounded further in
 \cite{Davis}.
-The second available method is the Hawkyard method, see \cite{Hawkyard} and \cite{Bianco}.
-The methods are quite similar.
+
+The \emph{Hawkyard method}, see \cite{Hawkyard} and \cite{Bianco},
+has been around a long time.
+The centroid and Hawkyard methods have similarities,
+e.g. both are low-dimensional with the number of variables equal to
+the number of responses (usually 3).
+The Hawkyard method is very fast, but has a key problem, see below.
+
+The \emph{Transformed Least Slope Squared} (TLSS) method was developed
+by Scott Burns, see \bold{References}.
+This is my name for it, not his.
+What I call TLLS is actually is a combination of Burns' LHTSS and LLSS methods;
+the one that \code{invert()} chooses depends on \code{type(x)}, see below.
+Both of these are high-dimensional,
+with the number of variables equal to #(responses) + #(wavelengths).
 
 The first argument to \code{invert()} is the responder \code{x},
-and the second is the matrix \code{response} of responses (e.g. XYZs).
+and the second is the matrix \code{response} of responses (e.g. XYZs or RGBs).
 
 The goal is to return a "good" spectrum for each response so that:
 \tabular{c}{
@@ -41,25 +56,64 @@ The error is returned as column \code{estim.precis}, see below.
 
 
 First consider the case where \code{x} has type \code{type='responsivity.material'}.
-If the response is on the object-color boundary (an \emph{optimal color})
-or outside the boundary, 
-the centroid method fails and the Hawkyard method
-returns a spectrum with an error that may be significant.
-The centroid method \emph{may} also fail if the response is inside the object-color
+The goal is to compute a reflectance spectra.
+All the methods will fail if the response is on the object-color boundary
+(an \emph{optimal color}) or outside the boundary.
+They \emph{may} also fail if the response is inside the object-color
 solid (the \emph{Rösch Farbkörper}) and very close to the boundary.
+\cr
+The centroid method solves a non-linear system that contains a 
+\emph{Langevin-function-based} squashing function, see \cite{Davis} for details.
+When successful it always returns a feasible spectrum
+with small \code{estim.precis}.
+\cr
+The Hawkyard method is linear and very fast,
+but in raw form it may return a non-feasible reflectance spectrum.
+In this case \code{invert()} simply clamps to the interval [0,1] and so
+\code{estim.precis} can be large.
+\cr
+The TLSS method solves a non-linear system that contains
+the squashing function \eqn{(\tanh(z) + 1)/2}, see \cite{Burns} for details.
+When successful it always returns a feasible spectrum
+with small \code{estim.precis}.
 
 Now consider the case where \code{x} has \code{type='responsivity.light'}.
-The centroid method will fail if the response is too far from
-the response to Illuminant E.
+The goal is to compute the spectrum of a light source.
+All the methods will fail if chromaticity of the response is on the boundary
+of the inverted-U (assuming \code{x} models the human eye) or outside the boundary.
+They \emph{may} also fail if the response is inside the inverted-U
+and very close to the boundary.
+\cr
+The centroid method works on a relatively small range of chromaticities;
+it will fail if the response is too far from the response to Illuminant E.
+See \cite{Davis} for the details.
+When successful it always returns an everywhere positive spectrum
+with small \code{estim.precis}.
+This method has the desirable property that if the response is multiplied by
+a positive number, the computed spectrum is multiplied by that same number.
+\cr
 The Hawkyard method does not work in this case.
+\cr
+The TLSS method solves a non-linear system that contains
+the squashing function \eqn{\exp(z)}, see \cite{Burns} for the details.
+When successful it always returns an everywhere positive spectrum
+with small \code{estim.precis}.
+This method succeeds on a larger set of chromaticities than the centroid method.
+It also has the desirable scaling multiplication property mentioned above.
 
-Equalization is controlled by the argument \code{alpha}
+The centroid and Hawkyard methods have an equalization option,
+which is controlled by the argument \code{alpha}
 and is enabled by default, see below.
-This means that if the response comes from a constant spectrum
+When enabled, if the response comes from a constant spectrum
 (a perfectly neutral gray material, or a multiple of Illuminant E),
-then the returned spectrum is that same constant spectrum (up to numerical precision).
-It is a complicated mechanism, for details see \cite{Davis}.\cr
-NOTE:  If the responder has only one output channel (e.g. a monochrome camera)
+then the computed spectrum is that same constant spectrum (up to numerical precision).
+I call this the \emph{neutral-exact property}.
+Equalization is a complicated mechanism, for details see \cite{Davis}.
+For the TLSS method, the neutral-exact property is intrinsic,
+and \code{alpha} is ignored.
+\cr
+NOTE:
+If the responder has only one output channel (e.g. a monochrome camera)
 and equalization is enabled,
 then \emph{all} responses are inverted to a constant spectrum.
 This may or may not be desirable.
@@ -72,14 +126,15 @@ This may or may not be desirable.
 }
 
 \arguments{
-\item{x}{a \bold{colorSpec} object with \code{type} equal to 
-    \code{'responsivity.material'} or \code{'responsivity.light'} and M responsivities }
+\item{x}{a \bold{colorSpec} object with \code{type(x)} = 
+\code{'responsivity.material'} or \code{'responsivity.light'} and M responsivities.
+The wavelengths must be regular (equidistant).}
   
 \item{response}{ a numeric NxM matrix, or a numeric vector that can be converted
     to such matrix, by row. The N responses are contained in the rows.
     The \code{rownames(response)} are copied to the output \code{specnames}.}
     
-\item{method}{either \code{'centroid'} or \code{'Hawkyard'}.  
+\item{method}{either \code{'centroid'} or \code{'Hawkyard'} or \code{'TLSS'}.  
     \code{'Hawkyard'} is only valid when 
     \code{type(x)} is \code{'responsivity.material'}.
     Matching is partial and case-insensitive.}
@@ -93,7 +148,8 @@ This may or may not be desirable.
     To disable equalization (not recommended) and use the original responsivities, 
     set \code{alpha=NULL}. 
     Similarly, when \code{method='Hawkyard'}, \code{alpha} is used for equalizing 
-    the responsivities, which is also recommended.}
+    the responsivities, which is also recommended.
+    When \code{method='TLSS'}, \code{alpha} is ignored.}
 }
     
 \value{
@@ -118,23 +174,38 @@ and the \code{extradata} is a \code{data.frame} with these columns:
        so all N spectra are assigned the same mean time.}
   
   \item{iters}{the number of iterations that were required to find the relevant root. 
-              This is present only when \code{method='centroid'}.}
+              This is not present when \code{method='Hawkyard'}.}
     
   \item{clamped}{a logical indicating whether the reflectance was clamped to [0,1]. This is present only  when \code{method='Hawkyard'}.}
     
 
 If a response could not be estimated, 
-the row contains \code{NA} in appropriate columns.\cr
+the row contains \code{NA} in appropriate columns,
+and a warning is issued.\cr
   
 In case of global error, the function returns \code{NULL}.
 }
 
 
 \details{
-When \code{method='centroid'} the function calls the non-linear
-root-finder 
-\code{\link[rootSolve:multiroot]{rootSolve::multiroot}()}.
+For \code{method='centroid'} the function calls the non-linear root-finder 
+\code{\link[rootSolve:multiroot]{rootSolve::multiroot}()},
+which is general purpose and "full Newton".
 % \code{\link[rootSolve]{multiroot}()}.
+
+For \code{method='Hawkyard'} the function solves a linear system by
+inverting a small matrix (#[responses] x #[responses]).
+The spectra are then clamped to [0,1].
+
+For \code{method='TLSS'} the function solves a constrained least-squares problem
+using Lagrange multipliers.
+A critical point is found using a "full Newton" iteration.
+The original MATLAB code is posted at \cite{Burns},
+and was  ported from MATLAB to R with only trivial changes.
+When computing a reflectance spectrum, the Hawkyard method is used for the
+initial guess, after little extra clamping.
+This improved guess cuts the number of iterations substantially, 
+and the extra computation time is negligible.
 }
 
 
@@ -169,7 +240,7 @@ range(extra$estim.precis)       # prints   0.000000e+00 3.191741e-08
 
 \references{
 Davis, Glenn.
-A Centroid for Sections of a Cube in a Function Space, with application to Colorimetry.
+A Centroid for Sections of a Cube in a Function Space, with Application to Colorimetry.
 \url{https://arxiv.org/abs/1811.00990}.
 [math.FA].
 2018.
@@ -181,6 +252,11 @@ vol. 27, no 8.
 pages 1868-1877.
 2010
 \url{https://www.osapublishing.org/josaa/abstract.cfm?uri=josaa-27-8-1868}.
+
+
+Burns, Scott A. 
+Generating Reflectance Curves from sRGB Triplets.
+\url{http://scottburns.us/reflectance-curves-from-srgb/}.
 
 Hawkyard, C. J.
 Synthetic reflectance curves by additive mixing.

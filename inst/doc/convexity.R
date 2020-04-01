@@ -29,7 +29,7 @@ bandRepresentation( spec )[[1]]
 
 ## ----fig1, echo=TRUE, fig.pos="H", fig.height=3.5, out.width='1.0\\linewidth', fig.cap='An example of a transmittance spectrum that is optimal, but has more than 2 transitions'----
 par( omi=c(0,0,0,0), mai=c(0.5,0.6,0.2,0) )
-plot( spec, main=FALSE, legend=FALSE )
+plot( spec, main=FALSE, legend=FALSE, type='step', lwd=c(3,0.25) )
 
 ## ----mets10, echo=TRUE, message=FALSE---------------------------------------------------
 mets = responsivityMetrics( xyz1931.1nm )
@@ -51,7 +51,7 @@ bandRepresentation( spec )[[1]]
 
 ## ----fig2, echo=TRUE, fig.pos="H", fig.height=3.5, out.width='1.0\\linewidth', fig.cap='An example of a transmittance spectrum that is optimal, but has more than 2 transitions'----
 par( omi=c(0,0,0,0), mai=c(0.5,0.6,0.2,0) )
-plot( spec, main=FALSE, legend=FALSE )
+plot( spec, main=FALSE, legend=FALSE, type='step', lwd=c(3,0.25) )
 
 ## ----finish, echo=FALSE, results="asis"-------------------------------------------------
 knit_hooks$set(output = function(x, options) { x })

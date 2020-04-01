@@ -6,7 +6,7 @@
 \title{plot spectra}
 
 \description{
-plot the spectra in a \bold{colorSpec} object as lines
+plot the spectra in a \bold{colorSpec} object as lines or points
 }
 
 \usage{
@@ -25,12 +25,13 @@ and taking the \code{\link{product}} with \code{BT.709.RGB}.
 The resulting RGBs are normalized to have a maximum of 1.
 This RGB normalization is done \emph{before} processing the \code{subset} argument.\cr
 If \code{color='auto'} then a suitable set of colors is generated using
-\code{\link{colorRampPalette}()}.\cr
-Otherwise \code{color} is passed along to \code{\link{lines}()}
+\code{\link{colorRamp}()}.\cr
+Otherwise \code{color} is passed on to \code{\link{lines.default}()}
 as the \code{col} argument,  e.g. \code{col='black'}.
 }
 
-\item{subset}{specifies a subset of \code{x} to plot; see \code{\link{subset}()} for acceptable arguments.}
+\item{subset}{specifies a subset of \code{x} to plot;
+see \code{\link{subset}()} for acceptable arguments.}
 
 \item{main}{If \code{main=TRUE} then a main title is generated from the file \code{'path'} in
 the \code{metadata} list, or from \code{deparse(substitute(x))}.
@@ -68,10 +69,41 @@ and \code{log}; see \bold{Details}.
 Commonly used graphical parameters are:
 
 \describe{
-\item{\code{lty, lwd}}{passed on to \code{\link{lines}()}, with no checks}
 
-\item{\code{pch}}{If \code{pch} is an integer, it is passed on to \code{\link{points}()}
-which adds points on top of the lines}
+\item{\code{type}}{passed to \code{\link{lines.default}()}, 
+with default \code{type='l'}.
+Other valid values are \code{'p'} (points), \code{'b'}, \code{'c'}, \code{'o'}, 
+\code{'h'}, \code{'S'}, \code{'s'}, and \code{'n'},
+see \code{\link[graphics]{plot}()} for their meanings.
+\cr
+An additional \code{type='step'} is available.
+This option draws each spectrum as a \emph{step function},
+similar to \code{'S'} and \code{'s'},
+except that the jumps are \emph{between} the wavelengths
+(with appropriate extensions at min and max wavelengths).
+The function \code{\link{segments}()} is used for the drawing.
+For \code{type='step'}, \code{lwd} and \code{lty} should be vectors of length 1 or 2.
+If the length of \code{lwd} is 1, then horizontal segments are draw with that width,
+but vertical segments are not drawn.
+If the length of \code{lwd} is 2, 
+then vertical segments are draw with width \code{lwd[2]}.
+If the length of \code{lty} is 2, then the styles are applied to the
+horizontal and vertical segments in that order.
+If the length of \code{lty} is 1, then that style is applied to both
+horizontal and vertical segments.
+For examples of this plotting option, see the vignette 
+\href{../doc/convexity.pdf}{\bold{Convexity and Transitions}}.}
+
+\item{\code{lwd, lty}}{passed to \code{\link{lines.default}()},
+except when \code{type='step'} when they are passed to \code{\link{segments}()}.
+In the former case these can be vectors, and components are passed
+sequentially to each spectrum, similar to \code{\link{matplot}()}.
+In the latter case, see the description in \code{type}.
+The default value for both is 1.}
+
+\item{\code{pch}}{passed to \code{\link{lines.default}()},
+but it only has meaning when \code{type='p'}, \code{'b'}, or \code{'o'}.
+This can be a vector, and components are passed sequentially to each spectrum.}
 
 \item{\code{ylab}}{If \code{ylab} is a string 
 then it is passed on to \code{\link{plot.default}()},
@@ -93,11 +125,13 @@ plot( xyz1931.1nm, add=TRUE, lty=2, legend=FALSE )
 }
 
 \seealso{
-\code{\link[base]{print}},
-\code{\link[base]{summary}},
-\code{\link{colorRampPalette}}
-in base.
-
+\code{\link{computeCCT}()},
+\code{\link{subset}()},
+\code{\link[graphics]{lines}()},
+\code{\link[graphics]{segments}()},
+\code{\link[graphics]{plot}()},
+\code{\link[graphics]{matplot}()},
+\code{\link[grDevices]{colorRamp}()}
 }
 
 \keyword{colorSpec}

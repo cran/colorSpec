@@ -90,22 +90,25 @@ est.eq   = invert( PEA.Flea2, response, method='centroid', alpha=1 )
 # range( extradata(est.eq)$estim.precis )    # est.eq$estim.precis also works
 plotOriginalPlusEstimates( list(NCSU6,est.eq), ymax=0.9 )
 
-## ----fig12, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=5, fig.width=10, out.width='1.0\\linewidth', fig.cap='(a) the original responsivities of the standard observer `eye`, and their sum. (b) the reparameterization to interval [0,1].  (c) the equalized responsivities, and their sum.'----
+## ----fig12, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=5, fig.width=10, out.width='1.0\\linewidth', fig.cap='The original light source spectrum is solid linestyle; the centroid-based estimate is dashed, and the TLSS-based estimate is dotted.'----
 eye   = resample( xyz1931.1nm, wave )
 spec  = planckSpectra( c(3000,4000), wave )
 spec  = bind( spec, daylightSpectra( c(5000,6504,9000), wave ) )
 spec  = bind( spec, planckSpectra( 11000, wave ) )
 XYZ   = product( spec, eye )
-est.c = invert( eye, XYZ )  
-plotOriginalPlusEstimates( list(spec,est.c), mfrow=c(2,3), ymax=NA )
+est.c = invert( eye, XYZ, method='centroid' ); est.t = invert( eye, XYZ, method='tlss' )
+plotOriginalPlusEstimates( list(spec,est.c,est.t), mfrow=c(2,3), ymax=NA )
 
-## ----fig13, echo=TRUE, fig.pos="H", fig.height=12, fig.width=9, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle; the estimate is dashed. In each plot the two spectra are metameric for Illuminant E.'----
+## ----fig13, echo=TRUE, fig.pos="H", fig.height=12, fig.width=9, out.width='1.0\\linewidth', fig.cap='The original reflectance spectrum is solid linestyle, the centroid-based estimate is dashed, and the TLSS-based estimate is dotted. In each plot the 3 spectra are metameric for Illuminant E.'----
+wave = seq( 400, 700, by=5 )
+E.eye = product( illuminantE(1,wave), "material", xyz1931.1nm, wavelength=wave )
 path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec' )
 MacbethCC = readSpectra( path, wavelength=wave )
 MacbethCC = subset( MacbethCC, c( 21:24, 17:20, 13:16, 9:12, 5:8, 1:4 ) )
 XYZ = product( MacbethCC, E.eye, wavelength=wave )
-est.eq   = invert( E.eye, XYZ, method='centroid', alpha=1 )
-plotOriginalPlusEstimates( list(MacbethCC,est.eq), ymax=NA, mfrow=c(6,4) )
+est.ce   = invert( E.eye, XYZ, method='centroid', alpha=1 )
+est.tl   = invert( E.eye, XYZ, method='TLSS' )
+plotOriginalPlusEstimates( list(MacbethCC,est.ce,est.tl), ymax=NA, mfrow=c(6,4) )
 
 ## ----finish, echo=FALSE, results="asis"-------------------------------------------------
 knit_hooks$set(output = function(x, options) { x })

@@ -20,17 +20,23 @@ testReflectanceInversion <- function()
     lambda = c( lambda, 500,525, 525,550, 550,575 )
     nearsemichrome = rectangularMaterial( lambda, 0.98, wave )
     XYZ = product( nearsemichrome, E.eye, wavelength=wave )
-    est.c = invert( E.eye, XYZ, method='centroid' )
-    if( is.null(est.c) ) return(FALSE)
-        
-    extra   = extradata(est.c)
-    #extra$response = NULL   # do not want to see it
-    print( extra )
-    if( any( is.na(extra$estim.precis) ) )    return(FALSE)
-
-    cat( 'mean(iters) = ', mean(extra$iters), '\n' )
-    cat( 'mean(estim.precis) = ', mean(extra$estim.precis), '\n' )
     
+    for( method in c('centroid','TLSS') )
+        {
+        mess    = sprintf( "\n##------------     rectangular materials,   method='%s'   ----------##\n", method )
+        cat( mess )        
+        est.c = invert( E.eye, XYZ, method=method )
+        if( is.null(est.c) ) return(FALSE)
+            
+        extra   = extradata(est.c)
+        #extra$response = NULL   # do not want to see it
+        print( extra )
+        if( any( is.na(extra$estim.precis) ) )    return(FALSE)
+
+        cat( 'mean(time.msec) = ', mean(extra$time.msec), '\n' )           
+        cat( 'mean(iters) = ', mean(extra$iters), '\n' )
+        cat( 'mean(estim.precis) = ', mean(extra$estim.precis), '\n' )
+        }
     
     ##------------     camera + 3 illuminants     ----------##
     cat( "\n##------------     camera + 3 illuminants     ----------##\n" )        
@@ -82,13 +88,12 @@ testReflectanceInversion <- function()
     
 testSourceInversion <- function()
     {
-    wave = 400:700
+    wave = seq( 380, 730, by=5 )    # 400:700
     
     eye = resample( xyz1931.1nm, wave )
 
     ##------------    light sources     ----------##
-    cat( "\n##------------     light sources     ----------##\n" )    
-    
+
     spec    = illuminantE( 1, wave )
     
     spec    = bind( spec, resample( D65.1nm, wave ) )
@@ -105,17 +110,26 @@ testSourceInversion <- function()
     #XYZ     = rbind( XYZ, c(0.5,0.3,0.2) ) ;  rownames(XYZ)[nrow(XYZ)] = 'outside2'
     #XYZ     = rbind( XYZ, c(0.2,0.7,0.1) ) ;  rownames(XYZ)[nrow(XYZ)] = 'outside3'
     
-    est.c   = invert( eye, XYZ )    
-    if( is.null(est.c) ) return(FALSE)
-        
-    extra   = extradata(est.c)
-    #  extra$response = NULL   # do not want to see it
-    print( extra )
-    if( any( is.na(extra$estim.precis) ) )    return(FALSE)
 
-    cat( 'mean(iters) = ', mean(extra$iters), '\n' )
-    cat( 'mean(estim.precis) = ', mean(extra$estim.precis), '\n' )
-    
+    for( method in c('centroid','TLSS') )
+        {
+        mess    = sprintf( "\n##------------     light sources,   method='%s'   ----------##\n", method )
+        cat( mess )    
+            
+        est.c   = invert( eye, XYZ, method=method )    
+        if( is.null(est.c) ) return(FALSE)
+            
+        extra   = extradata(est.c)
+        #  extra$response = NULL   # do not want to see it
+        print( extra )
+        if( any( is.na(extra$estim.precis) ) )    return(FALSE)
+
+        cat( 'mean(time.msec) = ', mean(extra$time.msec), '\n' )        
+        cat( 'mean(iters) = ', mean(extra$iters), '\n' )
+        cat( 'mean(estim.precis) = ', mean(extra$estim.precis), '\n' )
+        }
+        
+        
     return(TRUE)
     }
     

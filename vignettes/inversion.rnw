@@ -89,10 +89,13 @@ In the case that the estimated spectrum is a reflectance spectrum,
 the topic is often called \emph{reflectance estimation} or \emph{reflectance recovery},
 see Bianco \cite{bianco2010}.
 
-The \emph{centroid method}, which is the default and the featured method
-in this package, computes the \emph{centroid} of the set of all the metamers (if any).
+The \emph{centroid method}, 
+which is the default and the featured method in this package, 
+computes the \emph{centroid} of the set of all the metamers (if any).
 This centroid is computed in an infinite-dimensional function space 
 and its definition is expounded further in Davis \cite{Davis2018}.
+Also illustrated in this vignette is the \emph{TLSS method}, 
+developed by Burns \cite{Burns2015}.
 
 The featured function from \textbf{colorSpec} used in this vignette is \code{invert()}.
 Some lengthy plotting functions are imported from the file \code{invert-help.R}.
@@ -288,28 +291,28 @@ There's a trade-off - oh well.
 
 \section{Estimating Light Sources}
 
-The centroid method also works for estimating light sources,
+The centroid and TLSS methods also work for estimating light sources,
 but the mathematics is now different because there is no upper limit constraint
 on the energy spectrum of light.
 Create an arbitrary sequence of light spectra with increasing 
 correlated color temperature (CCT),
 and then estimate the spectra from the XYZ response.
-<<fig12, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=5, fig.width=10, out.width='1.0\\linewidth', fig.cap='(a) the original responsivities of the standard observer `eye`, and their sum. (b) the reparameterization to interval [0,1].  (c) the equalized responsivities, and their sum.' >>=
+<<fig12, echo=TRUE,  message=TRUE, fig.pos="H", fig.height=5, fig.width=10, out.width='1.0\\linewidth', fig.cap='The original light source spectrum is solid linestyle; the centroid-based estimate is dashed, and the TLSS-based estimate is dotted.' >>=
 eye   = resample( xyz1931.1nm, wave )
 spec  = planckSpectra( c(3000,4000), wave )
 spec  = bind( spec, daylightSpectra( c(5000,6504,9000), wave ) )
 spec  = bind( spec, planckSpectra( 11000, wave ) )
 XYZ   = product( spec, eye )
-est.c = invert( eye, XYZ )  
-plotOriginalPlusEstimates( list(spec,est.c), mfrow=c(2,3), ymax=NA )
+est.c = invert( eye, XYZ, method='centroid' ); est.t = invert( eye, XYZ, method='tlss' )
+plotOriginalPlusEstimates( list(spec,est.c,est.t), mfrow=c(2,3), ymax=NA )
 @
-These estimates are quite poor.  
+These estimates are poor, but the TLSS-based ones are somewhat better.
 They tend to flatten out at the ends, while the originals do not.
 % A better method might be to compute the CCT and then a Planckian or daylight
 % spectrum from the CCT, as Koenderink has pointed out in \cite{Koenderink} page 544.
 Moreover, there are some XYZ vectors for which the centroid method
-does not work at all; for more on this see Appendix A and \cite{Davis2018} Section 13.
-I see little practical value in this type of inversion.
+does not work at all; for more on this see Appendix B and \cite{Davis2018} Section 13.
+% I see little practical value in this type of inversion.
 
 
 % \pagebreak
@@ -318,16 +321,16 @@ I see little practical value in this type of inversion.
 \bibliography{bibliography}
 
 
+\section*{Appendix A - The Macbeth ColorChecker\texttrademark}
+<<appendixCC, child='MacbethCC.txt'>>=
+@
 
-\section*{Appendix A - Inverse Colorimetry}
+
+
+\section*{Appendix B - Inverse Colorimetry}
 <<appendixRI, child='right-inverse.txt'>>=
 @
 
-
-
-\section*{Appendix B - The Macbeth ColorChecker\texttrademark}
-<<appendixCC, child='MacbethCC.txt'>>=
-@
 
 
 

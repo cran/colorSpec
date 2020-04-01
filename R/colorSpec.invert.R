@@ -3,65 +3,96 @@
 #
 #   x           a material responder, or a light responder
 #   response    a matrix of responses, with a response in each row to be processed. ncol(response) == numSpectra(x)
-#   method      'centroid' or 'Hawkyard'.  The latter is only for material reflectances.
+#   method      'centroid' or 'Hawkyard' or 'TLSS'.  'Hawkyard' is only for material reflectances.
 #   alpha       weighting coefficients for equalization ('centroid') or normalization ('Hawkyard').
 #
 #   return value:  a colorSpec object with spectra that have the given responses
 invert.colorSpec <- function( x, response, method="centroid", alpha=1 )
     {   
+    #   check x
     if( ! is.regular(x) )
         {
         log.string( ERROR, "responder x does not have regular wavelength step, which is necessary to speed and simplify calculations." )        
         return(NULL)
         }
+        
+    ok  = grepl( "^responsivity", type(x) )
+    if( ! ok )
+        {
+        log.string( ERROR, "type(x) = '%s', but it must be 'responsivity.material' or 'responsivity.light'.", type(x) )        
+        return(NULL)
+        }
     
+    
+    #   check response
     spectra = numSpectra(x)     
     
     response    = prepareNxM( response, M=spectra )
     if( is.null(response) )
         return(NULL)
         
-    if( length(alpha) == 1 )
-        alpha = rep(alpha[1],spectra)
-        
-    ok  = is.null(alpha)  ||  ( is.numeric(alpha) && length(alpha)==spectra  &&  is.null(dim(alpha)) )
-    if( ! ok )
-        {
-        log.string( ERROR, "alpha is invalid.  It must be a numeric vector with length = %d, but length(alpha)=%d.", spectra, length(alpha) )
-        return(NULL)
-        }        
-              
-    if( type(x) == 'responsivity.material' )
-        return( invertReflectance( x, response, method=method, alpha=alpha ) )
-    else if( type(x) == 'responsivity.light' )
-        return( invertEnergyCentroid( x, response, alpha=alpha ) )
+    #   check method
+    methodvec   = c("centroid","Hawkyard","TLSS")
     
-    log.string( ERROR, "type(x) = '%s', but it must be 'responsivity.material' or 'responsivity.light'.", type(x) )        
-    
-    return(NULL)
-    }
-        
-invertReflectance <- function( x, response, method, alpha )
-    {
-    methodvec   = c("centroid","hawkyard")
-    idx = pmatch( tolower(method), methodvec )
+    idx = pmatch( tolower(method[1]), tolower(methodvec) )
     if( is.na(idx) )
         {
-        log.string( ERROR, "method='%s' invalid.", method )
+        log.string( ERROR, "method='%s' is invalid.", method )
         return(NULL)
         }
+    method  = methodvec[idx]
         
-    if( idx == 1 )
-        return( invertReflectanceCentroid( x, response, alpha=alpha ) )
-    else
-        return( invertReflectanceHawkyard( x, response, alpha=alpha ) )
+        
+    if( method=='centroid'  ||  method=='Hawkyard' )
+        {
+        #   check alpha
+        if( length(alpha) == 1 )
+            alpha = rep(alpha[1],spectra)
+            
+        ok  = is.null(alpha)  ||  ( is.numeric(alpha) && length(alpha)==spectra  &&  is.null(dim(alpha)) )
+        if( ! ok )
+            {
+            log.string( ERROR, "alpha is invalid.  It must be a numeric vector with length = %d, but length(alpha)=%d.", spectra, length(alpha) )
+            return(NULL)
+            }        
+        }
+        
+    if( method == 'centroid' )
+        {
+        if( type(x) == 'responsivity.material' )
+            out = invertReflectanceCentroid( x, response, alpha=alpha )
+        else if( type(x) == 'responsivity.light' )
+            out = invertEnergyCentroid( x, response, alpha=alpha )
+        }
+    else if( method == 'Hawkyard' )
+        {
+        if( type(x) == 'responsivity.light' )
+            {
+            log.string( ERROR, "Method 'Hawkyard' is invalid when type(x) == 'responsivity.light'."  )
+            return(NULL)
+            }  
+        out = invertReflectanceHawkyard( x, response, alpha=alpha )
+        }
+    else if( method == 'TLSS' )
+        {
+        out = invertTLSS( x, response )
+        }
+        
+    if( is.null(out) )  return(NULL)
+    
+    count   = sum( is.na(out$estim.precis) )
+    if( 0 < count )
+        {
+        log.string( WARN, "%d of %d responses could not be inverted.", count, nrow(response) )
+        }        
+        
+    return( out )
     }
+        
     
 
 invertReflectanceCentroid <- function( x, response, alpha )
-    {   
-    spectra = numSpectra(x)         
-    
+    {
     for( p in c('rootSolve') )     # ,'microbenchmark'
         {
         if( ! requireNamespace( p, quietly=TRUE ) )
@@ -71,6 +102,9 @@ invertReflectanceCentroid <- function( x, response, alpha )
             }           
         }
 
+    spectra = numSpectra(x)         
+            
+        
     n   = nrow(response)  # number of responses to process
         
     if( is.null(rownames(response)) )
@@ -214,7 +248,7 @@ invertReflectanceCentroid <- function( x, response, alpha )
             cat( 'rootSolve::multiroot()  res = ', str(res), '\n', file=stderr() )               
             cat( 'res$root   = ', res$root, '\n', file=stderr() )            
             cat( 'res$f.root = ', res$f.root, '\n', file=stderr() )
-            log.string( ERROR, "Failed because ! all( abs(f.root) < rtol*abs(root) + atol ). estim.precis = %g.",  res$estim.precis )
+            log.string( WARN, "Root-finding failed because ! all( abs(f.root) < rtol*abs(root) + atol ). estim.precis = %g.",  res$estim.precis )
             next 
             }  
 
@@ -237,9 +271,6 @@ invertReflectanceCentroid <- function( x, response, alpha )
         
     out = colorSpec( mat, wavelength=wavelength(x), quantity='reflectance', organization='df.row' )    
 
-    #class(response) = "model.matrix"
-    #class(tau0)     = "model.matrix"
-    
     extra   = data.frame( row.names=1:n )
     
     colnames(response)  = toupper( specnames(x) )
@@ -312,6 +343,8 @@ invertReflectanceHawkyard <- function( x, response, alpha=alpha )
     
     A_inv   = solve(A)
     
+    n   = nrow( response )    
+    
     #   compute all estimated spectra in one line, and put them in mat
     mat = mat.responsivity.normalized  %*%  A_inv  %*% t(response)
 
@@ -322,7 +355,7 @@ invertReflectanceHawkyard <- function( x, response, alpha=alpha )
         
     colnames(mat)   = namevec
     
-    n   = nrow( response ) 
+
     feasible    = logical( n )
     for( j in 1:n )
         {
@@ -517,7 +550,7 @@ invertEnergyCentroid <- function( x, response, alpha )
             cat( 'res = ', str(res), '\n', file=stderr() )            
             cat( 'res$root   = ', res$root, '\n', file=stderr() )            
             cat( 'res$f.root = ', res$f.root, '\n', file=stderr() )
-            log.string( ERROR, "Failed because ! all( abs(f.root) < rtol*abs(root) + atol ). estim.precis = %g.",  res$estim.precis )
+            log.string( INFO, "Root-finding failed because ! all( abs(f.root) < rtol*abs(root) + atol ). estim.precis = %g.",  res$estim.precis )
             next 
             }  
             
@@ -560,10 +593,293 @@ invertEnergyCentroid <- function( x, response, alpha )
     return( out )
     }
                 
+invertTLSS <- function( x, response )
+    {  
+    spectra = numSpectra(x)     # = length of the response vector = ncol(response)
+    
+    mat.responsivity    = as.matrix(x)
+    
+    step    = step.wl(x)            
+    mat.responsivity = step * mat.responsivity
+
+    n   = numWavelengths(x)
+    
+    m   = nrow(response)  # number of responses to process
+    
+
+    
+    #   load matrix D
+    D   = diag( rep(4,n) )
+    D[ cbind( 2:n,1:(n-1) ) ]   = -2
+    D[ cbind( 1:(n-1),2:n ) ]   = -2
+    D[ cbind(c(1,n),c(1,n)) ]   = 2
+    #   print( D )
+
+    squash  = list()
+    
+    if( type(x) == 'responsivity.material' )
+        {
+        quantity    = 'reflectance'
+        
+        squash$sigma    <- function( z ) { (tanh(z) + 1) / 2 }
+        squash$sigma1   <- function( z ) { 1/cosh(z)^2 / 2 }
+        squash$sigma2   <- function( z ) { -1/cosh(z)^2 * tanh(z) }
+            
+        sigmainv <- function( rho ) { atanh( 2*rho - 1 ) }
+        
+        #   make mat0 of initial estimates 
+        # mat0    = as.matrix( invertReflectanceCentroid( x, response, alpha=rep(1,spectra) ) )
+        
+        mat0    = as.matrix( invertReflectanceHawkyard( x, response, alpha=rep(1,spectra) ) )
+        mat0    = pmin( pmax( mat0,0.01), 0.99 )
+ 
+        mat0    = sigmainv( mat0 )        
+        }
+    else
+        {
+        #   type(x) == 'responsivity.light' )
+        quantity    = ifelse( is.radiometric(x), 'energy', 'photons' )        
+        
+        squash$sigma    <- exp
+        squash$sigma1   <- exp
+        squash$sigma2   <- exp
+            
+        sigmainv <- log
+        
+        #   make mat0 of initial estimates 
+        # mat0 =  array( 0, c(n,m) )   #   just use 0s
+
+        whitelevel  = mean( colSums(mat.responsivity) )  #;  cat( "whitelevel=", whitelevel, '\n' )
+        if( whitelevel <= 0 )
+            {
+            log.string( ERROR, "Cannot proceed because response to all 1s is non-positive. mean whitelevel=%g.", whitelevel )
+            return(NULL)
+            }
             
             
+       mat0 = matrix( NA_real_, n, m )
+       
+       for( k in 1:m )
+            {
+            y0  = response[k, ]     # the k'th row of the input matrix
+            
+            meanresp    = mean( y0 )
+            if( meanresp <= 0 )
+                {
+                log.string( WARN, "Cannot invert response %d, because mean response is non-positive.   meanresp=%g.", k, meanresp )
+                next
+                }            
+                
+            z0  = sigmainv( meanresp / whitelevel ) #; cat( "k=", k, "   z0=", z0, '\n' )
+            mat0[ ,k]   = z0
+            }
+        }
+        
+
+    iters           = rep( NA_integer_, m )
+    time            = rep( NA_real_, m )
+    estim.precis    = rep( NA_real_, m )
+    
+    if( is.null(rownames(response)) )
+        namevec = sprintf( "estimate.%d", 1:m )
+    else
+        namevec = sprintf( "%s.estimate", rownames(response) )
             
     
+    #   variable mat will hold the computed spectra
+    mat = array( NA_real_, c(n,m) )
+    colnames(mat)   = namevec    
+    
+    for( k in 1:m )
+        {
+        time[k] = gettime()     # as.double( Sys.time() )
+        
+        y0  = response[k, ]     # the k'th row of the input matrix
+
+        #   equality contraint function depends on y0
+        #   heq <- function( z )    { as.numeric( trans(z)  %*%  mat.responsivity ) - y0 }        
+        
+        #   extract initial guess z0 from mat0
+        z0  = mat0[ ,k]
+        if( is.na(z0[1]) )
+            #   y0 has already been determined to be bad, and warning issued, so skip it
+            next           
+            
+        res = TLSS( z0, squash, t(mat.responsivity), y0 )
+        
+        # res = alabama::auglag( par=z0, fn=fun, gr=grad, heq=heq, heq.jac=heq.jac, control.outer=list(trace=FALSE) )
+        #  res = alabama::constrOptim.nl( par=z0, fn=fun, gr=grad, heq=heq, heq.jac=heq.jac, control.outer=list(trace=FALSE) )
+        #   print( str(res) )
+        
+        
+        time[k]         = gettime() - time[k]        
+        iters[k]        = ifelse( is.null(res$iterations), res$outer.iterations, res$iterations )
+        
+        if( ! is.null(res$convergence)  &&  res$convergence != 0 ) next    # convergence failed
+        
+        mat[ ,k]        = res$rho   # trans( res$par )
+        
+        #if( is.null(res$equal) )    res$equal = heq( res$par )
+        # equal   = res$equal
+            
+        estim.precis[k] = mean( abs(res$equal) )
+        
+        #cat( "k=", k, "   iters=", iters[k], "  lambda=", res$lambda, "     counts=", res$counts, '\n' )
+        }
+        
+    out = colorSpec( mat, wavelength=wavelength(x), quantity=quantity, organization='df.row' )    
+    
+    extra   = data.frame( row.names=1:m )
+    
+    colnames(response)  = toupper( specnames(x) )
+    extra$response      = response
+    extra$time.msec     = 1000 * time
+    extra$iters         = iters
+    extra$estim.precis  = estim.precis
+    
+    extradata(out)  = extra      
+        
+    return( out )
+    }
+    
+    
+    
+#  from http://scottburns.us/wp-content/uploads/2019/05/LHTSS-text-file.txt    
+#        translated from MATLAB/octave to R by Glenn Davis
+#
+#   This one function will do both LHTSS and LLSS, depending on the argument 'squash'
+#
+#   This is a non-linear minimization with non-linear constraints, solved by Lagrange multipliers.
+#   The solution method is "full Newton"  (not quasi-Newton, e.g. augmented Lagrange).
+#
+#   The function works with the transformed variable z, and then rho = sigma(z).
+#       for reflectance: z := atanh( 2*rho - 1 ), so rho = (tanh(z) + 1)/2.  LHTSS method
+#                               rho is in (0,1)
+#       for energy:      z := log(energy), so energy = exp(z)                LLSS method
+#                                energy is in (0,Inf)
+#
+#   z0      the initial estimate for z, an n-vector.  n = # of wavelengths
+#   squash  a list with 3 functions:
+#               sigma   the squashing function itself, typically (tanh(z)+1)/2  or  exp(z)
+#               sigma1  the 1st derivative of sigma
+#               sigma2  the 2nd derivative of sigma
+#   T       matrix defining the linear map from R^n to R^r,  an r x n matrix.  T is wide.
+#   y0      the target response, an r-vector
+#   ftol    solution tolerance
+#
+#   sigma() is called a "squashing function".
+#
+#
+#
+#   return value:   a list with items:
+#                   convergence integer code, 0 means success
+#                   zopt        optimal z, whether convergence succeeded or not
+#                   rho         optimal computed reflectance or energy
+#                   lambda      optimal lambda
+#                   F1          the 1st part of the optimal F   n-vector, all should be small
+#                   equal       the 2nd part of the optimal F   r-vector, all should be small
+#                   iterations
+#
+#   a little bit of the notation was taken from:
+#           OPTIMIZATION WITH CONSTRAINTS
+#           2nd Edition, March 2004
+#           K. Madsen, H.B. Nielsen, O. Tingleff
+
+TLSS  <- function( z0, squash, T, y0, ftol=1.0e-8 )
+    {
+#   This is the Least Hyperbolic Tangent Slope Squared (LHTSS) algorithm for
+#   generating a "reasonable" reflectance curve from a given sRGB color triplet.
+
+#   Written by Scott Allen Burns, May 2019.
+#   Licensed under a Creative Commons Attribution-ShareAlike 4.0 International
+#   License (http://creativecommons.org/licenses/by-sa/4.0/).
+#   For more information, see http://scottburns.us/reflectance-curves-from-srgb/            
+#   [****  transcribed from MATLAB/octave to R by Glenn Davis  ****]
+
+    n   = ncol(T)
+    r   = nrow(T)
+    
+    #   D is the n x n  difference matrix for Jacobian
+    #   having 4 on main diagonal and -2 on off diagonals,
+    #   except first and last main diagonal are 2.
+    D   = diag( rep(4,n) )
+    D[ cbind( 2:n,1:(n-1) ) ]   = -2
+    D[ cbind( 1:(n-1),2:n ) ]   = -2
+    D[ cbind(c(1,n),c(1,n)) ]   = 2            
+            
+    #   initialize Newton's method
+    z       = z0                # starting guess for z
+    lambda  = numeric( r )      # starting Lagrange multiplier, all 0s
+    maxit   = 50                # max number of iterations
+
+    dslice  = cbind( 1:n, 1:n )
+    
+    #   Newton's method iteration
+    convergence = 1     #  iteration limit reached
+    
+    for( count in 1:maxit )
+        {
+        d0 = squash$sigma(z)    # (tanh(z) + 1)/2
+        d1 = squash$sigma1(z)   # 1/cosh(z)^2 / 2
+        d2 = squash$sigma2(z)   # -1/cosh(z)^2 * tanh(z)
+        
+        Tlambda = as.numeric( crossprod(T,lambda) )     #   =   t(T) %*% lambda, but slightly faster
+        
+        F = rbind( D %*% z  +  d1*Tlambda, T %*% d0 - y0 )  # (n+r)x1 F vector
+
+        if( all( abs(F) < ftol ) )
+            {
+            #   solution found !
+            convergence = 0
+            break
+            }
+
+        W           = D
+        W[dslice]   = W[dslice]  +  d2*Tlambda
+        
+        Jct = d1 * t(T)     # == diag(d1) %*% t(T)  which is an R trick
+        
+        top = cbind( W, Jct )                   # n x (n+r) ; print( str(top) )
+        bot = cbind( t(Jct), matrix(0,r,r) )    # r x (n+r) ; print( str(bot) )
+        J   = rbind( top, bot  )                # (n+r)x(n+r) 
+        
+        delta   = try( base::solve( J, -F ) )   # solve Newton system of equations J*delta = -F.  This is the bottleneck.
+        
+        if( ! is.numeric(delta) )       # class(delta) == "try-error" )    
+            {
+            #   cat( 'base::solve()  res = ', str(delta), '\n', file=stderr() )
+            convergence = 2  # J is bad,  too close to singular
+            log.string( INFO, "Convergence failed because J is too close to singular." )
+            break
+            }
+            
+        if( ! all( is.finite(delta) ) )
+            {
+            #   cat( 'base::solve()  res = ', str(delta), '\n', file=stderr() )
+            convergence = 3  # J is bad,  too close to singular
+            log.string( INFO, "Convergence failed because %d of %d components of delta are not finite.", 
+                                    sum(! is.finite(delta)), length(delta) )            
+            break
+            }
+
+        z       = z + delta[ 1:n ]                  # update z
+        lambda  = lambda + delta[ (n+1):(n+r) ]     # update lambda
+        }
+    
+    out = list()
+    out$convergence = convergence
+    out$zopt        = z
+    out$rho         = d0
+    out$lambda      = lambda
+    out$F1          = F[ 1:n ]
+    #   out$F2          = F[ (n+1):(n+r) ]
+    out$equal       = F[ (n+1):(n+r) ]
+    out$iterations  = count
+
+    return( out )
+    }                
+
+
 #--------       UseMethod() calls           --------------#            
 
 invert <- function( x, response, method="centroid", alpha=1 )

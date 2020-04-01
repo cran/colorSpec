@@ -172,7 +172,7 @@ importFrom( grDevices, colorRampPalette, rgb, rainbow )
 importFrom( graphics, abline, grid, legend, lines,
              lines.default, par, plot, plot.default, plot.new,
              plot.window, points, points.default, polygon,
-             rect, text, title, axTicks, strwidth, strheight )
+             rect, text, title, axTicks, strwidth, strheight, segments )
 importFrom( stats ,  approx, coef, lm, loess, predict,
              runif, spline, splinefun, rnorm )
 importFrom( utils, capture.output, flush.console, modifyList,
