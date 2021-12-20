@@ -23,7 +23,7 @@ The {\code{wavelength}} is from 300 to 700 nm, at 1nm intervals.
 }
 
 \source{
-\url{http://onlinelibrary.wiley.com/doi/10.1111/j.1095-8312.2005.00540.x/suppinfo}
+\url{https://onlinelibrary.wiley.com/doi/10.1111/j.1095-8312.2005.00540.x/suppinfo}
 }
 
 \references{

@@ -615,7 +615,26 @@ colorSpecFromDF <- function( df, path, preamble, idxtable )
     
     colnames(mat)   = specnames
 
-    theQuantity = guessSpectrumQuantity( specnames, c(preamble,attr(df,"header")) )
+    header  = attr( df, "header" )
+    
+    #   look for SPECTRAL_NORM, and if present divide by it
+    pattern = '^SPECTRAL_NORM[ \t]*"?([.0-9]+)"?'
+    vec = sub( pattern, "\\1", header, ignore.case=T )
+    
+    idx = which( nchar(vec) < nchar(header) )
+    if( 0 < length(idx) )
+        {
+        #   found 1 or lines matching, only look at the first one
+        value   = as.numeric( vec[idx[1]] )
+        
+        if( is.numeric(value)  &&  is.finite(value)  &&  0 < value  &&  value != 1 )
+            {
+            log.string( INFO, "Dividing spectral values by SPECTRAL_NORM=%g.", value )
+            mat = mat / value
+            }
+        }
+
+    theQuantity = guessSpectrumQuantity( specnames, c(preamble,header) )
     
     if( is.na(theQuantity) )
         {
@@ -645,7 +664,7 @@ colorSpecFromDF <- function( df, path, preamble, idxtable )
         extradata(out)  = extra
         }
         
-    metadata( out )    = list(  header=attr(df,"header"), 
+    metadata( out )    = list(  header=header, 
                                 date=attr(df,"date"),
                                 descriptor=attr(df,"descriptor") )    
 

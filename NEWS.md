@@ -1,5 +1,9 @@
 # NEWS for **colorSpec** package
 
+### Changes for version 1.3-0  [2021-12-20]
+* when reading .sp files, use value of `MEAS_TYPE` to assign the **colorSpec** `quantity`
+* when reading .sp files, divide spectral values by `SPECTRAL_NORM`
+* fix undefined color problem in some vignettes, caused by change in TeX package **xcolor**
 
 ### Changes for version 1.2-1  [2020-04-01]
 * in function `invert()` added new `method='TLSS'`, and updated the vignette **Estimating a Spectrum from its Response - Inverse Colorimetry**

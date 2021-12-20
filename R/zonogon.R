@@ -84,7 +84,7 @@ zonogon  <- function( W, tol=1.e-9, partition=FALSE )
     if( TRUE )
         {
         #   cluster the unit normal vectors  [reminds me of something similar at Link]
-        res = findRowClusters( normal )
+        res = findRowClusters( normal, tol=tol, projective=TRUE )
         if( is.null(res) )  return(NULL)
         
         out$clusteridx  = res$clusteridx

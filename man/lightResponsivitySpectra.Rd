@@ -50,7 +50,7 @@ CIE Res. Note, 6(1), 17-22. (1987)
 }
 
 \source{
-\url{http://en.wikipedia.org/wiki/Ultraviolet_index}
+\url{https://en.wikipedia.org/wiki/Ultraviolet_index}
 }
 
 \seealso{

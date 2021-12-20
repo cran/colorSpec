@@ -49,7 +49,7 @@ A \code{"FATAL"} event always stops execution.}
 \references{
 Wikipedia.
 \bold{Log4j}.
-\url{http://en.wikipedia.org/wiki/Log4j}
+\url{https://en.wikipedia.org/wiki/Log4j}
 }
 
 \seealso{

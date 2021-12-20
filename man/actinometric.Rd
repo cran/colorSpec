@@ -95,7 +95,7 @@ execute \code{cs.options(loglevel='INFO')}.
 \source{
 Wikipedia.
 \bold{Photon counting}.
-\url{http://en.wikipedia.org/wiki/Photon_counting}
+\url{https://en.wikipedia.org/wiki/Photon_counting}
 }
 
 \seealso{

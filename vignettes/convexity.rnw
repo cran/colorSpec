@@ -10,19 +10,7 @@
 %\VignetteIndexEntry{Convexity and Transitions}
 %\VignetteEngine{knitr::knitr}
 
-\RequirePackage{color}
-\definecolor{darkblue}{rgb}{0,0,0.5}
-\definecolor{blue}{rgb}{0,0,0.8}
-\definecolor{lightblue}{rgb}{0.2,0.2,0.9}
-\definecolor{darkred}{rgb}{0.6,0.0,0.0}
-\definecolor{red}{rgb}{0.7,0,0}
-\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
-\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
-\definecolor{darkorange}{rgb}{0.75, 0.45, 0}
-\definecolor{purple}{rgb}{0.65, 0, 0.75}
-\definecolor{goldenrod}{rgb}{0.80, 0.61, 0.11}
-\definecolor{lightyellow}{rgb}{0.98,0.94,0.83}
-
+\RequirePackage{color}    
 
 \RequirePackage{fancyvrb}
 \RequirePackage[T1]{fontenc}
@@ -36,6 +24,20 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{enumitem}
+
+% block of definecolor's moved down here on Dec 15 2021.  Kurt Hornik
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{blue}{rgb}{0,0,0.8}
+\definecolor{lightblue}{rgb}{0.2,0.2,0.9}
+\definecolor{darkred}{rgb}{0.6,0.0,0.0}
+\definecolor{red}{rgb}{0.7,0,0}
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
+\definecolor{darkorange}{rgb}{0.75, 0.45, 0}
+\definecolor{purple}{rgb}{0.65, 0, 0.75}
+\definecolor{goldenrod}{rgb}{0.80, 0.61, 0.11}
+\definecolor{lightyellow}{rgb}{0.98,0.94,0.83}
+
 
 \pagestyle{fancy}
 \cfoot{page \thepage\ of \pageref{LastPage}}

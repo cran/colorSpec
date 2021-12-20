@@ -273,7 +273,7 @@ Figure 10.11a. page 141.
 
 Wikipedia.
 \bold{Hadamard product (matrices)}.
-\url{http://en.wikipedia.org/wiki/Hadamard_product_\%28matrices\%29}
+\url{https://en.wikipedia.org/wiki/Hadamard_product_(matrices)}
 
 ASTM E308-01.
 Standard Practice for Computing the Colors of Objects by Using the CIE System.

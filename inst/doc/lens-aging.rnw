@@ -11,6 +11,16 @@
 %\VignetteEngine{knitr::knitr}
 
 \RequirePackage{color}
+\RequirePackage{fancyvrb}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{ae}       % ComputerModern Fonts
+\RequirePackage{fancyhdr}
+\RequirePackage{float}
+\RequirePackage{hyperref}
+\usepackage{lastpage}
+
+
+% block of definecolor's moved down here on Dec 17 2021.  Kurt Hornik
 \definecolor{darkblue}{rgb}{0,0,0.5}
 \definecolor{blue}{rgb}{0,0,0.8}
 \definecolor{lightblue}{rgb}{0.2,0.2,0.9}
@@ -24,13 +34,6 @@
 \definecolor{lightyellow}{rgb}{0.98,0.94,0.83}
 
 
-\RequirePackage{fancyvrb}
-\RequirePackage[T1]{fontenc}
-\RequirePackage{ae}       % ComputerModern Fonts
-\RequirePackage{fancyhdr}
-\RequirePackage{float}
-\RequirePackage{hyperref}
-\usepackage{lastpage}
 
 \pagestyle{fancy}
 \cfoot{page \thepage\ of \pageref{LastPage}}

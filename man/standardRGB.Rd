@@ -61,7 +61,7 @@ The new function returns "signal RGB" instead of linear RGB.
 IEC 61966-2-1:1999.
 Multimedia systems and equipment - Colour measurement and management.
 Part 2-1: Colour management - Default RGB colour space - sRGB.
-\url{http://webstore.iec.ch/publication/6169}
+\url{https://webstore.iec.ch/publication/6169}
 
 Lindbloom, Bruce.
 RGB/XYZ Matrices.
@@ -69,11 +69,11 @@ RGB/XYZ Matrices.
 
 Wikipedia.
 \bold{sRGB}.
-\url{http://en.wikipedia.org/wiki/SRGB}
+\url{https://en.wikipedia.org/wiki/SRGB}
 
 Wikipedia.
 \bold{Adobe RGB}.
-\url{http://en.wikipedia.org/wiki/Adobe_RGB_color_space}
+\url{https://en.wikipedia.org/wiki/Adobe_RGB_color_space}
 
 }
 

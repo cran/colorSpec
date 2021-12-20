@@ -42,7 +42,7 @@ New software should use \code{spacesRGB::SignalRGBfromLinearRGB()} instead.
 \source{
 Wikipedia.
 \bold{sRGB}.
-\url{http://en.wikipedia.org/wiki/sRGB}
+\url{https://en.wikipedia.org/wiki/SRGB}
 }
 
 \seealso{

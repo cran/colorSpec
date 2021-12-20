@@ -277,7 +277,7 @@ spectrumTypeFromQuantity <- function( .quantity )
     
 guessSpectrumQuantity <- function( .specnames, .header )
     {
-    #   first look for a direct assignment, not a guess
+    #   first look for a direct assignment of QUANTITY, not a guess
     pattern = '^#?[ \t]*QUANTITY:?[ \t]*"?([->A-Z]+)"?'
     out = sub( pattern, "\\1", .header, ignore.case=T )
     
@@ -298,6 +298,27 @@ guessSpectrumQuantity <- function( .specnames, .header )
         #   return( tolower( out[idx[1]] ) )
         }
         
+        
+    #   first look for MEAS_TYPE, which appear in newer versions of ArgyllCMS .sp files
+    pattern = '^MEAS_TYPE[ \t]*"?([A-Z]+)"?'
+    out = sub( pattern, "\\1", .header, ignore.case=T )
+    
+    idx = which( nchar(out) < nchar(.header) )
+    if( 0 < length(idx) )
+        {
+        #   found 1 or lines matching, only look at the first one
+        value   = toupper( out[idx[1]] )
+        
+        if( value == "REFLECTIVE" )     return( 'reflectance' )
+            
+        if( value == "TRANSMISSIVE" )   return( 'transmittance' )
+            
+        if( value=="EMISSION"  ||  value=="AMBIENT" )   return( 'energy' )
+            
+        if( value == "SENSITIVITY" )   return( 'energy->neural' )
+                        
+        #   else just keep looking
+        }
         
     #   scanners are electrical
     pattern = "keyword[: \t]+scanner"

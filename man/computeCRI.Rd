@@ -79,7 +79,7 @@ Table 1(3.11). p. 828.
 
 Wikipedia.
 \bold{Color rendering index}.
-\url{http://en.wikipedia.org/wiki/Color_rendering_index}
+\url{https://en.wikipedia.org/wiki/Color_rendering_index}
 
 Hunt, R. W. G. and M. R. Pointer.
 \bold{Measuring Colour}.  4th edition.
