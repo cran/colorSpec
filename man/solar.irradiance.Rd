@@ -70,7 +70,7 @@ Standard Tables for Reference Solar Spectral Irradiances: Direct Normal and Hemi
 \code{\link{D50}}, 
 \code{\link{daylightSpectra}},
 \code{\link{resample}},
-vignette \bold{Blue Flame and Green Comet}
+vignette \href{../doc/blueflame.pdf}{\bold{Blue Flame and Green Comet}}
 
 }
 

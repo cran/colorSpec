@@ -1,5 +1,15 @@
 # NEWS for **colorSpec** package
 
+
+### Changes for version 1.4-0  [2022-05-04]
+* in function `calibrate()` added new method that is compliant with ASTM and CIE
+* modified relevant vignettes to use the new calibration method
+* in the man pages, changed mentions of vignettes to hyperlinks
+* inactivated some (possibly) invalid URLs
+* in User Guide vignette, fixed embedded table problem by replacing `cat()` with `knitr::raw_html()`
+* increased width of User Guide vignette to match the width of embedded tables
+* moved packages **MASS** and **spacesXYZ** from Imports to Suggests
+
 ### Changes for version 1.3-0  [2021-12-20]
 * when reading .sp files, use value of `MEAS_TYPE` to assign the **colorSpec** `quantity`
 * when reading .sp files, divide spectral values by `SPECTRAL_NORM`

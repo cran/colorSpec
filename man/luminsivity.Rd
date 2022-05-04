@@ -61,10 +61,9 @@ It has been padded with 0s to 360 to 830 nm.
 Luminsivity is a self-coined \emph{portmanteau word}:
 \code{luminsivity} = \code{luminous} * \code{responsivity}.
 The word is unrelated to \emph{emissivity}.
-The term \emph{luminous responsivity} is not common, 
-but appears on page 15 of \emph{Grum}.
+The term \emph{luminous responsivity} is not common, but appears on page 15 of \emph{Grum}.
 The term \emph{luminous efficiency function} is standard, but too long.
-The term \emph{luminosity function} is common, but also appears in astronomy.\cr
+The term \emph{luminosity function} is common, but \emph{luminosity} is ambiguous and also appears in astronomy and scattering theory.\cr
 The object \code{luminsivity.1nm} is used by the function \code{\link{photometric}()}.
 }
 

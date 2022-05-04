@@ -15,15 +15,15 @@
 
 \arguments{
   \item{...}{\bold{colorSpec} objects with the same \code{\link{wavelength}} and \code{\link{quantity}}, and with distinct \code{\link{specnames}} (no duplicates)}
-    
+
 }
-    
+
 \value{
 \code{bind()} returns a \bold{colorSpec} object, or \code{NULL} in case of ERROR.  If the bind is
 successful, the number of spectra in the output object is the sum of the number of spectra
 in the input objects.
-           
-}    
+
+}
 
 
 \details{
@@ -32,23 +32,23 @@ where the order of complexity is:
 
 \code{'matrix'}  <  \code{'df.col'}  <  \code{'df.row'}
 
-If the selected \code{organization} is \code{'df.row'} the \code{extradata} is combined in a way that preserves all the columns.
+If the selected \code{organization} is \code{'df.row'}, the \code{extradata} is combined in a way that preserves all the columns.
 Missing data is filled with \code{NA}s, analogous to
-\code{plyr::rbind.fill()}.
+\code{\link[plyr]{rbind.fill}()}.
 
 The \code{\link{metadata}} of the returned object is copied from the first object in the input list.
-  
+
 }
 
 
 \seealso{
 \code{\link{wavelength}},
 \code{\link{quantity}},
-\code{\link{specnames}},    
-\code{\link{organization}},  
-\code{\link{extradata}},    
+\code{\link{specnames}},
+\code{\link{organization}},
+\code{\link{extradata}},
 \code{\link{metadata}},
-\code{\link[plyr]{rbind.fill}}  
+\code{\link[plyr]{rbind.fill}()}
 }
 
 \examples{

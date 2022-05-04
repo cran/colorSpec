@@ -454,7 +454,7 @@ makeCompatibleCGATS  <-  function( .data )
         if( cname %in% c("RGB","XYZ","LAB","LCH") )
             {
             #   expand 1 column into 3
-            mat = .data[ , j ]    #   a model.matrix
+            mat = .data[ , j ] 
             
             if( ncol(mat) != nchar(cname) )    next    #   something is wrong
             

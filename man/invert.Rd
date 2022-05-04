@@ -223,7 +223,7 @@ If \code{type(x)='responsivity.light'} the centroid method may fail
 \code{\link{product}()},
 \code{\link{extradata}()},
 \code{\link[rootSolve:multiroot]{rootSolve::multiroot}()},
-vignette \bold{inversion}
+vignette \href{../doc/inversion.pdf}{\bold{Estimating a Spectrum from its Response}}
 }
 
 \examples{
@@ -251,7 +251,7 @@ vol. 27, no 8.
 \emph{Journal of the Optical Society of America A}.
 pages 1868-1877.
 2010
-\url{https://www.osapublishing.org/josaa/abstract.cfm?uri=josaa-27-8-1868}.
+\url{https://opg.optica.org/josaa/abstract.cfm?uri=josaa-27-8-1868}.
 
 
 Burns, Scott A. 

@@ -4,6 +4,7 @@ author: "Glenn Davis"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
+    css: widevignette.css   # width 900px to match the included tables
     toc: true
     toc_depth: 2
     number_sections: true
@@ -50,25 +51,20 @@ Some features:
 </ul>
 
 
-Regarding the dependencies, the following packages are **Imports**:
+Regarding the dependencies, the following packages are **Suggests**:
 <ul>
-<li>**spacesXYZ** @spacesXYZ, required for computing CCT</li>
-<li>**MASS** @MASS, required for camera emulation,
-which uses the matrix pseudoinverse `MASS::ginv()`</li>
-</ul>
-
-The following packages are **Suggests**:
-<ul>
+<li>**spacesXYZ** @spacesXYZ, required for computing CCT, and for some vignettes</li>
 <li>**rootSolve** @rootSolve, required for inverse colorimetry</li>
+<li>**MASS** @MASS, required for camera emulation, which uses the matrix pseudoinverse `MASS::ginv()`</li>
 <li>**rgl** @rgl, required for plotting optimal colors in 3D</li>
-<li>**knitr** @knitr,  **rmarkdown** @rmarkdown, and **spacesRGB** @spacesRGB, 
-required for building the vignettes</li>
 <li>**microbenchmark** @microbenchmark, for a timer with higher precision 
 than **R**'s built-in timer</li>
 <li>**arrangements** @arrangements, makes the zonohedron calculations 
 for optimal colors a little bit faster</li>
 <li>**quadprog** @quadprog, may be used in `responsivityMetrics()` to determine whether the
 generators lie in an open linear halfspace</li>
+<li>**knitr** @knitr,  **rmarkdown** @rmarkdown, and **spacesRGB** @spacesRGB, 
+required for building the vignettes</li>
 </ul>
 
 
@@ -103,7 +99,9 @@ are not available.</li>
         
         tmp2 <- sprintf( '",  style="border: none; seamless:seamless; width: 900px; height: %s" ></iframe>', height )
 
-        cat( '<iframe src="data:text/html;charset=utf-8,', tmp1 , tmp2 )    
+        # cat( '<iframe src="data:text/html;charset=utf-8,', tmp1 , tmp2 )    
+
+        knitr::raw_html( c( '<iframe src="data:text/html;charset=utf-8,', tmp1 , tmp2 ), meta=NULL, cacheable=FALSE )
     }
 
     includeplain  <-  function( path ) {
@@ -124,7 +122,7 @@ or color management
 and you will see plots of many spectra. 
 Let's start with a simple division of these spectra into 4 basic types:
 ```{r echo=FALSE, results='asis'}
-    includetable("tables/table-1.1.html", "550px" )
+    includetable( "tables/table-1.1.html", "550px" )
 ```
 
 For the infinite-dimensional spaces, the interval [380,780] is used for illustration; 

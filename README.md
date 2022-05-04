@@ -5,8 +5,6 @@
 It supports the standard calculations with spectral properties of light sources, materials, cameras, eyes, scanners, etc. 
 And it works well with the more general action spectra.
 
-
-
 When a spectrum is contructed, a `quantity` is required,
 though it can be changed after contruction.
 The **colorSpec** quantities are typically not the same as the SI quantities;
@@ -220,8 +218,7 @@ Table 2.1.  The </FONT><FONT FACE="Courier New, monospace"><FONT SIZE=3>types</F
 <br><br>
 The `quantity` is used to label plots,
 and to make sense out of the arguments in the function `product()`.
-These quantities are typically not the same as the SI quantities; they are more general.
-For details please see the **colorSpec User Guide**.
+
 
 <br><br>
 The function `invert()` implements a method in 

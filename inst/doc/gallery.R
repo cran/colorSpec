@@ -23,10 +23,11 @@ print( extradata(MacbethCC), row.names=F )
 
 ## ----lee10, echo=TRUE, message=FALSE----------------------------------------------------
 D65.eye = product( D65.1nm, "artwork", xyz1931.1nm, wave='auto' )
-#   calibrate so the perfect-reflecting-diffuser is the 'official XYZ'
-#   scale XYZ independently
+# calibrate according to the ASTM and CIE standards,
+# except normalize to Y=1 instead of Y=100
+# X, Y, and Z are scaled by the same factor
 PRD = neutralMaterial( 1, wavelength(D65.eye) )
-D65.eye = calibrate( D65.eye, stimulus=PRD, response=standardXYZ('D65'), method='scaling' )
+D65.eye = calibrate( D65.eye, stimulus=PRD, response=c(NA,1,NA), method='scaling' )
 
 ## ----lee11, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm'----
 XYZ = product( MacbethCC, D65.eye, wave='auto' )
@@ -52,10 +53,10 @@ plotPatchesRGB( obj, space='sRGB', which='scene', back='gray20', labels=FALSE )
 
 ## ----lee20, echo=TRUE, message=FALSE----------------------------------------------------
 D50.eye = product( D50.5nm, "artwork", xyz1931.5nm, wave='auto' )
-#   calibrate so the response to the perfect-reflecting-diffuser is the 'official XYZ' of D50
-#   scale XYZ independently
+# calibrate according to the ASTM and CIE standards,
+# except normalize to Y=1 instead of Y=100
 PRD = neutralMaterial( 1, wavelength(D50.eye) )
-D50.eye = calibrate( D50.eye, stimulus=PRD, response=standardXYZ('D50'), method='scaling' )
+D50.eye = calibrate( D50.eye, stimulus=PRD, response=c(NA,1,NA), method='scaling' )
 
 ## ----lee21, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D50 and xyz1931.5nm'----
 XYZ = product( MacbethCC, D50.eye, wave='auto' )
@@ -69,7 +70,7 @@ D50.eye = product( D50.5nm, "artwork", xyz1931.5nm, wave='auto' )
 # calibrate so the response to the perfect-reflecting-diffuser is the 'official XYZ' of D65
 # with this chromatic adaption the destination XYZ is a 3x3 matrix times the source XYZ
 PRD = neutralMaterial( 1, wavelength(D50.eye) )
-XYZ.D65 = standardXYZ('D65')
+XYZ.D65 = spacesXYZ::standardXYZ('D65')
 D50toD65.eye = calibrate( D50.eye, stimulus=PRD, response=XYZ.D65, method='Bradford' )
 XYZ = product( MacbethCC, D50toD65.eye, wave='auto' )
 obj = extradata(MacbethCC)

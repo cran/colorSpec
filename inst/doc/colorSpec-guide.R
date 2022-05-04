@@ -8,7 +8,9 @@ library(colorSpec)
         
         tmp2 <- sprintf( '",  style="border: none; seamless:seamless; width: 900px; height: %s" ></iframe>', height )
 
-        cat( '<iframe src="data:text/html;charset=utf-8,', tmp1 , tmp2 )    
+        # cat( '<iframe src="data:text/html;charset=utf-8,', tmp1 , tmp2 )    
+
+        knitr::raw_html( c( '<iframe src="data:text/html;charset=utf-8,', tmp1 , tmp2 ), meta=NULL, cacheable=FALSE )
     }
 
     includeplain  <-  function( path ) {
@@ -17,7 +19,7 @@ library(colorSpec)
     }
 
 ## ----echo=FALSE, results='asis'-----------------------------------------------
-    includetable("tables/table-1.1.html", "550px" )
+    includetable( "tables/table-1.1.html", "550px" )
 
 ## ----echo=FALSE, results='asis'-----------------------------------------------
     includetable("tables/table-2.1.html", "640px" )

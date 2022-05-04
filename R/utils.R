@@ -397,6 +397,16 @@ angleBetween  <-  function( .vec1, .vec2, eps=5.e-14 )
 
     return(out)
     }
+    
+is.identity <- function( x )
+    {
+    if( ! is.matrix(x) )    return(FALSE)
+    
+    m   = nrow(x)
+    if( m != ncol(x) )  return(FALSE)
+    
+    return( identical(x,diag(m)) )
+    }
 
     
 #   x   numeric vector

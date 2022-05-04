@@ -94,7 +94,7 @@ responsivityMetrics.colorSpec <- function( x )
         res = try( quadprog::solve.QP( diag(3), numeric(3), t(x$Wcond), rep(1,ncond) ), silent=TRUE )
         #   print(res)
         
-        if( class(res) != "try-error" )    
+        if( inherits(res,"try-error") )    
             {
             normal  = res$solution
             normal  = normal / sqrt( sum(normal^2) )

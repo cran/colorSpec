@@ -23,7 +23,9 @@ The central projection of \eqn{P} onto the unit sphere is the \emph{spherical ch
 If \code{type} is \code{'responsivity.material'}, then \code{x} has an
 \emph{object-color solid} or \emph{Rösch Farbkörper},
 which is a zonohedron \eqn{Z}.
-See \cite{Centore} and vignette \bold{convexity} for details.
+See \cite{Centore} and vignette
+\href{../doc/convexity.pdf}{\bold{Convexity and Transitions}}
+for details.
 \cr
 Some simplification of the generators is performed during pre-processing.
 Generators that are 0 (in all channels) are removed,
@@ -93,7 +95,7 @@ To determine the value of \code{salient}, the package \bold{quadprog} might be r
 
 \seealso{
 \code{\link{type}},
-vignette \bold{convexity}
+vignette \href{../doc/convexity.pdf}{\bold{Convexity and Transitions}}
 }
 
 \references{

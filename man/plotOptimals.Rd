@@ -101,7 +101,7 @@ Indeed, the box may actually be \emph{inside} the optimals.
 \code{\link{type}()},
 \code{\link{probeOptimalColors}()},
 \code{\link{sectionOptimalColors}()},  
-vignette \bold{optimals}
+vignette \href{../doc/optimals.pdf}{\bold{Plotting Chromaticity Loci of Optimal Colors}}
 }
 
 
@@ -118,8 +118,8 @@ April 2013.
 Logvinenko, A. D.
 An object-color space. 
 Journal of Vision.
-9(11):5, 1-23, (2009).
-\url{https://jov.arvojournals.org/article.aspx?articleid=2203976}.
+9(11):5, 1-23, (2009).\cr
+\code{https://jov.arvojournals.org/article.aspx?articleid=2203976}.
 doi:10.1167/9.11.5.
 
 West, G. and M. H. Brill.

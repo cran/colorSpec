@@ -262,6 +262,10 @@ saveDatasets  <- function( .path="../data/colorSpec.rda" )
     
 #   an advantage of the private data in "sysdata.rda" is that these
 #   do not have to be documented, and therefore exposed    
+#
+#   p.Ma                    3x3 adaptation matrices
+
+
 savePrivateDatasets  <- function( .path="sysdata.rda" )
     {
     savevec = character(0)
@@ -283,8 +287,6 @@ savePrivateDatasets  <- function( .path="sysdata.rda" )
     savevec = c( savevec, "dataIlluminants" )
 
     
-    
-    
     #---------------       spectra for CRI     ------------------------##
     path    = "../inst/extdata/targets/TCSforCRI.txt"
     TCSforCRI = readSpectra( path )
@@ -295,6 +297,22 @@ savePrivateDatasets  <- function( .path="sysdata.rda" )
     LensAbsorbance1987 = readSpectra( path )
     organization(LensAbsorbance1987)  = mostEfficientOrganization(LensAbsorbance1987)        
     savevec = c( savevec, "LensAbsorbance1987" )
+    
+    #   list of adaptation matrices
+    p.Ma    = list()
+    p.Ma[[ "Bradford" ]]            = matrix( c(0.8951,0.2664,-0.1614,  -0.7502,1.7135,0.0367,  0.0389,-0.0685,1.0296), 3, 3, byrow=T )
+    p.Ma[[ "VonKries" ]]            = matrix( c(0.40024,0.7076,-0.08081,  -0.2263,1.16532,0.0457,  0,0,0.91822), 3, 3, byrow=T )
+    p.Ma[[ "MCAT02" ]]              = matrix( c( 0.7328, 0.4296, -0.1624,  -0.7036, 1.6975, 0.0061, 0.0030, 0.0136, 0.9834 ), 3, 3, byrow=T )
+    p.Ma[[ "Bianco+Schettini" ]]    = matrix( c( 0.8752, 0.2787, -0.1539,  -0.8904, 1.8709, 0.0195, -0.0061, 0.0162, 0.9899 ), 3, 3, byrow=T )
+    p.Ma[[ "scaling" ]]             = diag(3)
+    
+    for( k in 1:length(p.Ma) )
+        {
+        rownames( p.Ma[[k]] )   = c('L','M','S')
+        colnames( p.Ma[[k]] )   = c('X','Y','Z')
+        }
+        
+    savevec = c( savevec, "p.Ma" )    
 
     ##  finally ready to save it
     save( list=savevec, file=.path, compress='xz' )   #     'xz'  'gzip'  FALSE

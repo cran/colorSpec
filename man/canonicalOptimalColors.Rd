@@ -102,7 +102,7 @@ and is approximately a bandstop filter.
 \code{\link{scanner.ACES}},
 \code{\link{extradata}()},
 \code{\link{type}},
-vignette \bold{convexity},
+vignette \href{../doc/convexity.pdf}{\bold{Convexity and Transitions}}
 }
 
 \references{
@@ -117,8 +117,8 @@ April 2013.
 Logvinenko, A. D.
 An object-color space. 
 \bold{Journal of Vision}.
-9(11):5, 1-23, (2009).
-\url{https://jov.arvojournals.org/article.aspx?articleid=2203976}.
+9(11):5, 1-23, (2009).\cr
+\code{https://jov.arvojournals.org/article.aspx?articleid=2203976}
 doi:10.1167/9.11.5.
 
 Schrödinger, E. (1920). 

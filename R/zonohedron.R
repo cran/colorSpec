@@ -1995,7 +1995,7 @@ plotpolygon.zonohedron <- function( x, normal=c(1,1,1) )
         res = try( quadprog::solve.QP( diag(3), numeric(3), t(x$Wcond), rep(1,ncond) ), silent=TRUE )
         #   print(res)
         
-        if( class(res) == "try-error" )    
+        if( inherits(res,"try-error") )    
             {
             log.string( ERROR, "zonohedron x is not salient." )
             return(FALSE)
@@ -2787,9 +2787,9 @@ plotpolygon  <- function( x, normal=c(1,1,1)  )
     }    
     
 
-    
-gettime <- function()
-    {
-    return( microbenchmark::get_nanotime() * 1.e-9 )
-    }
+#   already in utils.R
+#gettime <- function()
+#    {
+#    return( microbenchmark::get_nanotime() * 1.e-9 )
+#    }
     

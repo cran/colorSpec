@@ -414,8 +414,15 @@ plotPatchesRGB  <-  function( obj, normalize=FALSE, gamma='sRGB', background='gr
             return(FALSE)
             }    
                     
-        obj   = as.data.frame.model.matrix( obj )
-        colnames(obj) = 'RGB'
+                    
+        #   convert the matrix to a data.frame with that matrix as the only column
+        
+        #obj   = as.data.frame.model.matrix( obj )
+        #colnames(obj) = 'RGB'
+        
+        df  = data.frame( row.names=1:nrow(obj) )
+        df$RGB  = obj
+        obj     = df
         }
         
     if( ! is.data.frame(obj) )

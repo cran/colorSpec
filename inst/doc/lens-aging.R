@@ -15,7 +15,7 @@ library( spacesXYZ )    # for function standardXYZ()
 library( spacesRGB )    # for functions RGBfromXYZ() and plotPatchesRGB()
 
 ## ----lens1, echo=TRUE, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='Human Lens Transmittance at age=32 and age=64'----
-lens.trans = linearize( lensAbsorbance( c(32,64), wave=380:780 ) )   
+lens.trans = linearize( lensAbsorbance( c(32,64), wave=380:780 ) )
 par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
 plot( lens.trans, color='black', lty=1:2, main=FALSE, legend='topleft' )
 
@@ -27,17 +27,18 @@ par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
 plot( lens.64, main=TRUE, legend=FALSE, ylab='Relative Transmittance', col='black' )
 
 ## ----target, echo=TRUE, message=FALSE---------------------------------------------------
-path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec') 
-MacbethCC = readSpectra( path, wave=wavelength(lens.64) ) 
+path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec')
+MacbethCC = readSpectra( path, wave=wavelength(lens.64) )
 MacbethCC = MacbethCC[ order(MacbethCC$SAMPLE_ID), ]
 print( extradata(MacbethCC), row.names=F )
 
 ## ----lee10, echo=TRUE, message=FALSE----------------------------------------------------
 D65.eye = product( D65.1nm, "artwork", xyz1931.1nm, wave=wavelength(lens.64) )
-#   calibrate so the perfect-reflecting-diffuser is the 'official XYZ'
-#   scale XYZ independently
+# Calibrate so that when "artwork" is the perfect-reflecting-diffuser, then Y=1,
+# and all 3 channels of D65.eye are scaled by the same factor.
+# This is the same as the ASTM recommended method, except Y=100 is replaced by Y=1
 prd = neutralMaterial( 1, wavelength(lens.64) )
-D65.eye = calibrate( D65.eye, stimulus=prd, response=standardXYZ('D65'), method='scaling' )
+D65.eye = calibrate( D65.eye, stimulus=prd, response=c(NA,1,NA), method='scaling' )
 
 ## ----lee11, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=32'----
 XYZ = product( MacbethCC, D65.eye, wave=wavelength(lens.64) )

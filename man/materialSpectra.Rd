@@ -95,7 +95,7 @@ which he calls the \emph{rectangle color atlas}.
 He also shows that if a material responder satisfies  the 2-transition condition,
 then these spectra uniquely generate \emph{all} 
 colors in the corresponding object color solid.
-For more on this, see the \bold{inversion} vignette.
+For more on this, see the vignette \href{../doc/inversion.pdf}{\bold{Estimating a Spectrum from its Response}}.
 }
 
 
@@ -126,8 +126,8 @@ July, 1944.
 Logvinenko, A. D.
 An object-color space. 
 \bold{Journal of Vision}.
-9(11):5, 1-23, (2009).
-\url{https://jov.arvojournals.org/article.aspx?articleid=2203976}.
+9(11):5, 1-23, (2009).\cr
+\code{https://jov.arvojournals.org/article.aspx?articleid=2203976}.
 doi:10.1167/9.11.5.
 
 Pokorny, Joel, Vivianne C. Smith, and Margaret Lutze.
@@ -144,7 +144,7 @@ Table I.  Page 1439.
 \code{\link{quantity}()},
 \code{\link{specnames}()},
 \code{\link{computeADL}()},
-vignette \bold{inversion}
+vignette \href{../doc/inversion.pdf}{\bold{Estimating a Spectrum from its Response}}
 }
 
 \examples{

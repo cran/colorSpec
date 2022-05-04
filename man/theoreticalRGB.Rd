@@ -81,7 +81,7 @@ Annex C, pp. 26-33.
 \code{\link{xyz1931.1nm}},
 \code{\link{ptransform}()},
 \code{\link{calibrate}()},
-vignette blueflame
+vignette \href{../doc/blueflame.pdf}{\bold{Blue Flame and Green Comet}}
 }
 
 \examples{

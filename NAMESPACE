@@ -166,8 +166,8 @@ export(officialXYZ)
 
 export(cs.options)
 
-importFrom( MASS, ginv )
-importFrom( spacesXYZ, CCTfromXYZ, standardXYZ )
+# importFrom( MASS, ginv )
+# importFrom( spacesXYZ, CCTfromXYZ, standardXYZ )
 importFrom( grDevices, colorRampPalette, rgb, rainbow )
 importFrom( graphics, abline, grid, legend, lines,
              lines.default, par, plot, plot.default, plot.new,

@@ -34,7 +34,8 @@ To get a material with transmittance identically 0, set \code{lambda} to a 0x2 m
 To get a material with transmittance identically 1, 
 set \code{lambda} to a 1x2 matrix with
 \eqn{\lambda_1=\beta_0} and \eqn{\lambda_2=\beta_N}, where \eqn{N} is the number of wavelengths.
-See vignette \bold{convexity} for the definition of \eqn{\beta_0} and  \eqn{\beta_N}
+See vignette \href{../doc/convexity.pdf}{\bold{Convexity and Transitions}}
+for the definition of \eqn{\beta_0} and  \eqn{\beta_N}
 and other mathematical details.
 \cr
 \code{lambda} can also be a list of such matrices, which are processed separately, see \bold{Value}.
@@ -61,14 +62,15 @@ There is a matrix in the list for each spectrum in \code{x}.
 \details{
 \code{bandRepresentation()} is a right-inverse of \code{bandMaterial()}, 
 see \bold{Examples} and the test script \code{test-bands.R}. 
-For more mathematical details, see vignette \bold{convexity}.
+For more mathematical details, see the vignette
+\href{../doc/convexity.pdf}{\bold{Convexity and Transitions}}.
 }
 
 
 
 \seealso{
 \code{\link{rectangularMaterial}()},
-vignette \bold{convexity}
+vignette \href{../doc/convexity.pdf}{\bold{Convexity and Transitions}}
 }
 
 \examples{

@@ -99,9 +99,10 @@ daylightLocus <-  function( .temperature, .space='xy'  )
     else if( .space == 'XYZ' )
         {
         XYZ = XYZ_from_xyY( x, y, 1 )
-        class(XYZ)  = 'model.matrix'
+        #   class(XYZ)  = 'model.matrix'
         
-        out = data.frame( temperature=.temperature, XYZ=XYZ )
+        out = data.frame( temperature=.temperature )    #, XYZ=XYZ )
+        out$XYZ = XYZ
         }
     
     

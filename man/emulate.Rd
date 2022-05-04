@@ -50,7 +50,7 @@ If \code{filter=FALSE} and \code{matrix=TRUE} then
 the returned value is \code{multiply(x,A)},
 where the matrix \code{A} is computed to minimize the difference with
 \code{y}, in the least squares sense (Frobenius matrix norm).
-The function \code{MASS::ginv()} is used here.
+The function \code{\link[MASS]{ginv}()} is used here.
 
 If \code{filter=TRUE} and \code{matrix=FALSE} then
 the returned value is \code{product(filter,x)},
@@ -70,7 +70,7 @@ the calculation is trivial and the emulation is exact.
 If \code{N} \eqn{\ge} \code{2},
 the calculation is iterative - solving alternatively for 
 \code{filter} and \code{A} until convergence.
-The function \code{MASS::ginv()} is used on each iteration.
+The function \code{\link[MASS]{ginv}()} is used on each iteration.
 This is a bilinear optimization.
 If convergence fails, it is an error and the function returns \code{NULL}.
 If convergence succeeds, there is 1 degree of freedom in the \code{(filter,A)} pair.
@@ -94,7 +94,7 @@ the original \code{x} is returned, with a \code{WARN} message.
 }
 
 \section{Examples}{
-see the vignette \bold{Emulation of one Camera by another Camera}
+see the vignette \href{../doc/emulation.pdf}{\bold{Emulation of one Camera by another Camera}}
 }
 
 \keyword{colorSpec}

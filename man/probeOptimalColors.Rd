@@ -162,7 +162,7 @@ Optimizing these compound faces is a possible topic for the future.
 
 \seealso{
 \code{\link{type}},
-vignette \bold{optimals},
+vignette \href{../doc/optimals.pdf}{\bold{Plotting Chromaticity Loci of Optimal Colors}},
 \code{\link{scanner.ACES}},
 \code{\link{extradata}()}
 }
@@ -179,8 +179,8 @@ April 2013.
 Logvinenko, A. D.
 An object-color space. 
 \bold{Journal of Vision}.
-9(11):5, 1-23, (2009).
-\url{https://jov.arvojournals.org/article.aspx?articleid=2203976}.
+9(11):5, 1-23, (2009).\cr
+\code{https://jov.arvojournals.org/article.aspx?articleid=2203976}.
 doi:10.1167/9.11.5.
 
 Schrödinger, E. (1920). 

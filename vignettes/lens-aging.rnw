@@ -73,7 +73,7 @@ if(!file.exists("figs")) dir.create("figs")
 
 The goal of this \textbf{colorSpec} vignette is to simulate the effect
 of age on human color vision.
-The colored figures are best viewed by an observer with age of 32 years, 
+The colored figures are best viewed by an observer with age of 32 years,
 and on a display calibrated for sRGB.
 
 
@@ -89,10 +89,10 @@ When making these colored images it is appropriate to use the
 CIE 1931 color matching functions (CMFs).
 Unfortunately I could not find the average age of the observers used to
 establish the 1931 standard observer (there were 17 of them).
-But it \emph{is} known that the average age of the observers used to create the 
+But it \emph{is} known that the average age of the observers used to create the
 CIE 1964 standard observer is 32 years, see \cite{Pokorny}.
 So we'll take 32 years for the CIE 1931 standard observer as well.
-Featured functions in this vignette are: 
+Featured functions in this vignette are:
 \code{linearize()},
 \code{lensAbsorbance()},
 \code{extradata()},
@@ -110,14 +110,14 @@ library( spacesRGB )    # for functions RGBfromXYZ() and plotPatchesRGB()
 Compute and plot lens transmittance at 32 and 64 years using the model in \cite{Pokorny}.
 
 <<lens1, echo=TRUE, fig.pos="H", fig.height=4, out.width='1.0\\linewidth', fig.cap='Human Lens Transmittance at age=32 and age=64' >>=
-lens.trans = linearize( lensAbsorbance( c(32,64), wave=380:780 ) )   
+lens.trans = linearize( lensAbsorbance( c(32,64), wave=380:780 ) )
 par( omi=c(0,0,0,0), mai=c(0.6,0.7,0.3,0.2) )
 plot( lens.trans, color='black', lty=1:2, main=FALSE, legend='topleft' )
 @
 
 To compare the color appearance at age 64 to that at age 32,
 we need the transmittance at age 64 relative to that at age 32.
-We know that object \code{lens.trans} is a matrix, 
+We know that object \code{lens.trans} is a matrix,
 so use the standard \textbf{R} matrix subset operation to extract each spectrum.
 Then perform the division and plot the ratio.
 
@@ -137,28 +137,29 @@ putting on these tinted glasses.
 % ----------------------------------------------------------------------------
 \section*{The Macbeth ColorChecker with Observer Age 32}
 
-We first read the spectra of the \emph{ColorChecker} target.  
+We first read the spectra of the \emph{ColorChecker} target.
 This data has been kindly provided in CGATS format by \cite{Pascale}.
-\emph{ColorChecker} is a Registered Trademark of X-Rite, and X-Rite is a Trademark. 
+\emph{ColorChecker} is a Registered Trademark of X-Rite, and X-Rite is a Trademark.
 
 <<target, echo=TRUE, message=FALSE>>=
-path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec') 
-MacbethCC = readSpectra( path, wave=wavelength(lens.64) ) 
+path = system.file( 'extdata/targets/CC_Avg30_spectrum_CGATS.txt', package='colorSpec')
+MacbethCC = readSpectra( path, wave=wavelength(lens.64) )
 MacbethCC = MacbethCC[ order(MacbethCC$SAMPLE_ID), ]
 print( extradata(MacbethCC), row.names=F )
 @
 
-Note that \code{MacbethCC} is organized as \code{'df.row'} 
+Note that \code{MacbethCC} is organized as \code{'df.row'}
 and contains extra data for each spectrum, notably the coordinates of the patch rectangle.
 
 Now build the "material responder" from Illuminant D65 and the 1931 CMFs:
 
 <<lee10, echo=TRUE, message=FALSE >>=
 D65.eye = product( D65.1nm, "artwork", xyz1931.1nm, wave=wavelength(lens.64) )
-#   calibrate so the perfect-reflecting-diffuser is the 'official XYZ'
-#   scale XYZ independently
+# Calibrate so that when "artwork" is the perfect-reflecting-diffuser, then Y=1,
+# and all 3 channels of D65.eye are scaled by the same factor.
+# This is the same as the ASTM recommended method, except Y=100 is replaced by Y=1
 prd = neutralMaterial( 1, wavelength(lens.64) )
-D65.eye = calibrate( D65.eye, stimulus=prd, response=standardXYZ('D65'), method='scaling' )
+D65.eye = calibrate( D65.eye, stimulus=prd, response=c(NA,1,NA), method='scaling' )
 @
 Calculate XYZ and then RGB:
 <<lee11, echo=TRUE, fig.pos="H", fig.height=5, out.width='1.0\\linewidth', fig.cap='Rendering with Illuminant D65 and xyz1931.1nm, at age=32' >>=
@@ -202,7 +203,7 @@ specnames( D65.eye.64 ) = sprintf( "%s.64", c('x','y','z') )
 plot( D65.eye.64,  lty=2, add=TRUE, legend='topright' )
 @
 
-But these figures are only appropriate for the instant in time that the change was made, 
+But these figures are only appropriate for the instant in time that the change was made,
 and before the eye and brain have had the time to adapt.
 In electronic camera terms, there is no "white balance" yet.
 

@@ -213,7 +213,7 @@ invertReflectanceCentroid <- function( x, response, alpha )
             
             cat( 'stats::optim()  res = ', str(res), '\n', file=stderr() )
                 
-            if( class(res) == "try-error"  || res$convergence != 0 )    
+            if( inherits(res,"try-error")  ||  res$convergence != 0 )    
                 {
                 cat( 'stats::optim()  res = ', str(res), '\n', file=stderr() )
                 next
@@ -231,7 +231,7 @@ invertReflectanceCentroid <- function( x, response, alpha )
                     
             res =  try( rootSolve::multiroot( myGrad, start0, rtol=rtol, atol=atol, ctol=0, verbose=F, jacfunc=myJac, jactype='fullusr', y0=y0 ),  silent=F )
             
-            if( class(res) == "try-error" )    
+            if( inherits(res,"try-error") )    
                 {
                 cat( 'rootSolve::multiroot()  res = ', str(res), '\n', file=stderr() )
                 next
@@ -296,14 +296,14 @@ invertReflectanceHawkyard <- function( x, response, alpha=alpha )
         return(NULL)    
         }
         
-    for( p in c('microbenchmark') )     
-        {
-        if( ! requireNamespace( p, quietly=TRUE ) )
-            {
-            log.string( ERROR, "Required package '%s' could not be loaded.",  p )
-            return(NULL)
-            }           
-        }        
+    #for( p in c('microbenchmark') )     
+    #    {
+    #    if( ! requireNamespace( p, quietly=TRUE ) )
+    #        {
+    #        log.string( ERROR, "Required package '%s' could not be loaded.",  p )
+    #        return(NULL)
+    #        }           
+    #    }        
     
     time_start  = gettime()         # microbenchmark::get_nanotime()       # as.double( Sys.time() )
     
@@ -534,7 +534,7 @@ invertEnergyCentroid <- function( x, response, alpha )
 
         # cat( 'res = ', str(res), '\n', file=stderr() )
         
-        if( class(res) == "try-error" )        
+        if( inherits(res,"try-error") )        
             {
             cat( 'res = ', str(res), '\n', file=stderr() )
             next
