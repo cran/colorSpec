@@ -12,7 +12,7 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
     m   = numSpectra(x)
     if( m == 0 )
         {
-        log.string( ERROR, "x has no spectra !" )
+        log_string( ERROR, "x has no spectra !" )
         return(FALSE)
         }
 
@@ -40,11 +40,11 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
             #   fake it by changing quantity to energy
             x.energy    = x    #   resample( x, wavelength(BT.709.RGB) )    #   we know BT.709.RGB has regular wavelength steps
             quantity(x.energy) = 'energy'
-            mat.rgb = product( x.energy, colorSpec::BT.709.RGB, wave='auto' )         #; print( mat.rgb )
+            mat.rgb = product( x.energy, colorSpec::BT.709.RGB, wavelength='auto' )         #   partial argument match FIXED
             
             if( all( is.na(mat.rgb) ) )
                 {
-                log.string( ERROR, "Cannot determine colors for plot.  Is all data NA ?" )                
+                log_string( ERROR, "Cannot determine colors for plot.  Is all data NA ?" )                
                 return( invisible(FALSE) )                
                 }            
                 
@@ -90,13 +90,13 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
         x.sub = subset( x, subset )
         if( is.null(x.sub) )
             {
-            log.string( ERROR, "subset is invalid." )
+            log_string( ERROR, "subset is invalid." )
             return(FALSE)
             }
             
         if( numSpectra(x.sub) == 0 )
             {
-            log.string( ERROR, "subset is empty; nothing to plot." )
+            log_string( ERROR, "subset is empty; nothing to plot." )
             return(FALSE)
             }        
         }
@@ -106,7 +106,7 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
     
     if( all( is.na(mat) ) )
         {
-        log.string( ERROR, "Cannot plot because all data in subset to be plotted is NA." )                
+        log_string( ERROR, "Cannot plot because all data in subset to be plotted is NA." )                
         return( invisible(FALSE) )                
         }              
         
@@ -302,7 +302,7 @@ initPlot.colorSpec  <- function( .x, .xlim=c(NA,NA), .ylim=c(NA,NA), .ylab=NA, .
         
         if( is.na(ymax) )
             {
-            log.string( ERROR, "Cannot determine ymax limit for plot.  Is all data NA ?" )
+            log_string( ERROR, "Cannot determine ymax limit for plot.  Is all data NA ?" )
             return( invisible(FALSE) )
             }
         }
@@ -315,7 +315,7 @@ initPlot.colorSpec  <- function( .x, .xlim=c(NA,NA), .ylim=c(NA,NA), .ylab=NA, .
             
         if( is.na(ymin) )
             {
-            log.string( ERROR, "Cannot determine ymin limit for plot.  Is all data NA ?" )
+            log_string( ERROR, "Cannot determine ymin limit for plot.  Is all data NA ?" )
             return( invisible(FALSE) )
             }
         }
@@ -395,7 +395,7 @@ plotPatchesRGB  <-  function( obj, normalize=FALSE, gamma='sRGB', background='gr
         {
         if( ncol(obj) != 3 )
             {
-            log.string( ERROR, "'%s' has %d columns, but it must be 3.", deparse(substitute(obj)), ncol(obj) )
+            log_string( ERROR, "'%s' has %d columns, but it must be 3.", deparse(substitute(obj)), ncol(obj) )
             return(FALSE)
             }    
             
@@ -410,7 +410,7 @@ plotPatchesRGB  <-  function( obj, normalize=FALSE, gamma='sRGB', background='gr
         
         if( ! ok )
             {
-            log.string( ERROR, "'%s' is not RGB.", deparse(substitute(.spec)) )
+            log_string( ERROR, "'%s' is not RGB.", deparse(substitute(.spec)) )
             return(FALSE)
             }    
                     
@@ -427,14 +427,14 @@ plotPatchesRGB  <-  function( obj, normalize=FALSE, gamma='sRGB', background='gr
         
     if( ! is.data.frame(obj) )
         {
-        log.string( ERROR, "data is invalid; neither matrix nor data.frame" )
+        log_string( ERROR, "data is invalid; neither matrix nor data.frame" )
         return(FALSE)
         }
 
     #   look for column RGB
     if( is.null(obj$RGB)  ||  is.null(dim(obj$RGB))  ||  ncol(obj$RGB) != 3 )
         {
-        log.string( ERROR, "data is invalid; there is no column RGB with 3 columns" )
+        log_string( ERROR, "data is invalid; there is no column RGB with 3 columns" )
         return(FALSE)
         }    
 
@@ -479,7 +479,7 @@ plotPatchesRGB  <-  function( obj, normalize=FALSE, gamma='sRGB', background='gr
         obj$RGB = DisplayRGBfromLinearRGB( obj$RGB, gamma )
     else
         {
-        log.string( ERROR, "gamma is invalid" )
+        log_string( ERROR, "gamma is invalid" )
         return(FALSE)
         }    
         
@@ -499,7 +499,7 @@ plotPatchesRGB  <-  function( obj, normalize=FALSE, gamma='sRGB', background='gr
             
             if( length(background) != 3 )
                 {
-                log.string( ERROR, "background is invalid, because length(background)==%d", length(background) )
+                log_string( ERROR, "background is invalid, because length(background)==%d", length(background) )
                 return(FALSE)
                 }
                 
@@ -509,7 +509,7 @@ plotPatchesRGB  <-  function( obj, normalize=FALSE, gamma='sRGB', background='gr
             
         if( ! is.character( background ) )
             {
-            log.string( ERROR, "background is invalid" )
+            log_string( ERROR, "background is invalid" )
             return(FALSE)
             }        
 
@@ -579,7 +579,7 @@ plotPatchesRGB  <-  function( obj, normalize=FALSE, gamma='sRGB', background='gr
         }
     else
         {
-        log.string( ERROR, "shape='%s' unknown.", shape )
+        log_string( ERROR, "shape='%s' unknown.", shape )
         }
         
     if( labels )

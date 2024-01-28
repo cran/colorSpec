@@ -1,9 +1,14 @@
 # NEWS for **colorSpec** package
 
+### Changes for version 1.5-0  [2024-01-28]
+* moved initialization of `colorSpec` options from `.onAttach()` to `.onLoad()`, so `colorSpec` can be used without attaching it; thanks to Pedro Aphalo
+* fixed some internal warnings about `partial argument match`; thanks to Pedro Aphalo
+* fixed `dimnames()` problem in `test-organization.R`
+* removed `exportClasses` directive
 
 ### Changes for version 1.4-0  [2022-05-04]
-* in function `calibrate()` added new method that is compliant with ASTM and CIE
-* modified relevant vignettes to use the new calibration method
+* in function `calibrate()` added new option for `response` that is compliant with ASTM and CIE
+* modified relevant vignettes to use the new calibration option
 * in the man pages, changed mentions of vignettes to hyperlinks
 * inactivated some (possibly) invalid URLs
 * in User Guide vignette, fixed embedded table problem by replacing `cat()` with `knitr::raw_html()`

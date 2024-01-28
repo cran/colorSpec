@@ -14,14 +14,14 @@ photometric.colorSpec <- function( x, photopic=683, scotopic=1700, multiplier=1 
     {
     if( type(x) != 'light' )
         {
-        log.string( ERROR, "type(x) = '%s, but it must be 'light'", type(x) )
+        log_string( ERROR, "type(x) = '%s, but it must be 'light'", type(x) )
         return(NULL)
         }
     
     #   x might be photon-based (actinometric)    
     x   = radiometric( x )
     
-    out = product( x, colorSpec::luminsivity.1nm, wave='auto' ) #;     print( out )
+    out = product( x, colorSpec::luminsivity.1nm, wavelength='auto' )   #  partial argument match FIXED
     
     #   scale the columns
     phot    = grepl( "^photopic", colnames(out) )

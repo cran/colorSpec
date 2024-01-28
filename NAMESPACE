@@ -1,5 +1,5 @@
 
-exportClasses(colorSpec)
+# exportClasses(colorSpec)   this is only for S4 classes
 
 ## methods for class colorSpec
 S3method(numSpectra,colorSpec)

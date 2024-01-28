@@ -7,9 +7,9 @@ testEmulate <- function()
     
     # read the 2 cameras
     path = system.file( 'extdata/cameras/Plumbicon30mm.txt', package='colorSpec') 
-    plumbicon =  readSpectra( path, wave=wave )
+    plumbicon =  readSpectra( path, wavelength=wave )
     path = system.file( 'extdata/cameras/Red-Epic-Dragon.txt', package='colorSpec') 
-    dragon = readSpectra( path, wave=wave )
+    dragon = readSpectra( path, wavelength=wave )
     dragon.mod = emulate( dragon, plumbicon, filter=FALSE, matrix=TRUE ) 
     
     if( ! all( 0 < dragon.mod ) )   return(FALSE)

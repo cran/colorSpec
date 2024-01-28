@@ -18,7 +18,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
     n   = length(theList)
     if( n == 0 )
         {
-        log.string( ERROR, "No arguments !" )
+        log_string( ERROR, "No arguments !" )
         return(NULL)
         }
         
@@ -56,7 +56,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
             idx = pmatch( integration, option )
             if( is.na(idx) )
                 {
-                log.string( ERROR, "integration='%s' is invalid.", as.character(integration) )
+                log_string( ERROR, "integration='%s' is invalid.", as.character(integration) )
                 return(NULL)
                 }            
             integration = option[idx]
@@ -67,8 +67,8 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
         #   all named args, except wavelength !
         resample.argv   = theList[ mask.named ]     #; print( resample.argv )  # wavelength is not here, it is passed to resample() separately
             
-        log.object( TRACE, wavelength )
-        log.object( TRACE, integration )        
+        log_object( TRACE, wavelength )
+        log_object( TRACE, integration )        
         }
     else
         {
@@ -78,7 +78,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
 
     if( sum(mask.noname) == 0 )
         {
-        log.string( ERROR, "No colorSpec arguments." )
+        log_string( ERROR, "No colorSpec arguments." )
         return(NULL)
         }
         
@@ -88,7 +88,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
         theNames    = theNames[ 2:(n+1) ]
     else
         {
-        log.string( WARN, "length(theNames) = %d != %d.  Using fake names.", length(theNames), n+1 )
+        log_string( WARN, "length(theNames) = %d != %d.  Using fake names.", length(theNames), n+1 )
         theNames    = sprintf( "Name%d", 1:n )
         }
         
@@ -99,10 +99,10 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
     names(theList)  = theNames  #; print( str(theList) )
     
     n   = length( theList )
-    log.string( TRACE, "Found %d objects in '...'", n )
+    log_string( TRACE, "Found %d objects in '...'", n )
     if( n == 0 )
         {
-        log.string( ERROR, "No colorSpec arguments." )
+        log_string( ERROR, "No colorSpec arguments." )
         return(NULL)
         }
         
@@ -110,7 +110,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
     
     if( is.na(type.return) )
         {
-        log.string( ERROR, "Cannot form product, because the argument sequence is invalid." )        
+        log_string( ERROR, "Cannot form product, because the argument sequence is invalid." )        
         return(NULL)
         }
         
@@ -146,8 +146,8 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
     #   check # of spectra
     if( any(spectra == 0) )
         {
-        log.object( ERROR, spectra )
-        log.string( ERROR, "one or more of of the %d colorSpec objects has 0 spectra.", n )
+        log_object( ERROR, spectra )
+        log_string( ERROR, "one or more of of the %d colorSpec objects has 0 spectra.", n )
         return(NULL)
         }    
     
@@ -158,8 +158,8 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
         spectra.unique  = unique( spectra.multi )
         if( 2 <= length(spectra.unique) )
             {
-            log.object( ERROR, spectra )
-            log.string( ERROR, "# of spectra in list is invalid." )
+            log_object( ERROR, spectra )
+            log_string( ERROR, "# of spectra in list is invalid." )
             return(NULL)
             }       
         }
@@ -170,15 +170,15 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
         res = splitSequence( spectra )
         if( is.null(res) )
             {
-            log.object( ERROR, spectra )            
-            log.string( ERROR, "# of spectra in list is invalid." )
+            log_object( ERROR, spectra )            
+            log_string( ERROR, "# of spectra in list is invalid." )
             return(NULL)
             }       
         seq.beg = res$begin
         seq.end = res$end
         
         if( res$ambiguous )
-            log.string( WARN, "The returned matrix is ambiguous; because it depends on the splitting. Inspect the matrix carefully." )
+            log_string( WARN, "The returned matrix is ambiguous; because it depends on the splitting. Inspect the matrix carefully." )
         }
         
     
@@ -189,7 +189,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
     ok  = is.null(wavelength)  ||  is.character(wavelength)  ||  is.numeric(wavelength)
     if( ! ok )
         {
-        log.string( ERROR, "wavelength type '%s' is invalid", typeof(wavelength) )
+        log_string( ERROR, "wavelength type '%s' is invalid", typeof(wavelength) )
         return(NULL)
         }        
 
@@ -208,7 +208,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
                 
                 if( ! identical( wavelength.colorSpec(theList[[k]]), wavelength ) )
                     {
-                    log.string( ERROR, "'%s' does not have the same wavelengths as '%s'. Consider option wavelength='auto'.",
+                    log_string( ERROR, "'%s' does not have the same wavelengths as '%s'. Consider option wavelength='auto'.",
                                         theNames[1], theNames[k] )
                     return(NULL)
                     }            
@@ -218,7 +218,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
             }
         else
             {
-            log.string( ERROR, "wavelength option '%s' is invalid.", wavelength[1] )
+            log_string( ERROR, "wavelength option '%s' is invalid.", wavelength[1] )
             return(NULL)
             }
         }
@@ -231,26 +231,26 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
         
         wavelength  = commonWavelength( lapply( theList[mask], wavelength.colorSpec )  )
 
-        log.string( INFO, "From %d objects, computed %d common wavelengths: %g to %g nm with step of %g nm",
+        log_string( INFO, "From %d objects, computed %d common wavelengths: %g to %g nm with step of %g nm",
                         sum(mask), length(wavelength), wavelength[1], wavelength[length(wavelength)], wavelength[2]-wavelength[1] )
         }        
         
         
     #if( ! isRegularSequence(wavelength) )
     #    {
-    #    log.string( ERROR, "Cannot form product, because resampling wavelength sequence is not regular." )
+    #    log_string( ERROR, "Cannot form product, because resampling wavelength sequence is not regular." )
     #    return(NULL)
     #    }        
         
     if( do.resample )
         {
         #   resample all of them
-        log.string( INFO, "Resampling all %d objects...", n )
+        log_string( INFO, "Resampling all %d objects...", n )
         
         #print( resample.argv )
         
         #   make arguments for resample().  Always wavelength and maybe more in resample.argv.
-        argv = c( list(wave=wavelength), resample.argv )
+        argv = c( list(wavelength=wavelength), resample.argv )   #  partial argument match FIXED
         
         #print( str(argv) )
         
@@ -271,7 +271,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
 
     #if( ! is.regular( theList[[1]] ) )
     #    {
-    #    log.string( ERROR, "Cannot form product, because wavelength sequence is not regular." )
+    #    log_string( ERROR, "Cannot form product, because wavelength sequence is not regular." )
     #    return(NULL)
     #    }
         
@@ -286,7 +286,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
         if( grepl( pattern, quantity[k] ) )
             {
             # convert from absorbance to transmittance
-            log.string( DEBUG, "converting spectrum %d from absorbance to transmittance.", k )
+            log_string( DEBUG, "converting spectrum %d from absorbance to transmittance.", k )
             theList[[k]]    = linearize(theList[[k]])
             }
             
@@ -294,7 +294,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
         if( grepl( pattern, quantity[k] ) )
             {
             # convert from actinometric to radiometric
-            log.string( DEBUG, "converting spectrum %d from actinometric to radiometric.", k )
+            log_string( DEBUG, "converting spectrum %d from actinometric to radiometric.", k )
             theList[[k]]   = radiometric(theList[[k]]) 
             }
         }
@@ -312,7 +312,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
         
         if( isRegularSequence(wavelength) )
             {
-            log.string( INFO, "Wavelength sequence is regular. step=%g. integration='%s'", step.wl, integration )
+            log_string( INFO, "Wavelength sequence is regular. step=%g. integration='%s'", step.wl, integration )
             
             #   this is the easy case, the step size can be brought outside            
             if( integration == 'trapezoidal' )
@@ -325,7 +325,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
             }
         else
             {
-            log.string( INFO, "Wavelength sequence is irregular.  integration='%s'",  integration )
+            log_string( INFO, "Wavelength sequence is irregular.  integration='%s'",  integration )
                         
             #weight  = diff( wavelength, lag=2 ) / 2
             #w.end   = c( wavelength[2] - wavelength[1], wavelength[p] - wavelength[p-1] )
@@ -334,7 +334,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
                              
             if( length(weight) != p )
                 {
-                log.string( ERROR, "length(weight)= %d != %d.", length(weight), p )
+                log_string( ERROR, "length(weight)= %d != %d.", length(weight), p )
                 return(NULL)
                 }
                 
@@ -415,7 +415,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
     #   the type of the returned colorSpec will be "responsivity.material"
     if( type.return != "responsivity.material" )
         {
-        log.string( FATAL, "type.return='%s' != '%s'.", type.return, "responsivity.material" )
+        log_string( FATAL, "type.return='%s' != '%s'.", type.return, "responsivity.material" )
         return(NULL)
         }
     
@@ -423,7 +423,7 @@ product.colorSpec <- function( ... )            #,  wavelength='identical' , int
     pattern     = "^(energy|power)"
     if( ! grepl( pattern, quantity ) )
         {
-        log.string( FATAL, "Internal error. Last object quantity='%s' does not begin with 'energy' or 'power'.", quantity )
+        log_string( FATAL, "Internal error. Last object quantity='%s' does not begin with 'energy' or 'power'.", quantity )
         return(NULL)
         }    
     quantity    = sub( pattern, "material", quantity )
@@ -476,7 +476,7 @@ commonWavelength <- function( .wavelist )
     
     if( wmax <= wmin )
         {
-        log.string( ERROR, "wavelength intersection [%g,%g] is empty.", wmin, wmax )
+        log_string( ERROR, "wavelength intersection [%g,%g] is empty.", wmin, wmax )
         return(NULL)
         }
     
@@ -511,8 +511,8 @@ simpleProduct <- function( .list )
     mask    =  spectra==1  |  spectra==channels
     if( ! all(mask) )
         {
-        log.object( FATAL, spectra )
-        log.string( FATAL, "Internal error.  Invalid spectra counts." )
+        log_object( FATAL, spectra )
+        log_string( FATAL, "Internal error.  Invalid spectra counts." )
         return(NULL)
         }
         
@@ -561,7 +561,7 @@ returnTypeProduct <- function( .list )
             {
             if( 0 < k.character )
                 {
-                log.string( ERROR, "String '%s' is too many strings.  There can be at most 1 string.", .list[[k]] )
+                log_string( ERROR, "String '%s' is too many strings.  There can be at most 1 string.", .list[[k]] )
                 return(out)
                 }
                 
@@ -569,7 +569,7 @@ returnTypeProduct <- function( .list )
                         
             if( k==1 || k==n )
                 {
-                log.string( ERROR, "String '%s' must appear in the interior of the argument list.", .list[[k]] )
+                log_string( ERROR, "String '%s' must appear in the interior of the argument list.", .list[[k]] )
                 return(out)
                 }
                 
@@ -581,13 +581,13 @@ returnTypeProduct <- function( .list )
 
         if( ! "colorSpec" %in% class( .list[[k]] ) )
             {
-            log.string( ERROR, "class(%s) = '%s', which is invalid.", theNames[k], paste( class(.list[[k]]) ,collapse=',') )
+            log_string( ERROR, "class(%s) = '%s', which is invalid.", theNames[k], paste( class(.list[[k]]) ,collapse=',') )
             return(out)
             }
             
         if( ! is.colorSpec( .list[[k]] ) )
             {
-            log.string( ERROR, "%s is not a valid colorSpec object.", theNames[k] )
+            log_string( ERROR, "%s is not a valid colorSpec object.", theNames[k] )
             return(out)
             }        
             
@@ -608,7 +608,7 @@ returnTypeProduct <- function( .list )
 
             if( type[k] != "material" )
                 {
-                log.string( ERROR, "type(%s) = '%s' which is invalid for list interior.  It must be 'material'.", 
+                log_string( ERROR, "type(%s) = '%s' which is invalid for list interior.  It must be 'material'.", 
                                         theNames[k], type[k] )
                 return(out)
                 }    
@@ -634,7 +634,7 @@ returnTypeProduct <- function( .list )
         out = "matrix"
     else
         {
-        log.string( ERROR, "Cannot form a product. The types of the colorSpec objects are invalid" )
+        log_string( ERROR, "Cannot form a product. The types of the colorSpec objects are invalid" )
         }
         
     return( out )

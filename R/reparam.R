@@ -16,13 +16,13 @@ makeReparamFunctionList <- function( .obj, .name, .mode='equalize', .pnorm=2 )
     
     if( ! is.colorSpec( .obj ) )
         {
-        log.string( ERROR, "%s is not a valid colorSpec object", .name )
+        log_string( ERROR, "%s is not a valid colorSpec object", .name )
         return(NULL)
         }
         
     if( ! is.regular( .obj ) )
         {
-        log.string( ERROR, "%s wavelengths are not regular.", .name )        
+        log_string( ERROR, "%s wavelengths are not regular.", .name )        
         return(NULL)
         }  
         
@@ -30,20 +30,20 @@ makeReparamFunctionList <- function( .obj, .name, .mode='equalize', .pnorm=2 )
     
     if( FALSE   &&  min(coredata) < 0 )
         {
-        log.string( ERROR, "responsivity of %s is invalid; some values are negative.", .name )        
+        log_string( ERROR, "responsivity of %s is invalid; some values are negative.", .name )        
         return(NULL)
         }    
 
     #   check that coredata is full-rank
     singular    = svd( coredata, nu=0, nv=0 )$d
     
-    #   log.string( DEBUG, "SVD time = %g sec", as.double(Sys.time()) - time_svd )
+    #   log_string( DEBUG, "SVD time = %g sec", as.double(Sys.time()) - time_svd )
     
     thresh  = max( dim(coredata) ) * singular[1] * 2^(-52)
     rank = sum( thresh < singular )
     if( rank <  min(dim(coredata)) )
         {
-        log.string( ERROR, "The responsivity matrix of %s is rank-deficient (rank=%d < %d).", 
+        log_string( ERROR, "The responsivity matrix of %s is rank-deficient (rank=%d < %d).", 
                                 .name, rank, min(dim(coredata)) )        
         return(NULL)
         }    
@@ -73,7 +73,7 @@ makeReparamFunctionList <- function( .obj, .name, .mode='equalize', .pnorm=2 )
         
         if( any(omega == 0) )
             {
-            log.string( ERROR, "Scanner '%s' has responsivity=0 at 1 or more wavelengths, which is invalid.", .name )
+            log_string( ERROR, "Scanner '%s' has responsivity=0 at 1 or more wavelengths, which is invalid.", .name )
             return(NULL)
             }
             
@@ -94,7 +94,7 @@ makeReparamFunctionList <- function( .obj, .name, .mode='equalize', .pnorm=2 )
         }
     else
         {
-        log.string( ERROR, ".mode='%s' is invalid.", .mode )
+        log_string( ERROR, ".mode='%s' is invalid.", .mode )
         return(NULL)
         }
         

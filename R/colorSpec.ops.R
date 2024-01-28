@@ -18,7 +18,7 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02, extrap
     k   = pmatch( tolower(method), table )
     if( is.na(k) )
         {
-        log.string( ERROR, "method='%s' does not uniquely match any of '%s'.",
+        log_string( ERROR, "method='%s' does not uniquely match any of '%s'.",
                             method, paste(table,collapse=',' ) )
         return(NULL)
         }
@@ -27,7 +27,7 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02, extrap
 
     if( method=='loess'  &&  span<=0 )
         {
-        log.string( WARN, "method='%s' with span=%g is invalid; changed to method='auto'.",
+        log_string( WARN, "method='%s' with span=%g is invalid; changed to method='auto'.",
                             method, span )
         method = 'auto'
         }
@@ -41,19 +41,19 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02, extrap
     if( method!='loess' &&  identical(wavelength,wave) )
         {
         #   no change !   nothing to do !
-        #   log.string( TRACE, "new wavelengths are identical to current wavelengths, and no smoothing. So nothing to do." )
+        #   log_string( TRACE, "new wavelengths are identical to current wavelengths, and no smoothing. So nothing to do." )
         return(x)
         }
 
     if( method=='sprague' &&  ! is.regular(x) )
         {
-        log.string( ERROR, "Sprague interpolation cannot be used with irregular wavelengths." )
+        log_string( ERROR, "Sprague interpolation cannot be used with irregular wavelengths." )
         return(NULL)
         }
 
     if( ! isStrictlyIncreasingSequence(wavelength) )
         {
-        log.string( ERROR, "New wavelength sequence is not strictly increasing." )
+        log_string( ERROR, "New wavelength sequence is not strictly increasing." )
         return(NULL)
         }
 
@@ -72,7 +72,7 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02, extrap
         }
     else
         {
-        log.string( ERROR, "extrapolation = '%s' is invalid.", paste(as.character(extrapolation),collapse=' ') )
+        log_string( ERROR, "extrapolation = '%s' is invalid.", paste(as.character(extrapolation),collapse=' ') )
         return(NULL)
         }
 
@@ -89,7 +89,7 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02, extrap
 
     if( ! valid )
         {
-        log.string( ERROR, "clamp = '%s' is invalid.", paste(as.character(clamp),collapse=' ') )
+        log_string( ERROR, "clamp = '%s' is invalid.", paste(as.character(clamp),collapse=' ') )
         return(NULL)
         }
 
@@ -101,14 +101,14 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02, extrap
     extrap  = (wavelength < wave[1])  |  (wave[length(wave)] < wavelength)
     if( 0 < sum(extrap) )
         {
-        log.string( TRACE, "For object '%s', wavelength extrapolation occurred at %d points (outside [%g,%g] nm).",
+        log_string( TRACE, "For object '%s', wavelength extrapolation occurred at %d points (outside [%g,%g] nm).",
                             deparse(substitute(x))[1], sum(extrap), wave[1], wave[length(wave)] )
         }
     }
 
 
 
-    log.string( TRACE, "For object '%s', resampling using '%s' method.",
+    log_string( TRACE, "For object '%s', resampling using '%s' method.",
                             deparse(substitute(x))[1], method )
 
     mat.in  = as.matrix( x )
@@ -145,7 +145,7 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02, extrap
         #   must extrapolate on the low side
         idx = which( wavelength < wave[1] )
 
-        log.string( TRACE, "For object %s, extrapolating %d points on the low side of [%g,%g] nm.",
+        log_string( TRACE, "For object %s, extrapolating %d points on the low side of [%g,%g] nm.",
                             deparse(substitute(x)), length(idx), wave[1], wave[length(wave)] )
 
         mat.out[idx, ]  = extrapolate.mat( wave, mat.in, wavelength[idx], extrapolation[[1]],  'lo' )
@@ -156,7 +156,7 @@ resample.colorSpec <-  function( x, wavelength, method='auto', span=0.02, extrap
         #   must extrapolate on the high side
         idx = which( wave[length(wave)] < wavelength )
 
-        log.string( TRACE, "For object %s, extrapolating %d points on the high side of [%g,%g] nm.",
+        log_string( TRACE, "For object %s, extrapolating %d points on the high side of [%g,%g] nm.",
                             deparse(substitute(x)), length(idx), wave[1], wave[length(wave)] )
 
         mat.out[idx, ]  = extrapolate.mat( wave, mat.in, wavelength[idx], extrapolation[[2]],  'hi' )
@@ -257,7 +257,7 @@ resampleXY <- function( .x, .y, .xnew, .method, .span )
 
         if( inherits(xy.obj,"try-error") )
             {
-            log.string( WARN, "loess smoothing with span=%g failed !  Probably span is too small.  Returning all NA.", .span )
+            log_string( WARN, "loess smoothing with span=%g failed !  Probably span is too small.  Returning all NA.", .span )
             return( rep(NA_real_,length(.xnew)) )       #return( resampleXY( .x, .y, .xnew, .span=0 ) )
             }
 
@@ -297,7 +297,7 @@ extrapolate.mat <- function( .x, .y, .xnew, .extrap, .side )
         n2  = n1 - 1
         }
 
-    #log.string( TRACE, "extrapolating %d values on the %s side, with extrapolation='%s'",
+    #log_string( TRACE, "extrapolating %d values on the %s side, with extrapolation='%s'",
     #                        n.new, .side, as.character(.extrap) )
 
     m   = ncol(.y)
@@ -329,7 +329,7 @@ extrapolate.mat <- function( .x, .y, .xnew, .extrap, .side )
         }
     else
         {
-        log.string( ERROR, "%s extrapolation='%s' is invalid", .side, as.character(.extrap) )
+        log_string( ERROR, "%s extrapolation='%s' is invalid", .side, as.character(.extrap) )
         #   cat( mess, '\n' )
         out = matrix( NA_real_, nrow=n.new, ncol=m )
         }
@@ -355,7 +355,7 @@ validateExtrapolation <- function( .extrap )
             return( "const" )
         }
 
-    log.string( ERROR, "extrapolation = '%s' is invalid.", as.character(.extrap) )
+    log_string( ERROR, "extrapolation = '%s' is invalid.", as.character(.extrap) )
 
     return(NA)
     }
@@ -377,7 +377,7 @@ areSpectraBindable <- function( .list )
         {
         if( ! is.colorSpec( .list[[k]] ) )
             {
-            log.string( ERROR, "The list of %d spectra are not bindable, because '%s' is not a valid colorSpec object.",
+            log_string( ERROR, "The list of %d spectra are not bindable, because '%s' is not a valid colorSpec object.",
                                     n, names(.list)[k] )
             return(FALSE)
             }
@@ -390,7 +390,7 @@ areSpectraBindable <- function( .list )
 
     if( 2 <= length(unique(qvec)) )
         {
-        log.string( ERROR, "The list of %d spectra are not bindable, because they do not have the same quantity.", n )
+        log_string( ERROR, "The list of %d spectra are not bindable, because they do not have the same quantity.", n )
         return(FALSE)
         }
 
@@ -402,7 +402,7 @@ areSpectraBindable <- function( .list )
         {
         if( ! identical( wavelength( .list[[k]] ), wave ) )
             {
-            log.string( ERROR, "The list of %d spectra are not bindable, because they do not have the same wavelengths.", n )
+            log_string( ERROR, "The list of %d spectra are not bindable, because they do not have the same wavelengths.", n )
             return(FALSE)
             }
         }
@@ -411,7 +411,7 @@ areSpectraBindable <- function( .list )
     namevec = unlist( sapply( .list, specnames.colorSpec ) )
     if( any(duplicated(namevec)) )
         {
-        log.string( ERROR, "The list of %d spectra are not bindable, because the specnames have duplicates.", n )
+        log_string( ERROR, "The list of %d spectra are not bindable, because the specnames have duplicates.", n )
         return(FALSE)
         }
 
@@ -432,18 +432,18 @@ bind.colorSpec  <-  function( ... )
     n   = length(theList)
     if( n == 0 )
         {
-        log.string( ERROR, "No arguments." )
+        log_string( ERROR, "No arguments." )
         return(NULL)
         }
 
-    log.string( TRACE, "Found %d objects in '...'", n )
+    log_string( TRACE, "Found %d objects in '...'", n )
 
     theNames = as.character( substitute(list(...)) )    # ; print( theNames )
     if( length(theNames) == n+1 )
         theNames    = theNames[ 2:(n+1) ]
     else
         {
-        log.string( WARN, "length(theNames) = %d != %d.  Using fake names.", length(theNames), n+1 )
+        log_string( WARN, "length(theNames) = %d != %d.  Using fake names.", length(theNames), n+1 )
         theNames    = sprintf( "Name%d", 1:n )
         }
 
@@ -479,7 +479,7 @@ bindSpectra <- function( .list )
     out     = colorSpec( mat, wavelength( .list[[1]] ), quantity=quantity( .list[[1]] ), organization=org )
 
     if( org == 'df.row' )
-        extradata(out)  = do.call( rbind.super.list, lapply( .list, extradata ) )
+        extradata(out)  = do.call( rbind_super.list, lapply( .list, extradata ) )
 
     metadata(out)   = metadata( .list[[1]] )
 
@@ -505,8 +505,8 @@ subset.colorSpec  <-  function( x, subset, ... )
         {
         if( length(subset) != spectra )
             {
-            log.object( ERROR, subset )
-            log.string( ERROR, "subset is logical, and length(subset) = %d != %d spectra.", length(subset), spectra )
+            log_object( ERROR, subset )
+            log_string( ERROR, "subset is logical, and length(subset) = %d != %d spectra.", length(subset), spectra )
             return( NULL )
             }
 
@@ -524,23 +524,23 @@ subset.colorSpec  <-  function( x, subset, ... )
 
         if( anyDuplicated(subset) )
             {
-            log.object( ERROR, subset )
-            log.string( ERROR, "subset indexes are invalid.  Duplicates are not allowed."  )
+            log_object( ERROR, subset )
+            log_string( ERROR, "subset indexes are invalid.  Duplicates are not allowed."  )
             return( NULL )
             }
 
         ok      = all( 1L <= subset & subset <= spectra )
         if( ! ok )
             {
-            log.object( ERROR, subset )
-            log.string( ERROR, "subset indexes are invalid.  One or more are outside the interval [%d,%d]", 1, spectra )
+            log_object( ERROR, subset )
+            log_string( ERROR, "subset indexes are invalid.  One or more are outside the interval [%d,%d]", 1, spectra )
             return( NULL )
             }
         }
     else
         {
-        log.object( ERROR, subset )
-        log.string( ERROR, "subset argument is invalid." )
+        log_object( ERROR, subset )
+        log_string( ERROR, "subset argument is invalid." )
         return(NULL)
         }
 
@@ -618,7 +618,7 @@ normalize.colorSpec  <-  function( x, norm='L1'  )
             normvec = base::apply( abs(coremat), 2, max )       #  fun <- function( y ) {  y / max(abs(y)) }
         else
             {
-            log.string( ERROR, "norm = '%s' is invalid.", norm )
+            log_string( ERROR, "norm = '%s' is invalid.", norm )
             return( x )
             }
         }
@@ -630,14 +630,14 @@ normalize.colorSpec  <-  function( x, norm='L1'  )
         i   = which( wavelength == norm )
         if( length(i) == 0 )
             {
-            log.string( ERROR, "norm = %g nm is an invalid wavelength.", norm )
+            log_string( ERROR, "norm = %g nm is an invalid wavelength.", norm )
             return( x )
             }
         normvec = coremat[i, ]
         }
     else
         {
-        log.string( ERROR, "norm = '%s' is invalid.", as.character(norm) )
+        log_string( ERROR, "norm = '%s' is invalid.", as.character(norm) )
         return( x )
         }
 
@@ -662,7 +662,7 @@ linearize.colorSpec <- function( x )
 
     if( quantity == 'absorbance' )
         {
-        #   log.string( TRACE, "Converting '%s' from 'absorbance' to 'transmittance'.", deparse(substitute(x)) )
+        #   log_string( TRACE, "Converting '%s' from 'absorbance' to 'transmittance'.", deparse(substitute(x)) )
         myfun <- function( y )  { 10^(-y) }
 
         quantity    = "transmittance"
@@ -697,7 +697,7 @@ chop.colorSpec <- function( x, interval, adj=0.5 )
 
     if( spectra == 0 )
         {
-        log.string( ERROR, "'%s' has 0 spectra !", deparse(substitute(x)) )
+        log_string( ERROR, "'%s' has 0 spectra !", deparse(substitute(x)) )
         return(x)
         }
 
@@ -712,7 +712,7 @@ chop.colorSpec <- function( x, interval, adj=0.5 )
 
     if( i2 - i1 < 2 )
         {
-        log.string( ERROR, ".interval endpoints %g and %g are too close (or swapped).",
+        log_string( ERROR, ".interval endpoints %g and %g are too close (or swapped).",
                         interval[1], interval[2] )
         return(NULL)
         }
@@ -753,7 +753,7 @@ multiply.colorSpec   <-  function( x, s )
     {
     if( ! is.numeric(s) )
         {
-        log.string( ERROR, "s is not numeric. type(s)='%s'", typeof(s) )
+        log_string( ERROR, "s is not numeric. type(s)='%s'", typeof(s) )
         return(x)
         }
 
@@ -768,7 +768,7 @@ multiply.colorSpec   <-  function( x, s )
 
     if( ! ok )
         {
-        log.string( ERROR, "Size of s is invalid for %d spectra.", spectra )
+        log_string( ERROR, "Size of s is invalid for %d spectra.", spectra )
         return(x)
         }
 
@@ -838,7 +838,7 @@ applyspec.colorSpec <- function( x, FUN, ... )
 
     if( nrow(out) != nrow(mat) )
         {
-        log.string( ERROR, "Function FUN mapped %d-vector to a %d-vector.", nrow(mat), nrow(out) )
+        log_string( ERROR, "Function FUN mapped %d-vector to a %d-vector.", nrow(mat), nrow(out) )
         return(NULL)
         }
 
@@ -865,7 +865,7 @@ convolvewith.colorSpec <- function( x, coeff )
             coeff = c(1,-12,120,-12,1)/98
         else
             {
-            log.string( ERROR, "Unknown coeff='%s'.", coeff )
+            log_string( ERROR, "Unknown coeff='%s'.", coeff )
             return(NULL)
             }
         }
@@ -875,7 +875,7 @@ convolvewith.colorSpec <- function( x, coeff )
 
     if( ! ok )
         {
-        log.string( ERROR, "coeff is not a numeric vector of odd length.  length=%d.", length(coef) )
+        log_string( ERROR, "coeff is not a numeric vector of odd length.  length=%d.", length(coef) )
         return(NULL)
         }
 

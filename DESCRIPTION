@@ -1,9 +1,9 @@
 Package: colorSpec
 Type: Package
 Title: Color Calculations with Emphasis on Spectral Data
-Version: 1.4-0
+Version: 1.5-0
 Encoding: UTF-8
-Date: 2022-05-04
+Date: 2024-01-28
 Author: Glenn Davis [aut, cre]
 Maintainer: Glenn Davis <gdavis@gluonics.com>
 Description: Calculate with spectral properties of light sources, materials, cameras, eyes, and scanners.
@@ -23,5 +23,5 @@ Repository: CRAN
 VignetteBuilder: knitr
 BuildVignettes: yes
 ByteCompile: no
-Packaged: 2022-05-04 01:04:56 UTC; Glenn
-Date/Publication: 2022-05-04 02:40:02 UTC
+Packaged: 2024-01-28 02:44:27 UTC; Glenn
+Date/Publication: 2024-01-28 06:00:02 UTC

@@ -11,16 +11,16 @@
 #       *) columns in common (the intersection of the names)
 
 
-rbind.super <- function( .df1, .df2, .check=TRUE )   
+rbind_super <- function( .df1, .df2, .check=TRUE )   
     {
     if( .check )
         {
-        out = rbind.super( .df1, .df2, .check=FALSE )
+        out = rbind_super( .df1, .df2, .check=FALSE )
         if( is.null(out) )  return(NULL)
         
         if( nrow(out) != nrow(.df1) + nrow(.df2) )
             {
-            mess    = sprintf( "rbind.super() FATAL  nrow(out)=%d != %d = nrow(.df1) + nrow(.df2).",
+            mess    = sprintf( "rbind_super() FATAL  nrow(out)=%d != %d = nrow(.df1) + nrow(.df2).",
                                 nrow(out), nrow(.df1),nrow(.df2)  )
             cat( mess )
             return(NULL)
@@ -42,7 +42,7 @@ rbind.super <- function( .df1, .df2, .check=TRUE )
     
     if( any( duplicated( rownames.out, incomparables=NA_character_ ) ) )
         {
-        mess    = sprintf( "rbind.super() row names have duplicates.\n" )
+        mess    = sprintf( "rbind_super() row names have duplicates.\n" )
         cat( mess )
         return(NULL)
         }
@@ -60,7 +60,7 @@ rbind.super <- function( .df1, .df2, .check=TRUE )
         ncol2   = lapply( df2.common, ncol )
         if( ! identical( ncol1, ncol2 ) )
             {
-            mess    = sprintf( "rbind.super() columns with same name in the data.frames do not have matching ncol." )
+            mess    = sprintf( "rbind_super() columns with same name in the data.frames do not have matching ncol." )
             cat( mess, '\n' )
             return(NULL)
             }
@@ -121,7 +121,7 @@ rbind.super <- function( .df1, .df2, .check=TRUE )
 #
 #   compare with plyr::rbind.fill
 
-rbind.super.list <- function( ... )
+rbind_super.list <- function( ... )
     {    
     df.list = list(...)
     
@@ -139,7 +139,7 @@ rbind.super.list <- function( ... )
     
     if( any( duplicated(rownames.all) ) )
         {
-        log.string( ERROR, "Row names have duplicates." )
+        log_string( ERROR, "Row names have duplicates." )
         return(NULL)
         }
         
@@ -157,7 +157,7 @@ rbind.super.list <- function( ... )
     
     colnames.sub   = colnames.list[ 0 < colnames.len ]  #; print( colnames.sub )
     
-    if( all.identical( colnames.sub ) )
+    if( all_identical( colnames.sub ) )
         #   only 1 non-trivial schema
         field   = colnames.sub[[1]]
     else
@@ -201,9 +201,9 @@ rbind.super.list <- function( ... )
             #   are the same colnames, or NULL in case of a vector column
             colnames.mat   = lapply( df.vert[mask.cname], function(x) { colnames(x[[1]]) } )      #; print(colnames.mat)
             
-            if( ! all.identical(colnames.mat) )
+            if( ! all_identical(colnames.mat) )
                 {
-                log.string( ERROR, "For column '%s', one data.frame has a matrix, and another has a vector (or a matrix with different # of columns or different column names).",
+                log_string( ERROR, "For column '%s', one data.frame has a matrix, and another has a vector (or a matrix with different # of columns or different column names).",
                                 cname )
                 return(NULL)
                 }
@@ -220,7 +220,7 @@ rbind.super.list <- function( ... )
     
 #   .list   list of objects
     
-all.identical  <-  function( .list )
+all_identical  <-  function( .list )
     {
     n   = length(.list)
     if( n <= 1 )    return(TRUE)

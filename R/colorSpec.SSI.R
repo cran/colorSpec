@@ -30,7 +30,7 @@ computeSSI.colorSpec <-function( x, reference=NULL, digits=0, isotherms='mccamy'
     {
     if( type(x) != 'light' )
         {
-        log.string( ERROR, "type(x)='%s', but it must be 'light'.", type(x) )
+        log_string( ERROR, "type(x)='%s', but it must be 'light'.", type(x) )
         return(NULL)
         }
         
@@ -62,7 +62,7 @@ computeSSI.colorSpec <-function( x, reference=NULL, digits=0, isotherms='mccamy'
         ok  = is.colorSpec(reference)  &&  type(reference)=='light'
         if( ! ok )
             {
-            log.string( ERROR, "Argument 'reference' is not a colorSpec object, or else type(reference)!='light'." )
+            log_string( ERROR, "Argument 'reference' is not a colorSpec object, or else type(reference)!='light'." )
             return(NULL)
             }
             
@@ -70,7 +70,7 @@ computeSSI.colorSpec <-function( x, reference=NULL, digits=0, isotherms='mccamy'
         ok      = numref %in% c(1,m)
         if( ! ok )
             {
-            log.string( ERROR, "numSpectra(reference)==%d, but it must be %d or %d.", numref, 1, m )
+            log_string( ERROR, "numSpectra(reference)==%d, but it must be %d or %d.", numref, 1, m )
             return(NULL)
             }
             
@@ -113,7 +113,7 @@ computeSSI.colorSpec <-function( x, reference=NULL, digits=0, isotherms='mccamy'
         sumtest30 = sum(test30)        
         if( is.na(sumtest30) || sumtest30 <= 0 )
             {
-            log.string( WARN, "spectrum '%s' has invalid sum=%g. SSI is NA.", specnames(x)[j], sumtest30 )
+            log_string( WARN, "spectrum '%s' has invalid sum=%g. SSI is NA.", specnames(x)[j], sumtest30 )
             next
             }
         test30    = test30 / sumtest30
@@ -126,7 +126,7 @@ computeSSI.colorSpec <-function( x, reference=NULL, digits=0, isotherms='mccamy'
             
             if( is.na(CCT)  )
                 {
-                log.string( WARN, "Cannot compute CCT for spectrum '%s'. SSI is NA.", specnames(x)[j] )
+                log_string( WARN, "Cannot compute CCT for spectrum '%s'. SSI is NA.", specnames(x)[j] )
                 next
                 }
             
@@ -145,7 +145,7 @@ computeSSI.colorSpec <-function( x, reference=NULL, digits=0, isotherms='mccamy'
                 }                
             else
                 {
-                log.string( WARN, "spectrum '%s' has CCT = %g > 25000. SSI is NA.", specnames(x)[j], CCT )
+                log_string( WARN, "spectrum '%s' has CCT = %g > 25000. SSI is NA.", specnames(x)[j], CCT )
                 next
                 }
                 
@@ -162,7 +162,7 @@ computeSSI.colorSpec <-function( x, reference=NULL, digits=0, isotherms='mccamy'
         sumref30 = sum(ref30)        
         if( is.na(sumref30) || sumref30 <= 0 )
             {
-            log.string( WARN, "reference spectrum %d has invalid sum=%g. SSI is NA.", j, sumref30 )
+            log_string( WARN, "reference spectrum %d has invalid sum=%g. SSI is NA.", j, sumref30 )
             next
             }
         ref30 = ref30 / sumref30

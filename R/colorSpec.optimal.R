@@ -31,27 +31,27 @@ probeOptimalColors.colorSpec <- function( x, gray, direction, aux=FALSE, spectra
     
     if( ! ok )
         {
-        log.string( ERROR, "numSpectra(%s) = %d is invalid.", theName, spectra )     
+        log_string( ERROR, "numSpectra(%s) = %d is invalid.", theName, spectra )     
         return(NULL)
         }        
 
     if( type(x) != "responsivity.material" )
         {
-        log.string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )        
+        log_string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )        
         return(NULL)
         }    
         
     ok  = is.numeric(gray)  &&  0<length(gray)
     if( ! ok )
         {
-        log.string( ERROR, "Argument 'gray' is not a numeric vector with positive length." )
+        log_string( ERROR, "Argument 'gray' is not a numeric vector with positive length." )
         return(NULL)
         }
                 
     mask    =  0<gray & gray<1 
     if( ! all(mask) )
         {
-        log.string( ERROR, "gray = %g is invalid.", gray[ which(!mask)[1] ] )
+        log_string( ERROR, "gray = %g is invalid.", gray[ which(!mask)[1] ] )
         return(NULL)
         }    
     
@@ -169,12 +169,12 @@ probeOptimalColors.colorSpec <- function( x, gray, direction, aux=FALSE, spectra
     if( FALSE )
         {
         time_elapsed    = as.double( Sys.time() ) - time_start
-        log.string( INFO, "Processed %d rays in %g sec  (%g sec per rays)",
+        log_string( INFO, "Processed %d rays in %g sec  (%g sec per rays)",
                             rays, time_elapsed, time_elapsed/rays ) 
 
         failures    = sum( is.na( out$s ) )
         if( 0 < failures )
-            log.string( WARN, "There were %d failures out of %d rays.\n", failures, nrow(out) )
+            log_string( WARN, "There were %d failures out of %d rays.\n", failures, nrow(out) )
         
         if( aux )
             out = cbind( out, df.aux )
@@ -199,28 +199,28 @@ sectionOptimalColors.colorSpec <- function( x, normal, beta )
     
     if( type(x) != "responsivity.material" )
         {
-        log.string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )        
+        log_string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )        
         return(NULL)
         }        
     
     ok  = is.numeric(normal)   &&   (length(normal) %in% 2L:3L )  &&  all( is.finite(normal) )  &&   ! all( normal==0 )
     if( ! ok )
         {
-        log.string( ERROR, "argument 'normal' is not numeric, with length 2 or 3. Or else it is zero."  )     
+        log_string( ERROR, "argument 'normal' is not numeric, with length 2 or 3. Or else it is zero."  )     
         return(NULL)
         }   
     dim(normal) = NULL
 
     if( numSpectra(x) != length(normal) )
         {
-        log.string( ERROR, "numSpectra(x) = %d  !=  %d = length(normal).", numSpectra(x), length(normal) )
+        log_string( ERROR, "numSpectra(x) = %d  !=  %d = length(normal).", numSpectra(x), length(normal) )
         return(NULL)
         }   
     
     ok  = is.numeric(beta)   &&   0<length(beta)
     if( ! ok )
         {
-        log.string( ERROR, "argument 'beta' is not numeric, with positive length."  )
+        log_string( ERROR, "argument 'beta' is not numeric, with positive length."  )
         return(NULL)
         }   
     dim(beta) = NULL
@@ -274,13 +274,13 @@ canonicalOptimalColors.colorSpec <- function( x, lambda, spectral=FALSE )
     ok  = (numSpectra(x) == 3L)
     if( ! ok )
         {
-        log.string( ERROR, "numSpectra(%s) = %d  != 3.", theName, numSpectra(x) )     
+        log_string( ERROR, "numSpectra(%s) = %d  != 3.", theName, numSpectra(x) )     
         return(NULL)
         }        
 
     if( type(x) != "responsivity.material" )
         {
-        log.string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )        
+        log_string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )        
         return(NULL)
         }    
         
@@ -293,7 +293,7 @@ canonicalOptimalColors.colorSpec <- function( x, lambda, spectral=FALSE )
     ok  = all( mask )
     if( ! ok )
         {
-        log.string( ERROR, "In argument lambda, %d of %d wavelengths are not in the wavelength sequence of '%s'.", 
+        log_string( ERROR, "In argument lambda, %d of %d wavelengths are not in the wavelength sequence of '%s'.", 
                         sum(!mask), length(lambda), theName )     
         return(NULL)
         }        
@@ -316,7 +316,7 @@ canonicalOptimalColors.colorSpec <- function( x, lambda, spectral=FALSE )
     ncond   = nrow(condlist$Wcond)    
     if( ncond < 3 )
         {
-        log.string( ERROR, "Invalid number of condensed generators = %d < 3.", ncond )
+        log_string( ERROR, "Invalid number of condensed generators = %d < 3.", ncond )
         return(NULL)
         }
         
@@ -336,7 +336,7 @@ canonicalOptimalColors.colorSpec <- function( x, lambda, spectral=FALSE )
         idxpair = match( lambda[i, ], wave )    
         if( any(is.na(idxpair)) )
             {
-            log.string( FATAL, "bad logic for lambda=%g,%g.", lambda[i,1], lambda[i,2] )
+            log_string( FATAL, "bad logic for lambda=%g,%g.", lambda[i,1], lambda[i,2] )
             return(NULL)
             }
         
@@ -436,7 +436,7 @@ canonicalOptimalColors.colorSpec <- function( x, lambda, spectral=FALSE )
     count   = sum( is.na(transitions) )
     if( 0 < count )
         {
-        log.string( WARN, "%d of %d colors could not be computed, because the pair of wavelengths is invalid.",
+        log_string( WARN, "%d of %d colors could not be computed, because the pair of wavelengths is invalid.",
                             count, length(transitions) )
         }
     
@@ -455,7 +455,7 @@ plotfunctional <- function( x, lambda, gamma )
     idxpair   = match( lambda, wave )
     if( length(lambda)!=2  ||  any( is.na(idxpair) ) )
         {
-        log.string( ERROR, "lambda='%s' is invalid.", as.character(lambda) )
+        log_string( ERROR, "lambda='%s' is invalid.", as.character(lambda) )
         return(FALSE)
         }
     
@@ -474,7 +474,7 @@ plotfunctional <- function( x, lambda, gamma )
     ncond   = nrow(condlist$Wcond)    
     if( ncond < 3 )
         {
-        log.string( ERROR, "Invalid number of condensed generators = %d < 3.", ncond )
+        log_string( ERROR, "Invalid number of condensed generators = %d < 3.", ncond )
         return(FALSE)
         }
 
@@ -543,7 +543,7 @@ expandcanonical <- function( condlist, idxpair, pcube )
     {
     if( length(pcube) != nrow(condlist$Wcond) )
         {
-        log.string( FATAL, "mismatch %d != %d", length(pcube), nrow(condlist$Wcond) )
+        log_string( FATAL, "mismatch %d != %d", length(pcube), nrow(condlist$Wcond) )
         return(NULL)
         }
    
@@ -557,7 +557,7 @@ expandcanonical <- function( condlist, idxpair, pcube )
     ok  = all( pdrop==0  |  pdrop==1 )
     if( ! ok )
         {
-        log.string( FATAL, "pcube is invalid, because values not at %d and %d are not 0 or 1.", 
+        log_string( FATAL, "pcube is invalid, because values not at %d and %d are not 0 or 1.", 
                                 kdxpair[1], kdxpair[2] )
         return(NULL)
         }
@@ -565,7 +565,7 @@ expandcanonical <- function( condlist, idxpair, pcube )
     ok  = all( pcube[kdxpair] == 0.5 )
     if( ! ok )
         {
-        log.string( FATAL, "pcube is invalid, because values at %d and %d are not 1/2.", 
+        log_string( FATAL, "pcube is invalid, because values at %d and %d are not 1/2.", 
                                 kdxpair[1], kdxpair[2] )
         return(NULL)
         }
@@ -595,7 +595,7 @@ expandcanonical <- function( condlist, idxpair, pcube )
         j   = match( k, kdxpair )
         if( is.na(j) )
             {
-            log.string( FATAL, "k=%d is not in the pair (%d,%d).", k, kdxpair[1], kdxpair[2] )
+            log_string( FATAL, "k=%d is not in the pair (%d,%d).", k, kdxpair[1], kdxpair[2] )
             return(NULL)
             }
             
@@ -603,7 +603,7 @@ expandcanonical <- function( condlist, idxpair, pcube )
         ok  = idxpair[j] %in% group
         if( ! ok )
             {
-            log.string( FATAL, "idxpair[%d]=%d is not in the proper group '%s'.", 
+            log_string( FATAL, "idxpair[%d]=%d is not in the proper group '%s'.", 
                                     j, idxpair[j], paste( group, collapse=' ' ) )
             return(NULL)
             }
@@ -689,13 +689,13 @@ plotOptimals3D.colorSpec <- function( x, size=50, type='w', both=TRUE )
     
     if( type(x) != "responsivity.material" )
         {
-        log.string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )
+        log_string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )
         return(FALSE)
         }        
     
     if( numSpectra(x) != 3 )
         {
-        log.string( ERROR, "numSpectra(%s) = %d != 3", theName, numSpectra(x) )
+        log_string( ERROR, "numSpectra(%s) = %d != 3", theName, numSpectra(x) )
         return(FALSE)
         }     
         
@@ -704,7 +704,7 @@ plotOptimals3D.colorSpec <- function( x, size=50, type='w', both=TRUE )
     idx = pmatch( type, typefull )
     if( is.na(idx) )
         {
-        log.string( ERROR, "type='%s' is invalid", type )
+        log_string( ERROR, "type='%s' is invalid", type )
         return(FALSE)
         }     
     type    = typefull[idx]
@@ -737,13 +737,13 @@ plotOptimals2D.colorSpec <- function( x  )
     
     if( type(x) != "responsivity.material" )
         {
-        log.string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )
+        log_string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )
         return(FALSE)
         }        
     
     if( numSpectra(x) != 2 )
         {
-        log.string( ERROR, "numSpectra(%s) = %d != 2", theName, numSpectra(x) )
+        log_string( ERROR, "numSpectra(%s) = %d != 2", theName, numSpectra(x) )
         return(FALSE)
         }     
         
@@ -773,13 +773,13 @@ computeADL.colorSpec <- function( x, response )
     
     if( type(x) != "responsivity.material" )
         {
-        log.string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )
+        log_string( ERROR, "type(%s) = '%s' != 'responsivity.material'", theName, type(x) )
         return(NULL)
         }        
     
     if( numSpectra(x) != 3 )
         {
-        log.string( ERROR, "numSpectra(%s) = %d != 3", theName, numSpectra(x) )
+        log_string( ERROR, "numSpectra(%s) = %d != 3", theName, numSpectra(x) )
         return(NULL)
         }     
         

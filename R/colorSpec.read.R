@@ -23,7 +23,7 @@ readSpectra  <- function( pathvec, ... )
 
     if( is.na(ftype) )
         {
-        log.string( ERROR, "Cannot determine type of file '%s'.", path )
+        log_string( ERROR, "Cannot determine type of file '%s'.", path )
         return(NULL)
         }
 
@@ -43,7 +43,7 @@ readSpectra  <- function( pathvec, ... )
             for( k in 1:length(out) )
                 out[[k]]    = resample( out[[k]], ... )
 
-            log.string( INFO, "Resampled %d spectra from file '%s' to new wavelengths.", length(out), path )
+            log_string( INFO, "Resampled %d spectra from file '%s' to new wavelengths.", length(out), path )
             }
 
         if( length(out) == 1 )
@@ -56,7 +56,7 @@ readSpectra  <- function( pathvec, ... )
         {
         if( ! areSpectraBindable(out) )
             {
-            log.string( ERROR, "File '%s' has %d distinct spectra that cannot be combined.  Try assigning a new wavelength sequence for resampling.",
+            log_string( ERROR, "File '%s' has %d distinct spectra that cannot be combined.  Try assigning a new wavelength sequence for resampling.",
                                 path, length(out) )
             return(NULL)
             }
@@ -174,7 +174,7 @@ readSpectraControl <- function( path)
     idx = which( grepl( "^\\[Control\\]", line_vec, ignore.case=TRUE ) )
     if( length(idx) != 1 )
         {
-        log.string( ERROR, "Cannot find [Control] section in '%s'.", path)
+        log_string( ERROR, "Cannot find [Control] section in '%s'.", path)
         return( NULL )
         }
 
@@ -238,7 +238,7 @@ readSpectraControl <- function( path)
     #   print(idx)
     if( length(idx) <= 1 )
         {
-        log.string( ERROR, "Cannot find any [data] sections, only a [Control] section in '%s'.", path)
+        log_string( ERROR, "Cannot find any [data] sections, only a [Control] section in '%s'.", path)
         return( NULL )
         }
 
@@ -255,7 +255,7 @@ readSpectraControl <- function( path)
 
         if( cname == "Control" ) next    # not a channel
 
-        log.string( DEBUG, "Found [%s] channel on line %d.", cname, i )
+        log_string( DEBUG, "Found [%s] channel on line %d.", cname, i )
 
         x_px_vec = numeric(0)
         y_px_vec = numeric(0)
@@ -280,7 +280,7 @@ readSpectraControl <- function( path)
 
         if( length(x_px_vec) < 2 )
             {
-            log.string( WARN, "Found only %d points in [%s] channel", length(x_px_vec), cname )
+            log_string( WARN, "Found only %d points in [%s] channel", length(x_px_vec), cname )
             }
 
         data_new = data.frame( x_px_vec=x_px_vec, y_px_vec=y_px_vec )   # ; print( data_new )
@@ -304,7 +304,7 @@ readSpectraControl <- function( path)
         if( is.na(quant) )
             {
             quant = 'energy'
-            log.string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
+            log_string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
                                 basename(path), quant )
             }
 
@@ -326,7 +326,7 @@ readSpectraXYY <- function( path )
     {
     if( ! file.exists( path) )
         {
-        log.string( ERROR, "File '%s' does not exist !", path)
+        log_string( ERROR, "File '%s' does not exist !", path)
         return(NULL)
         }
 
@@ -340,7 +340,7 @@ readSpectraXYY <- function( path )
 
     if( length(idx) == 0 )
         {
-        log.string( ERROR, "Cannot find Wavelength column in '%s' !\n",  path)
+        log_string( ERROR, "Cannot find Wavelength column in '%s' !\n",  path)
         return(NULL)
         }
 
@@ -380,14 +380,14 @@ readSpectraXYY <- function( path )
         colnames(data) = paste( base, cname, sep='.', collapse=NULL )
         }
 
-    header = header[ 1:(idx[1]-1) ]     #;   log.object( DEBUG, header )
+    header = header[ 1:(idx[1]-1) ]     #;   log_object( DEBUG, header )
 
     #   theType     = guessSpectrumType( colnames(data), header )   #; print( theType )
     theQuantity = guessSpectrumQuantity( colnames(data), header )
     if( is.na(theQuantity) )
         {
         theQuantity = 'energy'
-        log.string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
+        log_string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
                                 basename(path), theQuantity )
         }
 
@@ -409,7 +409,7 @@ readSpectraSpreadsheet <- function( path )
     {
     if( ! file.exists( path) )
         {
-        log.string( ERROR, "File '%s' does not exist !",  path)
+        log_string( ERROR, "File '%s' does not exist !",  path)
         return(NULL)
         }
 
@@ -422,7 +422,7 @@ readSpectraSpreadsheet <- function( path )
 
     if( length(idx_start) == 0 )
         {
-        log.string( ERROR, "Cannot find header line in '%s' !\n",   path)
+        log_string( ERROR, "Cannot find header line in '%s' !\n",   path)
         return(NULL)
         }
 
@@ -437,7 +437,7 @@ readSpectraSpreadsheet <- function( path )
     mask_nm = grepl( pattern, colnames(df) )
     count   = sum(mask_nm)
 
-    log.string( INFO, "Found %d wavelengths in '%s'\n", count, path)
+    log_string( INFO, "Found %d wavelengths in '%s'\n", count, path)
     if( count == 0 )
         {
         return(NULL)
@@ -477,7 +477,7 @@ readSpectraSpreadsheet <- function( path )
     if( is.na(quantity) )
         {
         quantity = 'reflectance'
-        log.string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
+        log_string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
                                 basename(path), quantity )
         }
 
@@ -541,7 +541,7 @@ readSpectraCGATS <-  function( path )
 
     if( length(theData) == 0 )
         {
-        log.string( ERROR, "Found no tables with spectral data in '%s'.", path )
+        log_string( ERROR, "Found no tables with spectral data in '%s'.", path )
         return(NULL)
         }
 
@@ -629,7 +629,7 @@ colorSpecFromDF <- function( df, path, preamble, idxtable )
 
         if( is.numeric(value)  &&  is.finite(value)  &&  0 < value  &&  value != 1 )
             {
-            log.string( INFO, "Dividing spectral values by SPECTRAL_NORM=%g.", value )
+            log_string( INFO, "Dividing spectral values by SPECTRAL_NORM=%g.", value )
             mat = mat / value
             }
         }
@@ -639,7 +639,7 @@ colorSpecFromDF <- function( df, path, preamble, idxtable )
     if( is.na(theQuantity) )
         {
         theQuantity = 'energy'
-        log.string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
+        log_string( WARN, "Cannot guess quantity from from contents of '%s', so assigning quantity='%s'.",
                             basename(path), theQuantity )
         }
 
@@ -652,7 +652,7 @@ colorSpecFromDF <- function( df, path, preamble, idxtable )
     if( 0 < discrep  &&  discrep < 0.5 )
         {
         step.wl     = wavereg[2] - wavereg[1]
-        log.string( WARN, "Perturbed wavelengths in '%s' to have equal increments of %g nm [%g to %g nm]",
+        log_string( WARN, "Perturbed wavelengths in '%s' to have equal increments of %g nm [%g to %g nm]",
                             path, step.wl, wavereg[1], wavereg[ length(wavereg) ] )
         wavelength(out)  = wavereg
         }
@@ -705,7 +705,7 @@ spectralColumns <- function( df, path, idxtable )
     if( any( mask_dec | mask_pct ) )
         {
         #   the standard convention
-        log.string( INFO, "In file '%s' and table %d, using standard convention for spectral data.", path, idxtable )
+        log_string( INFO, "In file '%s' and table %d, using standard convention for spectral data.", path, idxtable )
         #cat( "Standard convention\n" )
 
         idx_dec = which( mask_dec )
@@ -718,7 +718,7 @@ spectralColumns <- function( df, path, idxtable )
 
         if( n == 0 )
             {
-            log.string( ERROR, "In file '%s' and table %d, there are %d spectral value fields, but there are no wavelengths.",
+            log_string( ERROR, "In file '%s' and table %d, there are %d spectral value fields, but there are no wavelengths.",
                             path, idxtable, length(idx_dec)+length(idx_pct) )
             return(NULL)
             }
@@ -731,7 +731,7 @@ spectralColumns <- function( df, path, idxtable )
 
         if( divisor == 0 )
             {
-            log.string( ERROR, "In file '%s' and table %d, there are %d wavelength columns, but spectral value columns do not match up.",
+            log_string( ERROR, "In file '%s' and table %d, there are %d wavelength columns, but spectral value columns do not match up.",
                             path, idxtable, n )
             return(NULL)
             }
@@ -742,8 +742,8 @@ spectralColumns <- function( df, path, idxtable )
         if( 1 < waveunique[ idx_max ] )
             {
             #   not unique
-            log.object( ERROR, wavelength[[idx_max]] )
-            log.string( ERROR, "In file '%s', wavelength columns in table %d exist, but they are not unique.",
+            log_object( ERROR, wavelength[[idx_max]] )
+            log_string( ERROR, "In file '%s', wavelength columns in table %d exist, but they are not unique.",
                             path, idxtable )
             return(NULL)
             }
@@ -771,15 +771,15 @@ spectralColumns <- function( df, path, idxtable )
             #   no spectral data found
             return( as.logical(NA) )
 
-        log.string( INFO, "In file '%s' and table %d, using non-standard convention for spectral data.", path, idxtable )
+        log_string( INFO, "In file '%s' and table %d, using non-standard convention for spectral data.", path, idxtable )
 
         contig = all( diff(idx_val) == 1 )
 
         if( ! contig )
             {
-            log.string( ERROR, "In file '%s' and table %d, there are %d spectral columns, but they are not contiguous.",
+            log_string( ERROR, "In file '%s' and table %d, there are %d spectral columns, but they are not contiguous.",
                             path, idxtable, n )
-            #   log.object( WARN, idx_val )
+            #   log_object( WARN, idx_val )
             return(NULL)
             }
 
@@ -796,7 +796,7 @@ spectralColumns <- function( df, path, idxtable )
     ok  = is.numeric(out$wavelength)  &&  all( is.finite(out$wavelength) )
     if( ! ok )
         {
-        log.string( ERROR, "In file '%s' and table %d, the %d wavelength values are not all numeric and finite.",
+        log_string( ERROR, "In file '%s' and table %d, the %d wavelength values are not all numeric and finite.",
                             path, idxtable, length(wavelength) )
         return(NULL)
         }
@@ -805,7 +805,7 @@ spectralColumns <- function( df, path, idxtable )
     ok  = all( sapply( df[out$idx_val], function(y) { is.numeric(y)  &&  all( is.finite(y) ) } ) )
     if( ! ok )
         {
-        log.string( ERROR, "In file '%s' and table %d, the %dx%d spectral values are not all numeric and finite.",
+        log_string( ERROR, "In file '%s' and table %d, the %dx%d spectral values are not all numeric and finite.",
                             path, idxtable, nrow(df), length(idx_val) )
         return(NULL)
         }
@@ -900,13 +900,13 @@ spectralFileType <- function( .path )
 
     if( is.null(.path) )
         {
-        log.string( ERROR, "File argument is NULL !" )
+        log_string( ERROR, "File argument is NULL !" )
         return(out)
         }
 
     if( ! file.exists( .path) )
         {
-        log.string( ERROR, "File '%s' does not exist !", .path)
+        log_string( ERROR, "File '%s' does not exist !", .path)
         return(out)
         }
 
@@ -927,7 +927,7 @@ spectralFileType <- function( .path )
             return( "Excel" )
         else
             {
-            log.string( WARN, "File type of '%s' unnknown. It appears to be binary. !", .path )
+            log_string( WARN, "File type of '%s' unnknown. It appears to be binary. !", .path )
             return(out)
             }
         }
@@ -973,7 +973,7 @@ readSpectraExcel <- function( path, worksheet=NULL )
         ok  = requireNamespace( p, quietly=TRUE )
         if( ! ok )
             {
-            log.string( ERROR, "Package '%s' is required.  Please install it.", p )
+            log_string( ERROR, "Package '%s' is required.  Please install it.", p )
             return(NULL)
             }
         }
@@ -981,7 +981,7 @@ readSpectraExcel <- function( path, worksheet=NULL )
 
     if( ! file.exists( path) )
         {
-        log.string( ERROR, "File '%s' does not exist !\n", path)
+        log_string( ERROR, "File '%s' does not exist !\n", path)
         return(NULL)
         }
 
@@ -1003,7 +1003,7 @@ readSpectraExcel <- function( path, worksheet=NULL )
             rowcount    = length( xlsx::getRows( sheetlist[[i]] ) )
             if( 0 < rowcount )
                 {
-                log.string( INFO, "Found sheet '%s'   rows=%d.",
+                log_string( INFO, "Found sheet '%s'   rows=%d.",
                                     names(sheetlist)[i], rowcount )
                 idx_sheet = i
                 break
@@ -1012,7 +1012,7 @@ readSpectraExcel <- function( path, worksheet=NULL )
 
         if( idx_sheet == 0 )
             {
-            log.string( ERROR, "Cannot find a suitable worksheet, with rows, in '%s'.", path)
+            log_string( ERROR, "Cannot find a suitable worksheet, with rows, in '%s'.", path)
             return(NULL)
             }
         }
@@ -1023,7 +1023,7 @@ readSpectraExcel <- function( path, worksheet=NULL )
 
         if( length(idx_sheet) != 1 )
             {
-            log.string( ERROR, "Cannot find worksheet '%s' in '%s'.",
+            log_string( ERROR, "Cannot find worksheet '%s' in '%s'.",
                                     worksheet, path )
             return(NULL)
             }
@@ -1045,7 +1045,7 @@ readSpectraExcel <- function( path, worksheet=NULL )
 
     if( length(idx) != 1 )
         {
-        log.string( ERROR, "Cannot find '%s' in worksheet %d in '%s'.",
+        log_string( ERROR, "Cannot find '%s' in worksheet %d in '%s'.",
                                 pattern, idx_sheet, path)
         return(NULL)
         }

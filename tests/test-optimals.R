@@ -6,7 +6,7 @@ testProbe <- function()
     {
     wave    = seq(400,700,by=5)
     
-    D50.eye = product( D50.5nm, 'material', xyz1931.1nm, wave=wave )
+    D50.eye = product( D50.5nm, 'material', xyz1931.1nm, wavelength=wave )
 
     #   make a few random rectangular spectra
     set.seed( 0 )
@@ -24,7 +24,7 @@ testProbe <- function()
     #   compute XYZ
     XYZ = product( rectspec, D50.eye )  #; print(XYZ)
     
-    white.XYZ   = product( neutralMaterial(1,wave=wave), D50.eye )  #; print( white.XYZ/2 )
+    white.XYZ   = product( neutralMaterial(1,wavelength=wave), D50.eye )  #; print( white.XYZ/2 )
     
     # white.XYZ   = step.wl( D50.eye ) * colSums( as.matrix(D50.eye) ) #; print( white.XYZ/2 )
     

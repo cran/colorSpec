@@ -17,7 +17,7 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
     {    
     if( ! is.colorSpec(object) )
         {
-        log.string( ERROR, "object is not a valid colorSpec object." )
+        log_string( ERROR, "object is not a valid colorSpec object." )
         return(FALSE)
         }
     
@@ -117,7 +117,7 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
     
     if( 0 < spectra )
         {
-        data        = as.matrix( object )  #;    log.object( DEBUG, data  )
+        data        = as.matrix( object )  #;    log_object( DEBUG, data  )
         
         #   compute matrix with some simple stats
         mat = matrix( as.numeric(NA), spectra, 4 )  #; print( dim(mat) )

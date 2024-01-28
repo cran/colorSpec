@@ -11,7 +11,7 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
 
     if( numSpectra( x ) != 1 )
         {
-        log.string( ERROR, "Object '%s' has %d spectra, but must have exactly 1.",
+        log_string( ERROR, "Object '%s' has %d spectra, but must have exactly 1.",
                     deparse(substitute(x)), numSpectra( x ) )
         return( out )
         }
@@ -20,7 +20,7 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
 
     if( type(x) != 'light' )
         {
-        log.string( WARN, "The type of of '%s' is '%s', but it must be 'light'.",
+        log_string( WARN, "The type of of '%s' is '%s', but it must be 'light'.",
                     deparse(substitute(x)), type(x) )
         return( out )
         }
@@ -34,7 +34,7 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
     #   find the reference illuminant
     locus   = ifelse( CCT < 5000, 'planckian', 'daylight' )
 
-    #log.string( DEBUG, "For CCT=%g, using %s radiator as reference.", CCT, locus )
+    #log_string( DEBUG, "For CCT=%g, using %s radiator as reference.", CCT, locus )
 
     if( locus == 'planckian' )
         #   Planckian radiator
@@ -66,7 +66,7 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
     if( tol < dc )
         {
         #   print(dc)
-        log.string( ERROR, "The distance from uv.test to uv.ref (on the %s locus) = %g > %g.  It is too large.",
+        log_string( ERROR, "The distance from uv.test to uv.ref (on the %s locus) = %g > %g.  It is too large.",
                                 locus, dc, tol )
         return( out )
         }

@@ -14,14 +14,14 @@ computeCCT.colorSpec   <- function( x, isotherms='robertson', locus='robertson',
     
     if( type(x) != 'light' )
         {
-        log.string( WARN, "The type of of '%s' is '%s', but it must be 'light'.",
+        log_string( WARN, "The type of of '%s' is '%s', but it must be 'light'.",
                     deparse(substitute(x))[1], type(x) )
         return(out)
         }
         
     if( ! requireNamespace( 'spacesXYZ', quietly=TRUE ) )
         {
-        log.string( ERROR, "Required package 'spacesXYZ' could not be imported."  )
+        log_string( ERROR, "Required package 'spacesXYZ' could not be imported."  )
         return(out)
         }     
     

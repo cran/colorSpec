@@ -38,13 +38,13 @@ zonogon  <- function( W, tol=1.e-9, partition=FALSE )
     ok  = is.numeric(W)  &&  is.matrix(W)  &&  2<=nrow(W)  &&  ncol(W)==2
     if( ! ok )
         {
-        log.string( ERROR, "argument W is not an nx2 numeric matrix, with n>=2." )
+        log_string( ERROR, "argument W is not an nx2 numeric matrix, with n>=2." )
         return(NULL)
         }
         
     if( ! all( is.finite(W) ) )
         {
-        log.string( ERROR, "matrix W is invalid because it has %d entries that are not finite.", sum(! is.finite(W) ) )
+        log_string( ERROR, "matrix W is invalid because it has %d entries that are not finite.", sum(! is.finite(W) ) )
         return(NULL)
         }
     
@@ -60,7 +60,7 @@ zonogon  <- function( W, tol=1.e-9, partition=FALSE )
     bad     = normal2 <= tol*tol * mean(normal2)
     if( all(bad) )
         {
-        log.string( ERROR, "argument W does not have rank 2, with relative tol=%g.", tol )
+        log_string( ERROR, "argument W does not have rank 2, with relative tol=%g.", tol )
         return(NULL)
         }
     
@@ -184,7 +184,7 @@ zonogon  <- function( W, tol=1.e-9, partition=FALSE )
     betamin = min( out$face$beta, na.rm=TRUE )
     if( betamin <= 0 )
         {
-        log.string( FATAL, "Internal Error.  min(beta)=%g <= 0.", tol, betamin )
+        log_string( FATAL, "Internal Error.  min(beta)=%g <= 0.", tol, betamin )
         return(NULL)
         }
         
@@ -233,19 +233,19 @@ zonogon  <- function( W, tol=1.e-9, partition=FALSE )
 ##----------        zonogon methods    -------------##
     
 #   x   a zonogon object
-#   p   an Nx3 matrix, etc.
+#   g   an Nx3 matrix, etc.
 #
 #   value   a dataframe with columns
 #           inside      logical
 #           distance    numeric signed distance to zonogon boundary, non-positive means inside.  
 #                       If positive then this is only approximate.
-inside.zonogon <- function( x, p )
+inside.zonogon <- function( x, g )
     {
-    p   = prepareNxM( p, 2 )
-    if( is.null(p) )    return(NULL)
+    g   = prepareNxM( g, 2 )
+    if( is.null(g) )    return(NULL)
     
-    #   translate p to the centered zonogon
-    gcentered   = p - matrix( x$center, nrow(p), 2, byrow=TRUE ) #; print(gcentered)
+    #   translate g to the centered zonogon
+    gcentered   = g - matrix( x$center, nrow(g), 2, byrow=TRUE ) #; print(gcentered)
     
     hg  = tcrossprod( x$face$normal, gcentered )    #; print( str(hg) )
     
@@ -258,22 +258,22 @@ inside.zonogon <- function( x, p )
     if( x$nonnegative )
         {
         #   special override for black
-        black   = apply( p, 1, function(v) { isTRUE(all(v==0)) } )  #; print(black)
+        black   = apply( g, 1, function(v) { isTRUE(all(v==0)) } )  #; print(black)
         if( any(black) )
             distance[black] = 0
             
         #   special override for white.  Fortunately multiplication by 0.5 and 2 preserves all precision.
-        white   = apply( p, 1, function(v) { isTRUE(all(v==2*x$center)) } )  #; print(white)
+        white   = apply( g, 1, function(v) { isTRUE(all(v==2*x$center)) } )  #; print(white)
         if( any(white) )
             distance[white] = 0
         }
         
-    rnames  = rownames(p)
-    if( is.null(rnames) )   rnames = 1:nrow(p)
+    rnames  = rownames(g)
+    if( is.null(rnames) )   rnames = 1:nrow(g)
         
     out = data.frame( row.names=rnames )
     
-    out$p           = p
+    out$p           = g
     out$inside      = distance <= 0
     out$distance    = distance
 
@@ -300,7 +300,7 @@ raytrace.zonogon <- function( x, base, direction )
     ok  = is.numeric(base)  &&  length(base)==2  &&  all( is.finite(base) )
     if( ! ok )
         {
-        log.string( ERROR, "base is invalid. It must be a numeric vector of length 2, and all entries finite." )
+        log_string( ERROR, "base is invalid. It must be a numeric vector of length 2, and all entries finite." )
         return(NULL)
         }
         
@@ -338,7 +338,7 @@ raytrace.zonogon <- function( x, base, direction )
         
     if( ! ok )
         {
-        log.string( ERROR, "point base=(%g,%g) is not in the interior of the zonogon.  distance=%g >= 0.", 
+        log_string( ERROR, "point base=(%g,%g) is not in the interior of the zonogon.  distance=%g >= 0.", 
                                 base[1], base[2], distance )
         return(NULL)
         }
@@ -469,7 +469,7 @@ invertboundary.zonogon <- function( x, boundary, data=NULL, tol=NULL )     #1.e-
     ok  = ok  &&  !is.null(data$boundary)  &&   !is.null(data$idx)  &&  !is.null(data$sign)  &&  !is.null(data$alpha)
     if( ! ok )
         {
-        log.string( ERROR, "argument data is invalid." )
+        log_string( ERROR, "argument data is invalid." )
         return(NULL)
         }
     
@@ -509,7 +509,7 @@ invertboundary.zonogon <- function( x, boundary, data=NULL, tol=NULL )     #1.e-
         delta   = abs(bpoint - data$boundary)
         
         if( tol <= max(delta,na.rm=TRUE) )
-            log.string( WARN, "Verification failed. max(delta)=%g > %g.", max(delta), tol )        
+            log_string( WARN, "Verification failed. max(delta)=%g > %g.", max(delta), tol )        
         }
         
     vertex  = t(vertex)
@@ -541,14 +541,14 @@ section.zonogon <- function( x, normal, beta )
     ok  = is.numeric(normal)  &&  length(normal)==2  &&  all( is.finite(normal) )
     if( ! ok )
         {
-        log.string( ERROR, "normal is invalid. It must be a numeric vector of length 2, and all entries finite." )
+        log_string( ERROR, "normal is invalid. It must be a numeric vector of length 2, and all entries finite." )
         return(NULL)
         }
         
     ok  = is.numeric(beta)  &&  0<length(beta)   &&  all( is.finite(beta) )
     if( ! ok )
         {
-        log.string( ERROR, "beta is invalid. It must be a numeric vector of positive length, and all entries finite." )
+        log_string( ERROR, "beta is invalid. It must be a numeric vector of positive length, and all entries finite." )
         return(NULL)
         }
     
@@ -615,7 +615,7 @@ section.zonogon <- function( x, normal, beta )
         if( ! ok )  
             {    
             # should not happen
-            # log.string( WARN, .... )
+            # log_string( WARN, .... )
             next
             }
 
@@ -738,7 +738,7 @@ findRowClusters <- function( A, tol, projective )
     {
     if( ! (ncol(A) %in% c(2,3) ) )
         {
-        log.string( FATAL, "ncol(A)=%d is invalid.", ncol(A) )
+        log_string( FATAL, "ncol(A)=%d is invalid.", ncol(A) )
         return(NULL)
         }    
     
@@ -837,7 +837,7 @@ findRunsFALSE <- function( mask )
     
     if( length(start) != length(stop) )
         {
-        log.string( FATAL, "Internal error.  %d != %d", length(start), length(stop) )
+        log_string( FATAL, "Internal error.  %d != %d", length(start), length(stop) )
         return(NULL)
         }
         
@@ -856,7 +856,7 @@ findRunsTRUE <- function( mask, periodic=FALSE )
     
     if( length(start) != length(stop) )
         {
-        log.string( FATAL, "Internal error.  %d != %d", length(start), length(stop) )
+        log_string( FATAL, "Internal error.  %d != %d", length(start), length(stop) )
         return(NULL)
         }
         

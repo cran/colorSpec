@@ -111,13 +111,13 @@ createReparamList <- function( .obj, .name, .alpha=1 )
     
     if( ! is.colorSpec( .obj ) )
         {
-        log.string( ERROR, "%s is not a valid colorSpec object", .name )
+        log_string( ERROR, "%s is not a valid colorSpec object", .name )
         return(NULL)
         }
         
     if( ! is.regular( .obj ) )
         {
-        log.string( ERROR, "%s wavelengths are not regular.", .name )        
+        log_string( ERROR, "%s wavelengths are not regular.", .name )        
         return(NULL)
         }  
         
@@ -125,20 +125,20 @@ createReparamList <- function( .obj, .name, .alpha=1 )
     
     if( FALSE   &&  min(coredata) < 0 )
         {
-        log.string( ERROR, "responsivity of %s is invalid; some values are negative.", .name )        
+        log_string( ERROR, "responsivity of %s is invalid; some values are negative.", .name )        
         return(NULL)
         }    
 
     #   check that coredata is full-rank
     singular    = svd( coredata, nu=0, nv=0 )$d
     
-    #   log.string( DEBUG, "SVD time = %g sec", as.double(Sys.time()) - time_svd )
+    #   log_string( DEBUG, "SVD time = %g sec", as.double(Sys.time()) - time_svd )
     
     thresh  = max( dim(coredata) ) * singular[1] * 2^(-52)
     rank = sum( thresh < singular )
     if( rank <  min(dim(coredata)) )
         {
-        log.string( ERROR, "The responsivity matrix of %s is rank-deficient (rank=%d < %d).", 
+        log_string( ERROR, "The responsivity matrix of %s is rank-deficient (rank=%d < %d).", 
                                 .name, rank, min(dim(coredata)) )        
         return(NULL)
         }    
@@ -164,7 +164,7 @@ createReparamList <- function( .obj, .name, .alpha=1 )
 
     if( any(omega <= 0) )
         {
-        log.string( ERROR, "Scanner '%s' has non-positive linear combination at some wavelengths, which is invalid.", .name )
+        log_string( ERROR, "Scanner '%s' has non-positive linear combination at some wavelengths, which is invalid.", .name )
         return(NULL)
         }
         
@@ -359,13 +359,13 @@ DisplayRGBfromLinearRGB <- function( RGB, gamma='sRGB' )
         if( tolower(gamma[1]) == 'srgb' )
             out = ifelse( out <= 0.0031308,    12.92 * out,  1.055 * out^(1/2.4) - 0.055 )
         #else
-        #    log.string( ERROR, "gamma is invalid" )
+        #    log_string( ERROR, "gamma is invalid" )
         }
     else if( is.numeric(gamma) && 0 < gamma[1] )
         out = out ^ (1/gamma[1])
     else
         {
-        #log.string( ERROR, "gamma is invalid" )
+        #log_string( ERROR, "gamma is invalid" )
         }
     
     dim(out)        = dim(RGB)

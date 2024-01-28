@@ -19,7 +19,10 @@ loglevelFromString  <- function( .level )
     {    
     if( ! is.character(.level) )
         {
-        mess = sprintf( "WARN  loglevelFromString() loglevel='%s' is not a string - ignored.", as.character(.level) )
+        if( is.null(.level) )
+            mess    = "WARN  loglevelFromString() loglevel=NULL is not a string - ignored."
+        else
+            mess = sprintf( "WARN  loglevelFromString() loglevel='%s' is not a string - ignored.", as.character(.level) )
         cat( mess, '\n', file=stderr() )
         return(NA_integer_)
         }

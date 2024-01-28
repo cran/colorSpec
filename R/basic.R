@@ -13,7 +13,7 @@ sRGBfromXYZ  <-  function( XYZ )
     
     if( length(dim(XYZ))!=2  ||  ncol(XYZ)!=3 )
         {
-        log.string( ERROR, "XYZ is invalid" )
+        log_string( ERROR, "XYZ is invalid" )
         return(NULL)
         }
         
@@ -52,13 +52,13 @@ RGBfromXYZ  <-  function( XYZ, space )
     
     if( length(dim(XYZ))!=2  ||  ncol(XYZ)!=3 )
         {
-        log.string( ERROR, "XYZ is invalid" )
+        log_string( ERROR, "XYZ is invalid" )
         return(NULL)
         }
 
     if( ! is.character(space) )
         {
-        log.string( ERROR, "typeof(space) = '%s', but must be character.", typeof(space) )
+        log_string( ERROR, "typeof(space) = '%s', but must be character.", typeof(space) )
         return(NULL)
         }
 
@@ -79,7 +79,7 @@ RGBfromXYZ  <-  function( XYZ, space )
         }
     else
         {
-        log.string( ERROR, "RGB space '%s' unknown", space )
+        log_string( ERROR, "RGB space '%s' unknown", space )
         return(NULL)
         }
                 
@@ -113,12 +113,12 @@ DisplayRGBfromLinearRGB <- function( RGB, gamma='sRGB' )
         if( tolower(gamma[1]) == 'srgb' )
             out = ifelse( out <= 0.0031308,    12.92 * out,  1.055 * out^(1/2.4) - 0.055 )
         else
-            log.string( ERROR, "gamma is invalid" )
+            log_string( ERROR, "gamma is invalid" )
         }
     else if( is.numeric(gamma) && 0 < gamma[1] )
         out = out ^ (1/gamma[1])
     else
-        log.string( ERROR, "gamma is invalid" )
+        log_string( ERROR, "gamma is invalid" )
         
     
     dim(out)        = dim(RGB)
@@ -208,7 +208,7 @@ uv_from_xy <- function( .xy, .year=1960 )
         }
     else
         {
-        log.string( ERROR, 'year %g is invalid\n', .year )
+        log_string( ERROR, 'year %g is invalid\n', .year )
         return(NULL)
         }   
         

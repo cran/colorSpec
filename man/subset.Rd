@@ -12,7 +12,7 @@
 }
 
 \usage{
-\S3method{subset}{colorSpec}( x, subset, ... )
+\S3method{subset}{colorSpec}( x, subset, \dots )
 
 }
 

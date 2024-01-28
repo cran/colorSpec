@@ -22,7 +22,7 @@ testAllReads <- function()
         
     print( extdata )
     
-    pathvec = list.files( extdata, recursive=TRUE, full=TRUE ) #; print( pathvec )
+    pathvec = list.files( extdata, recursive=TRUE, full.names=TRUE ) #; print( pathvec )
     
     #   ignore some file extensions
     pattern1    = "[.](png|jpg|xls|m|htm|html)$"

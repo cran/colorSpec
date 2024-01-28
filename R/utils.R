@@ -322,7 +322,7 @@ roundAffine  <- function( .x, .digits )
     ok  = (1 <= .digits)  &&  (.digits <= 10 )  &&  (round(.digits) == .digits)
     if( ! ok )
         {
-        log.string( ERROR, ".digits=%g is invalid\n", .digits )
+        log_string( ERROR, ".digits=%g is invalid\n", .digits )
         return(NULL)
         }
     
@@ -332,7 +332,7 @@ roundAffine  <- function( .x, .digits )
     
     if( isum != n )
         {
-        log.string( ERROR, "sum(.x) = %g is not accurate to %g fractional digits\n", 
+        log_string( ERROR, "sum(.x) = %g is not accurate to %g fractional digits\n", 
                                 sum(.x), .digits )
         return(NULL)
         }
@@ -347,7 +347,7 @@ roundAffine  <- function( .x, .digits )
         
     if( length(.x) < abs(delta) )
         {
-        log.string( ERROR, "abs(delta) = %g is too large.  This should not happen.", abs(delta) )
+        log_string( ERROR, "abs(delta) = %g is too large.  This should not happen.", abs(delta) )
         return(NULL)
         }
     
@@ -405,7 +405,7 @@ is.identity <- function( x )
     m   = nrow(x)
     if( m != ncol(x) )  return(FALSE)
     
-    return( identical(x,diag(m)) )
+    return( all( x==diag(m) ) )       # was identical()
     }
 
     
@@ -443,14 +443,14 @@ prepareNxM  <-  function( A, M=3, Nmin=1 )
         #print( sys.frames() )
         mess    = substr( paste0(as.character(A),collapse=','), 1, 10 )
         #arglist = list( ERROR, "A must be a non-empty numeric Nx3 matrix (with N>=%d). A='%s...'", mess )
-        #do.call( log.string, arglist, envir=parent.frame(n=3) )
-        #myfun   = log.string
+        #do.call( log_string, arglist, envir=parent.frame(n=3) )
+        #myfun   = log_string
         #environment(myfun) = parent.frame(3)
         
         Aname = deparse(substitute(A))        
         
-        #   notice hack with 2L to make log.string() print name of parent function
-        log.string( c(ERROR,2L), "Argument '%s' must be a non-empty numeric Nx%d matrix (with N>=%d). %s='%s...'", 
+        #   notice hack with 2L to make log_string() print name of parent function
+        log_string( c(ERROR,2L), "Argument '%s' must be a non-empty numeric Nx%d matrix (with N>=%d). %s='%s...'", 
                                     Aname, M, Nmin, Aname, mess )
         return(NULL)
         }

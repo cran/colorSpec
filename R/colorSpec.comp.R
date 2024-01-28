@@ -30,7 +30,7 @@ planckSpectra <-  function( temperature, wavelength=300:830, normalize=TRUE, c2=
 
     if( !(is.numeric(c2)  &&  length(c2)==1) )
         {
-        log.string( ERROR, "c2 = '%s' is invalid.", as.character(c2) )
+        log_string( ERROR, "c2 = '%s' is invalid.", as.character(c2) )
         return(NULL)
         }
         
@@ -164,7 +164,7 @@ rectangularMaterial <- function( lambda, alpha=1, wavelength=380:780 )
     
     if( ! is.numeric(alpha) )
         {
-        log.string( ERROR, "alpha is invalid, because it is not numeric." )
+        log_string( ERROR, "alpha is invalid, because it is not numeric." )
         return(NULL)
         }
     
@@ -173,13 +173,13 @@ rectangularMaterial <- function( lambda, alpha=1, wavelength=380:780 )
     
     if( length(alpha) != n )
         {
-        log.string( ERROR, "length(alpha) = %d != %d = nrow(lambda).", length(alpha), nrow(lambda) )
+        log_string( ERROR, "length(alpha) = %d != %d = nrow(lambda).", length(alpha), nrow(lambda) )
         return(NULL)
         }
     
     if( ! all( -1<=alpha  &  alpha<=1 ) )
         {
-        log.string( ERROR, "alpha is invalid; all values must be in [-1,1]." )
+        log_string( ERROR, "alpha is invalid; all values must be in [-1,1]." )
         return(NULL)
         }
         
@@ -215,7 +215,7 @@ rectangularMaterial <- function( lambda, alpha=1, wavelength=380:780 )
         if( lam[1] == lam[2] )
             {
             #   special case - undefined
-            log.string( WARN, "material is undefined because lambda_min==lambda_max == %g.", lam[1] )
+            log_string( WARN, "material is undefined because lambda_min==lambda_max == %g.", lam[1] )
             next
             }
 
@@ -303,7 +303,7 @@ bandMaterial <- function( lambda, wavelength=380:780 )
         lambdalist  = lambda
     else
         {
-        log.string( ERROR, "Argument 'lambda' is invalid." )
+        log_string( ERROR, "Argument 'lambda' is invalid." )
         return(NULL)
         }
         
@@ -324,7 +324,7 @@ bandMaterial <- function( lambda, wavelength=380:780 )
     idx     = which( ! valid )
     if( 0 < length(idx) )
         {
-        log.string( ERROR, "List item %d is invalid.", idx[1] )
+        log_string( ERROR, "List item %d is invalid.", idx[1] )
         return(NULL)
         }
         
@@ -353,7 +353,7 @@ bandRepresentation.colorSpec  <-  function( x )
     {
     if( type(x) != "material" )
         {
-        log.string( ERROR, "type(x)='%s' is invalid.", type(x) )
+        log_string( ERROR, "type(x)='%s' is invalid.", type(x) )
         return(NULL)
         }
     
@@ -388,7 +388,7 @@ validLambdaMat  <- function( lambdamat, wavelength, bslist=NULL )
     ok  = is.matrix(lambdamat)  &&  ncol(lambdamat)==2
     if( ! ok )
         {
-        log.string( ERROR, "lambdamat is not an Mx2 matrix."  )
+        log_string( ERROR, "lambdamat is not an Mx2 matrix."  )
         return(FALSE)
         }
     
@@ -400,7 +400,7 @@ validLambdaMat  <- function( lambdamat, wavelength, bslist=NULL )
     inside      = all( lambdarange[1] <= lambdamat  &  lambdamat <= lambdarange[2] )
     if( ! inside )
         {
-        log.string( ERROR, "Not all lambda's are in the interval [%g,%g].", lambdarange[1], lambdarange[2] )
+        log_string( ERROR, "Not all lambda's are in the interval [%g,%g].", lambdarange[1], lambdarange[2] )
         return(FALSE)
         }
         
@@ -418,7 +418,7 @@ validLambdaMat  <- function( lambdamat, wavelength, bslist=NULL )
     if( any(is.na(bpmask)) )
         {
         k   = which( is.na(bpmask)[1] )
-        log.string( ERROR, "Interval [%g,%g] is empty.", lambdamat[k,1], lambdamat[k,2] )
+        log_string( ERROR, "Interval [%g,%g] is empty.", lambdamat[k,1], lambdamat[k,2] )
         return(FALSE)
         }
         
@@ -426,7 +426,7 @@ validLambdaMat  <- function( lambdamat, wavelength, bslist=NULL )
     idxbs   = which( ! bpmask )
     if( 1 < length(idxbs) )
         {
-        log.string( ERROR, "There are %d > 1 bandstops.", length(idxbs) )
+        log_string( ERROR, "There are %d > 1 bandstops.", length(idxbs) )
         return(FALSE)
         }
         
@@ -454,7 +454,7 @@ validLambdaMat  <- function( lambdamat, wavelength, bslist=NULL )
         idx     = which( dif==0 )
         if( 1 <= length(idx) )
             {
-            log.string( ERROR, "Two intervals have the same lower endpoint = %g.", lambdamat[idx[1],1] )
+            log_string( ERROR, "Two intervals have the same lower endpoint = %g.", lambdamat[idx[1],1] )
             return(FALSE)
             }
         
@@ -463,7 +463,7 @@ validLambdaMat  <- function( lambdamat, wavelength, bslist=NULL )
         idx     = which( dif<0 )
         if( 1 <= length(idx) )
             {
-            log.string( ERROR, "Interval [%g,%g] intersects another interval.", lambdamat[idx[1],1],  lambdamat[idx[1],2] )
+            log_string( ERROR, "Interval [%g,%g] intersects another interval.", lambdamat[idx[1],1],  lambdamat[idx[1],2] )
             return(FALSE)
             }
         }
@@ -475,7 +475,7 @@ validLambdaMat  <- function( lambdamat, wavelength, bslist=NULL )
         ok  = lambdamat[m,2] < lambdabs[1]  &&  lambdabs[2] < lambdamat[1,1]
         if( ! ok )
             {
-            log.string( ERROR, "Bandstop interval [%g,%g] intersects another interval.", lambdabs[1], lambdabs[2] )
+            log_string( ERROR, "Bandstop interval [%g,%g] intersects another interval.", lambdabs[1], lambdabs[2] )
             return(FALSE)
             }
         }
@@ -638,7 +638,7 @@ lambdasFromSpectrum <- function( spectrum, wavelength, bslist=NULL )
     mat     = findRunsTRUE( 0<spectrum, periodic=TRUE )
     if( nrow(mat) == 0 )
         {
-        log.string( FATAL, "Found 0 runs of non-zero coords, impossible!" )
+        log_string( FATAL, "Found 0 runs of non-zero coords, impossible!" )
         return(NULL)
         }
         
@@ -730,7 +730,7 @@ lambdasFromSpectrum <- function( spectrum, wavelength, bslist=NULL )
     count       = length(bandstop)
     if( 1 < count )
         {
-        log.string( FATAL, "There are %d > 1 bandstops.", count )
+        log_string( FATAL, "There are %d > 1 bandstops.", count )
         return(NULL)
         }    
 
@@ -985,7 +985,7 @@ compute_lambdas <- function( spectrum, wave, step=NULL )
             adjacent    = alphaidx[1]+1==alphaidx[2]  ||  (alphaidx[1]==n && alphaidx[2]==1)
             if( ! adjacent )
                 {
-                log.string( ERROR, "For spectrum, alphaidx=%d,%d is invalid.", alphaidx[1], alphaidx[2] )
+                log_string( ERROR, "For spectrum, alphaidx=%d,%d is invalid.", alphaidx[1], alphaidx[2] )
                 return(lambda)
                 }
             
@@ -1031,7 +1031,7 @@ compute_lambdas <- function( spectrum, wave, step=NULL )
                 }
             else
                 {
-                log.string( ERROR, "transition matrix is invalid." )
+                log_string( ERROR, "transition matrix is invalid." )
                 return( lambda )
                 }
             }                      
