@@ -39,6 +39,7 @@ S3method(product,colorSpec)
 S3method(calibrate,colorSpec)
 S3method(computeCCT,colorSpec)
 S3method(computeCRI,colorSpec)
+S3method(computeCRIdata,colorSpec)
 S3method(computeSSI,colorSpec)
 S3method(radiometric,colorSpec)
 S3method(is.radiometric,colorSpec)
@@ -53,16 +54,16 @@ S3method(plotOptimals2D,colorSpec)
 S3method(computeADL,colorSpec)
 S3method(interpolate,colorSpec)
 S3method(ptransform,colorSpec)
-S3method(emulate,colorSpec)      
+S3method(emulate,colorSpec)
 S3method(invert,colorSpec)
 S3method(responsivityMetrics,colorSpec)
 S3method(bandRepresentation,colorSpec)
 
-S3method(as.colorSpec,default)     
+S3method(as.colorSpec,default)
 
-export(numSpectra, 
-    numWavelengths, 
-    organization, 
+export(numSpectra,
+    numWavelengths,
+    organization,
     "organization<-",
     coredata,
     extradata,
@@ -82,52 +83,53 @@ export(numSpectra,
 #   isValid,
     step.wl,
     product,
-    calibrate,    
+    calibrate,
     normalize,
     linearize,
-    chop,        
+    chop,
     multiply,
     bind,
     resample,
     applyspec,
     convolvewith,
     computeCCT,
-    computeCRI,    
+    computeCRI,
+    computeCRIdata,
     computeSSI,
     radiometric,
-    is.radiometric,    
+    is.radiometric,
     actinometric,
-    is.actinometric,    
+    is.actinometric,
     photometric,
     probeOptimalColors,
-    canonicalOptimalColors,    
-    sectionOptimalColors,    
+    canonicalOptimalColors,
+    sectionOptimalColors,
     plotOptimals3D,
-    plotOptimals2D,    
+    plotOptimals2D,
     computeADL,
     interpolate,
     ptransform,
     emulate,
     invert,
     responsivityMetrics,
-    bandRepresentation    
+    bandRepresentation
     )
-    
-#   functions that are already generic, for S3 classes    
-export( 
+
+#   functions that are already generic, for S3 classes
+export(
     subset.colorSpec,
     mean.colorSpec,
     as.matrix.colorSpec,
-    as.data.frame.colorSpec,    
+    as.data.frame.colorSpec,
     print.colorSpec,
     summary.colorSpec,
     plot.colorSpec
     )
-    
+
 
 
 export( colorSpec )
-export( 
+export(
     readSpectra,
     readSpectraControl,
     readSpectraXYY,
@@ -135,10 +137,10 @@ export(
 #   readSpectraExcel,
     readSpectrumScope,
     readSpectraCGATS,
-    readCGATS    
+    readCGATS
     )
-    
-#   spectra with an equation    
+
+#   spectra with an equation
 export(
     erythemalSpectrum,
     neutralMaterial,
@@ -150,24 +152,27 @@ export(
     illuminantE,
     atmosTransmittance
     )
-    
+
 #export(
 #   daylightLocus,
 #    CCTfromXYZ,
 #    CCTfromxy,
 #    CCTfromuv
 #    )
-    
+
 # export(plotPatchesRGB)
 export(DisplayRGBfromLinearRGB)
 export(RGBfromXYZ)
 export(officialXYZ)
 
-
 export(cs.options)
+
 
 # importFrom( MASS, ginv )
 # importFrom( spacesXYZ, CCTfromXYZ, standardXYZ )
+
+import( logger )
+
 importFrom( grDevices, colorRampPalette, rgb, rainbow )
 importFrom( graphics, abline, grid, legend, lines,
              lines.default, par, plot, plot.default, plot.new,

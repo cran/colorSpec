@@ -1,144 +1,69 @@
 
 
-
-
-log_string <- function( level, msg, ... )
-    {
-    conn    = stderr()
-
-    if( ! is.integer(level) )
-        {
-        warning( "log_string(). level is not an integer."  )
-        return( invisible(FALSE) )
-        }
-
-    updatePrivateOptions()
-
-    #   compare with g.loglevel
-    if( g.loglevel < level[1] )
-        #   do nothing
-        return( invisible(FALSE) )
-
-    generation  = 1L
-    if( 2 <= length(level) )
-        {
-        #   hack to get higher generation parents !!
-        generation  = level[2]
-        level       = level[1]  # this preserves names(level[1])
-        }
-
-    msg = sprintf( msg[1], ... )    # should this really be msg[1] ?
-
-    #   cat( 'length(msg)=', length(msg), '\n', file=conn )
-    #   print( g.word )
-
-    idx = which( grepl("^%",g.word) )   #; print( idx )
-    if( length(idx) == 0 )
-        {
-        cat( msg, '\n', file=conn )
-        return( invisible(TRUE) )
-        }
-
-    word    = g.word
-
-    #   where   = sys.parent(1) ; print(where)
-
-    for( k in idx )
-        {
-        spec    = substr( g.word[k], 1, 2 )
-
-        if( spec == "%l" )
-            word[k] = sprintf( "%-5s", names(level) )
-        else if( spec == "%t" )
-            {
-            fmt = ''
-            m   = nchar(g.word[k])
-            if( 5 <= m ) fmt = substr( g.word[k], 4, m-1 )
-            word[k] = format( Sys.time(), fmt )
-            }
-        else if( spec == "%n" )
-            word[k] = "colorSpec"
-        else if( spec == "%f" )
-            {
-            where   = sys.parent(generation)  # ; print(where)
-
-            if( 0 < where )
-                word[k] = tryCatch( deparse(sys.call(where)[[1L]]), error=function(e) "[console]" )
-            else
-                word[k] = "[console]"
-            }
-        else if( spec == "%m" )
-            word[k] = msg
-        }
-
-    # print( word )
-    #   cat( paste0(word,collapse=''), '\n' )   ; flush.console()
-
-    mess    = paste0(word,collapse='')
-    #   message( mess )   ; flush.console()
-
-    #print( sys.parent(1) )
-    #print( deparse(sys.call(-3L)) )
-    #print( deparse(sys.call(-2L)[[1L]]) )
-    #print( deparse(sys.call(-1L)[[1L]]) )
-    #print( deparse(sys.call(0L)[[1L]]) )
-    #print( deparse(sys.call(1L)[[1L]]) )
-    #print( deparse(sys.call(2L)[[1L]]) )
-    #print( deparse(sys.call(3L)[[1L]]) )
-
-
-    if( g.options$stoponerror  &&  level <= ERROR )
-        stop( mess, '\n', "Stopping, because option colorSpec.stoponerror==TRUE", call.=FALSE )
-
-    cat( mess, '\n', file=conn ) ;   flush(conn)
-
-    return( invisible(TRUE) )
-    }
+#   this function does not add level or timestamp or function call, or anything like that
+#   it's meant be called right after a regular sprintf() logging event
 
 log_object <- function( level, obj, type='whole', addname=TRUE )
     {
-    conn    = stderr()
-
     if( ! is.integer(level) )
         {
         warning( "log_object(). level is not an integer."  )
         return( invisible(FALSE) )
         }
 
-    updatePrivateOptions()
-
-    if( g.loglevel < level )
+    if( logger::log_threshold(namespace='colorSpec') < level )
         #   do nothing
         return( invisible(FALSE) )
+        
+    conn    = stderr()
 
     if( type == 'whole' )
         {
         line    = capture.output( print(obj) )
+                
         if( addname )
             {
             cat( deparse(substitute(obj)), file=conn )
             if( 1 < length(line) )
-                cat( '\t=\n', file=conn )
+                cat( ' =\n', file=conn )
             else
-                cat( '\t=\t', file=conn )
+                cat( ' =\t', file=conn )
             }
-
-        for( k in 1:length(line) )
-            cat( line[k], '\n', file=conn )
+            
+        logger::appender_console( line )
         }
     else if( type == 'str' )
         {
+        line    = capture.output( print( str(obj) ) )
+        
         if( addname )
             {
             cat( deparse(substitute(obj)), '\n', file=conn )
             }
-        print( str(obj) )
+            
+        logger::appender_console( line )        
         }
 
     flush.console()
 
     return( invisible(TRUE) )
     }
+    
+
+#   this function is made to be called by me, from global env
+testLogging <- function()
+    {
+    log_level( ERROR, "Hello %s.  Matrix A is:", "World" )
+
+    A   =  matrix( runif(3*3), 3, 3 )
+    log_object( ERROR, A )
+
+    return( invisible(TRUE) )
+    }
+
+    
+
+#####################       deadwood below      #########################################
 
 setLogFormat <- function( .fmt )
     {
@@ -194,34 +119,3 @@ setLogFormat <- function( .fmt )
     return(invisible(TRUE))
     }
 
-
-#   .level  a string, partial matches OK
-setLogLevel <- function( .level )
-    {
-    #   convert string to integer
-    lev = loglevelFromString( .level )
-
-    if( is.na(lev) )    return(FALSE)
-
-    # record the integer
-    #   assign( "g.loglevel", lev, envir=asNamespace('colorSpec') )
-    g.loglevel <<-  lev
-
-    #   cat( 'g.loglevel=', g.loglevel, '\n' )
-
-    #   now record the string in g.options
-    assignPrivateOption( 'loglevel', .level )
-
-    return(TRUE)
-    }
-
-
-testLogging <- function()
-    {
-    log_string( ERROR, "Hello %s.  Matrix A is:", "World" )
-
-    A   =  matrix( runif(3*3), 3, 3 )
-    log_object( ERROR, A )
-
-    return( invisible(TRUE) )
-    }

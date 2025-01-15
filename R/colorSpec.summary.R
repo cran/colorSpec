@@ -17,7 +17,7 @@ summary.colorSpec  <-  function( object, long=TRUE, ... )
     {    
     if( ! is.colorSpec(object) )
         {
-        log_string( ERROR, "object is not a valid colorSpec object." )
+        log_level( ERROR, "object is not a valid colorSpec object." )
         return(FALSE)
         }
     

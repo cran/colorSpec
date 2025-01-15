@@ -11,19 +11,19 @@ colorSpec  <-  function( data, wavelength, quantity='auto', organization='auto',
 
     if( ! is.numeric(data)  )
         {
-        log_string( ERROR, "data has incorrect type '%s'.", typeof(data) )
+        log_level( ERROR, "data has incorrect type '%s'.", typeof(data) )
         return(NULL)
         }    
         
     if( ! is.numeric(wavelength)  )
         {
-        log_string( ERROR, "wavelength has incorrect type '%s'.", typeof(wavelength) )
+        log_level( ERROR, "wavelength has incorrect type '%s'.", typeof(wavelength) )
         return(NULL)
         }    
     
     if( length(wavelength) != n )
         {
-        log_string( ERROR, "NROW(data) = %d != %d = length(wavelength) mismatch.", n, length(wavelength) )
+        log_level( ERROR, "NROW(data) = %d != %d = length(wavelength) mismatch.", n, length(wavelength) )
         return(NULL)
         }     
         
@@ -34,7 +34,7 @@ colorSpec  <-  function( data, wavelength, quantity='auto', organization='auto',
         
     if( ! isIncreasingSequence(wavelength) )
         {
-        log_string( ERROR, "wavelength is not increasing." )
+        log_level( ERROR, "wavelength is not increasing." )
         return(NULL)
         } 
 
@@ -60,7 +60,7 @@ colorSpec  <-  function( data, wavelength, quantity='auto', organization='auto',
         }
     else
         {
-        log_string( ERROR, "data is numeric, but neither vector nor matrix." )
+        log_level( ERROR, "data is numeric, but neither vector nor matrix." )
         #   log_object( ERROR, data, type='str' )
         return(NULL)
         }
@@ -80,10 +80,10 @@ colorSpec  <-  function( data, wavelength, quantity='auto', organization='auto',
             if( 80 < nchar(combo) ) combo = paste( substr(combo,1,76), '...', collapse='' )
             
             if( 0 < dups )
-                log_string( WARN, "specnames are invalid (there are %d duplicates).  Using '%s' instead.", 
+                log_level( WARN, "specnames are invalid (there are %d duplicates).  Using '%s' instead.", 
                             dups, combo )
             else
-                log_string( WARN, "specnames are invalid.  Using '%s' instead.", combo )
+                log_level( WARN, "specnames are invalid.  Using '%s' instead.", combo )
             }
         else
             {
@@ -98,14 +98,14 @@ colorSpec  <-  function( data, wavelength, quantity='auto', organization='auto',
         quantity = guessSpectrumQuantity( specnames, '' )
         if( is.na( quantity ) )
             {
-            log_string( ERROR, "Cannot guess spectrum quantity from the specnames." )
+            log_level( ERROR, "Cannot guess spectrum quantity from the specnames." )
             return(NULL)
             }    
         }
 
     if( is.na( spectrumTypeFromQuantity( quantity ) ) )
         {
-        log_string( ERROR, "quantity='%s' is invalid.", quantity )
+        log_level( ERROR, "quantity='%s' is invalid.", quantity )
         return(NULL)
         }    
         
@@ -116,7 +116,7 @@ colorSpec  <-  function( data, wavelength, quantity='auto', organization='auto',
     ok  = organization %in% c("df.col","df.row","matrix","vector")       
     if( ! ok )
         {
-        log_string( ERROR, "organization='%s' is invalid\n", organization )
+        log_level( ERROR, "organization='%s' is invalid\n", organization )
         return(NULL)
         }
         
@@ -124,7 +124,7 @@ colorSpec  <-  function( data, wavelength, quantity='auto', organization='auto',
         {
         if( spectra != 1 )
             {
-            log_string( ERROR, "organization='%s' is invalid, because there are %d spectra in data\n", organization, spectra )
+            log_level( ERROR, "organization='%s' is invalid, because there are %d spectra in data\n", organization, spectra )
             return(NULL)
             }        
         out         = as.numeric(data)
@@ -171,32 +171,32 @@ is.colorSpec <- function(x)
     {
     if( ! "colorSpec" %in% class(x) )   
         {
-        log_string( DEBUG, "'%s' class '%s' is invalid.", deparse(substitute(x)), class(x) )
+        log_level( DEBUG, "'%s' class '%s' is invalid.", deparse(substitute(x)), class(x) )
         return(FALSE)
         }
 
     if( is.na(organization(x)) )
         {
-        log_string( DEBUG, "'%s' organization '%s' is invalid.", deparse(substitute(x)), organization(x) )
+        log_level( DEBUG, "'%s' organization '%s' is invalid.", deparse(substitute(x)), organization(x) )
         return(FALSE)
         }
         
     if( ! type(x) %in% c("light","responsivity.light","material","responsivity.material")  )
         {
-        log_string( DEBUG, "'%s' type '%s' is invalid.", deparse(substitute(x)), type(x) )
+        log_level( DEBUG, "'%s' type '%s' is invalid.", deparse(substitute(x)), type(x) )
         return(FALSE)
         }
         
     wave    = wavelength(x) 
     if( ! is.double( wave ) )  
         {
-        log_string( DEBUG, "'%s' wavelengths are not double-precision.", deparse(substitute(x)) )
+        log_level( DEBUG, "'%s' wavelengths are not double-precision.", deparse(substitute(x)) )
         return(FALSE)
         }
 
     if( ! isIncreasingSequence(wave) )
         {
-        log_string( DEBUG, "'%s' wavelengths are not increasing.", deparse(substitute(x)) )
+        log_level( DEBUG, "'%s' wavelengths are not increasing.", deparse(substitute(x)) )
         return(FALSE)
         }        
         
@@ -209,7 +209,7 @@ is.colorSpec <- function(x)
         
 as.colorSpec.default <- function( ... )
     {
-    log_string( WARN, "This function is designed to be called from other packages." )
+    log_level( WARN, "This function is designed to be called from other packages." )
     return(NULL)
     }
     
@@ -325,7 +325,7 @@ guessSpectrumQuantity <- function( .specnames, .header )
     if( any( grepl(pattern,.header,ignore.case=TRUE) ) )    return( 'material->electrical' )    
     
     
-    type    = guessSpectrumType( .specnames, .header )      ; log_string( DEBUG, "guessed type=%s", type )
+    type    = guessSpectrumType( .specnames, .header )      ; log_level( DEBUG, "guessed type=%s", type )
     
     if( is.na(type)  ||  type == "light" )
         {
@@ -394,7 +394,7 @@ guessSpectrumQuantity <- function( .specnames, .header )
     #   log_object( DEBUG, type )
     log_object( DEBUG, .specnames )    
     #   log_object( DEBUG, .header )       
-    log_string( DEBUG, "Cannot guess quantity from .specnames and .header." )
+    log_level( DEBUG, "Cannot guess quantity from .specnames and .header." )
     
     return( as.character(NA) )
     }
@@ -468,7 +468,7 @@ organization.colorSpec <- function(x)
         }
         
     log_object( ERROR, x, 'str' )
-    log_string( ERROR, "cannot determine organization of object x." )
+    log_level( ERROR, "cannot determine organization of object x." )
     
     return( as.character(NA) )
     }
@@ -485,7 +485,7 @@ organization.colorSpec <- function(x)
     ok  = value %in% c("vector","matrix","df.row","df.col")        
     if( ! ok )
         {
-        log_string( ERROR, "organization='%s' is invalid.", value )
+        log_level( ERROR, "organization='%s' is invalid.", value )
         return(x)
         }    
     
@@ -499,7 +499,7 @@ organization.colorSpec <- function(x)
     if( value == "vector"  &&  m != 1 )
         {
         #   return x unchanged
-        log_string( ERROR, "cannot reorganize to vector because #(spectra) = %d != 1.", m )
+        log_level( ERROR, "cannot reorganize to vector because #(spectra) = %d != 1.", m )
         return( x )
         }
             
@@ -556,7 +556,7 @@ coredata.colorSpec <- function( x, forcemat=FALSE )
         }
     else
         {
-        log_string( FATAL, "Internal error. organization='%s' is unknown.", org )
+        log_level( FATAL, "Internal error. organization='%s' is unknown.", org )
         return(NULL)
         }
 
@@ -581,7 +581,7 @@ coredata.colorSpec <- function( x, forcemat=FALSE )
 
 as.matrix.colorSpec <- function( x, ... )    
     {
-    #   log_string( TRACE, "as.matrix.colorSpec()" )
+    #   log_level( TRACE, "as.matrix.colorSpec()" )
     return( coredata(x,forcemat=TRUE) )
     }
     
@@ -604,7 +604,7 @@ as.data.frame.colorSpec  <-  function( x, row.names=NULL, optional=FALSE, organi
         organization(out) = 'df.row'
     else
         {
-        log_string( ERROR, "organization='%s' is invalid.", organization )
+        log_level( ERROR, "organization='%s' is invalid.", organization )
         return(NULL)
         }
         
@@ -626,7 +626,7 @@ extradata.colorSpec <- function( x )
 
     if( org != "df.row" )
         {    
-        #   log_string( WARN, "organization = '%s' is invalid.", org )
+        #   log_level( WARN, "organization = '%s' is invalid.", org )
         #   return data.frame with 0 columns
         return( data.frame( row.names=specnames(x) ) )
         }
@@ -636,7 +636,7 @@ extradata.colorSpec <- function( x )
     m   = ncol(x)
     if( m == 1 )
         {    
-        #   log_string( WARN, "Object '%s' has no extra data.", deparse(substitute(x)) )
+        #   log_level( WARN, "Object '%s' has no extra data.", deparse(substitute(x)) )
         #   return data.frame with 0 columns        
         return( data.frame( row.names=row.names(x) ) )
         }
@@ -656,7 +656,7 @@ extradata.colorSpec <- function( x )
     #   cat( sprintf( "type='%s'\n", typeof(value) ) )
     if( ! is.null(value)  &&  ! is.data.frame(value) )
         {    
-        log_string( ERROR, "RHS object '%s' is not a data.frame, and not NULL.", deparse(substitute(value))[1] )
+        log_level( ERROR, "RHS object '%s' is not a data.frame, and not NULL.", deparse(substitute(value))[1] )
         return(x)
         }    
     
@@ -676,7 +676,7 @@ extradata.colorSpec <- function( x )
 
     if( org != "df.row" )
         {    
-        log_string( ERROR, "organization(x) = '%s' is invalid.  Please change to 'df.row' first.", org )
+        log_level( ERROR, "organization(x) = '%s' is invalid.  Please change to 'df.row' first.", org )
         return(x)
         }
 
@@ -684,7 +684,7 @@ extradata.colorSpec <- function( x )
         {
         if( nrow(value) != nrow(x) )
             {    
-            log_string( ERROR, "Row count mismatch. LHS %d != %d RHS.",  nrow(x), nrow(value) )
+            log_level( ERROR, "Row count mismatch. LHS %d != %d RHS.",  nrow(x), nrow(value) )
             return(x)
             }
             
@@ -695,7 +695,7 @@ extradata.colorSpec <- function( x )
             idx     = which( duplicated(namevec) )
             if( 0 < length(idx) ) 
                 {
-                log_string( ERROR, "Cannot add new extradata, because one of its column names already appears in the current extradata, e.g. '%s'.",
+                log_level( ERROR, "Cannot add new extradata, because one of its column names already appears in the current extradata, e.g. '%s'.",
                                 namevec[idx[1]] )
                 return(x)
                 }       
@@ -741,7 +741,7 @@ wavelength.colorSpec  <- function(x)
         wave    = x[[1]]
         
         if( is.null(wave) )
-            log_string( FATAL, "Internal Error. Cannot determine wavelength of object '%s'", deparse(substitute(x)) )
+            log_level( FATAL, "Internal Error. Cannot determine wavelength of object '%s'", deparse(substitute(x)) )
         }
         
     return( wave )
@@ -753,21 +753,21 @@ wavelength.colorSpec  <- function(x)
     
     if( length(value) != n )
         {
-        log_string( ERROR, "length(wavelength)=%d is invalid.", length(value) )
+        log_level( ERROR, "length(wavelength)=%d is invalid.", length(value) )
         return(x)
         }
         
     if( ! isIncreasingSequence( value ) )
         {
         #   log_object( ERROR, value, 'str' )
-        log_string( ERROR, "wavelength sequence is not increasing." )
+        log_level( ERROR, "wavelength sequence is not increasing." )
         return(x)
         }
         
     #sym = deparse(substitute(x))        
     #if( bindingIsLocked(sym,environment(wavelength.colorSpec)) )
     #    {
-    #    log_string( ERROR, "Cannot modify '%s', because it is locked.", sym )
+    #    log_level( ERROR, "Cannot modify '%s', because it is locked.", sym )
     #    return(NULL)
     #    }
         
@@ -815,7 +815,7 @@ quantity.colorSpec  <- function(x)
     {  
     if( ! isValidQuantity( value ) )
         {
-        log_string( ERROR, "quantity=%s is invalid\n", value )
+        log_level( ERROR, "quantity=%s is invalid\n", value )
         return(x)
         }        
     
@@ -858,7 +858,7 @@ specnames.colorSpec <- function(x)
     
     if( length(value) != n )
         {
-        log_string( ERROR, "length(value) = %d is invalid. It is not equal to numSpectra = %d", 
+        log_level( ERROR, "length(value) = %d is invalid. It is not equal to numSpectra = %d", 
                             length(value), n )
         return(x)
         }
@@ -869,7 +869,7 @@ specnames.colorSpec <- function(x)
     count   = sum(duplicated(value))
     if( 0 < count )
         {
-        log_string( ERROR, "The %d names for the spectra have %d duplicates.  Names are ignored.", 
+        log_level( ERROR, "The %d names for the spectra have %d duplicates.  Names are ignored.", 
                     n, count)        
         return(x)
         }
@@ -936,7 +936,7 @@ metadata.colorSpec <- function( x, ... )
     mask    = nzchar( names(value) )
 
     if( ! all (mask) )
-        log_string( WARN, "options without name are discarded: %d", which(!mask) )
+        log_level( WARN, "options without name are discarded: %d", which(!mask) )
 
     if( add )
         {

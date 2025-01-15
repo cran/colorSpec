@@ -36,14 +36,14 @@ responsivityMetrics.colorSpec <- function( x )
     ok  = (numSpectra(x) == 3L)
     if( ! ok )
         {
-        log_string( ERROR, "numSpectra(%s) = %d  != 3.", theName, numSpectra(x) )     
+        log_level( ERROR, "numSpectra(%s) = %d  != 3.", theName, numSpectra(x) )     
         return(NULL)
         }        
 
     ok  = type(x)=="responsivity.light"  ||  type(x)=="responsivity.material" 
     if( ! ok )
         {
-        log_string( ERROR, "type(%s) = '%s' is invalid.", theName, type(x) )        
+        log_level( ERROR, "type(%s) = '%s' is invalid.", theName, type(x) )        
         return(NULL)
         }    
         
@@ -62,7 +62,7 @@ responsivityMetrics.colorSpec <- function( x )
     ncond   = nrow(condlist$Wcond)    
     if( ncond < 3 )
         {
-        log_string( ERROR, "Invalid number of condensed generators = %d < 3.", ncond )
+        log_level( ERROR, "Invalid number of condensed generators = %d < 3.", ncond )
         return(NULL)
         }
         
@@ -87,7 +87,7 @@ responsivityMetrics.colorSpec <- function( x )
         {
         if( ! requireNamespace( 'quadprog', quietly=TRUE ) )
             {
-            log_string( ERROR, "Required package 'quadprog' could not be imported."  )
+            log_level( ERROR, "Required package 'quadprog' could not be loaded."  )
             return(NULL)
             }     
         
@@ -159,7 +159,7 @@ responsivityMetrics.colorSpec <- function( x )
         {
         #print( out$coneangle )
         #print( out$cxconeangle )
-        #log_string( WARN, "coneangle=%g  >  %g=cxconeangle.  One or both must be incorrect.",
+        #log_level( WARN, "coneangle=%g  >  %g=cxconeangle.  One or both must be incorrect.",
         #                        out$coneangle, out$cxconeangle )
         }
     

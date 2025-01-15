@@ -1,7 +1,13 @@
 
 library( colorSpec )
 
-cs.options( loglevel='TRACE' )
+# library( logger )
+
+# cs.options( loglevel='TRACE' )   obsolete
+
+logger::log_threshold( logger::TRACE, namespace="colorSpec" )
+
+
 
 testCGATS <- function()
     {
@@ -63,12 +69,18 @@ testCGATS <- function()
     if( length(junk) != 2 )
         return(FALSE)
         
-    #   the final call should generate an ERROR and return NULL, so disable stopping
+    #   the readSpectraCGATS() call should generate an ERROR and return NULL, so disable stopping
     cs.options( stoponerror=FALSE )
+    
+    #   base::options( colorSpec.stoponerror=FALSE )
+    #   cat( "stop =", .Options$colorSpec.stoponerror, '\n', file=stdout() )
+        
     junk    = readSpectraCGATS(path) 
     if( ! is.null(junk) )
         return(FALSE)
         
+    cs.options( stoponerror=TRUE )        
+    
     return(TRUE)
     }
     

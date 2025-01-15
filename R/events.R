@@ -5,7 +5,7 @@ g.microbenchmark    = FALSE     # logical value, whether the package microbenchm
 #   the 3 hooks below are called in this order
 #
 #   1)  .onLoad()   synchronizes the global R colorSpec.* options with the private options (3 of them)
-#   2)  myonLoad()  unlocks the private options
+#   2)  myonLoad()  unlocks the private options.  Not used in 2025 or later, v 1.6-0
 #   3)  .onAttach() prints a startup message.  It may not be called at all.
 #
 
@@ -22,9 +22,19 @@ g.microbenchmark    = FALSE     # logical value, whether the package microbenchm
     #   unlockBinding() is not needed for g.microbenchmark, because it is currently unlocked in .onLoad()
     g.microbenchmark    <<- requireNamespace( 'microbenchmark', quietly=TRUE )  #;  cat( "g.microbenchmark=", g.microbenchmark, '\n' )
 
-    #mess    = environmentName( environment(.onLoad) )
-    #mess = sprintf( "Environment: '%s'\n", mess )
-    #cat( mess )
+    if( requireNamespace( 'logger', quietly=FALSE ) )
+        {
+        #   log_formatter( formatter_mine )
+        #   layout_mine and appender_mine are defined in logger.R
+        log_formatter( logger::formatter_sprintf, namespace=pkgname )   # force sprintf(), even if glue is installed
+        log_layout( layout_mine, namespace=pkgname )                    # put fn() between timestamp and the msg
+        log_appender( appender_mine, namespace=pkgname )                # maybe stop on ERROR or FATAL
+        log_threshold( WARN, namespace=pkgname )                        # default is INFO
+        }
+    else
+        {
+        base::packageStartupMessage( "ERROR.  Required package 'logger' could not be loaded." )
+        }
 
     initOptions( pkgname )
 
@@ -32,7 +42,7 @@ g.microbenchmark    = FALSE     # logical value, whether the package microbenchm
 
     #   after exiting this function, private options are then locked
     #   set hook to unlock private options
-    base::setHook( base::packageEvent(pkgname,"onLoad"), myonLoad )
+    # base::setHook( base::packageEvent(pkgname,"onLoad"), myonLoad )   not in 2025 or later
     }
 
 

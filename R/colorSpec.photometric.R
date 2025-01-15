@@ -14,7 +14,7 @@ photometric.colorSpec <- function( x, photopic=683, scotopic=1700, multiplier=1 
     {
     if( type(x) != 'light' )
         {
-        log_string( ERROR, "type(x) = '%s, but it must be 'light'", type(x) )
+        log_level( ERROR, "type(x) = '%s, but it must be 'light'", type(x) )
         return(NULL)
         }
     

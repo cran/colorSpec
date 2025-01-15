@@ -36,7 +36,7 @@ actinometric.colorSpec <- function( x, multiplier=1, warn=FALSE )
         #   a micromole of photons = 1.e-6*N_A photons
         phys    = 1.e6/(N_A*h*c)
         final   = multiplier * phys
-        log_string( INFO, "final multiplier = multiplier * 1.e6/(N_A*h*c) * lambda = %g * %g * lambda = %g * lambda.",
+        log_level( INFO, "final multiplier = multiplier * 1.e6/(N_A*h*c) * lambda = %g * %g * lambda = %g * lambda.",
                             multiplier, phys, final )        
         vec     = final * lambda
         quantity.actino  = "photons"
@@ -48,7 +48,7 @@ actinometric.colorSpec <- function( x, multiplier=1, warn=FALSE )
         e       = 1.6021766208e-19  # charge of electron, in C
         phys    = (h*c)/e
         final   = multiplier * phys
-        log_string( INFO, "final multiplier = multiplier * ((h*c)/e) / lambda = %g * %g / lambda = %g / lambda.",
+        log_level( INFO, "final multiplier = multiplier * ((h*c)/e) / lambda = %g * %g / lambda = %g / lambda.",
                             multiplier, phys, final )
         vec     = final / lambda
         quantity.actino  = sub( "^(energy|power)", "photons", quantity )    
@@ -60,7 +60,7 @@ actinometric.colorSpec <- function( x, multiplier=1, warn=FALSE )
         #   this is the reciprocal of above "light"
         phys    = 1.e-6*N_A*h*c
         final   = multiplier * phys
-        log_string( INFO, "final multiplier = multiplier * 10^{-6}*N_A*h*c / lambda = %g * %g / lambda = %g / lambda.",
+        log_level( INFO, "final multiplier = multiplier * 10^{-6}*N_A*h*c / lambda = %g * %g / lambda = %g / lambda.",
                             multiplier, phys, final )
         vec     = final / lambda
         quantity.actino  = sub( "^(energy|power)", "photons", quantity )         
@@ -78,7 +78,7 @@ actinometric.colorSpec <- function( x, multiplier=1, warn=FALSE )
     
     if( warn )
         {
-        log_string( WARN, "Object x has been converted from radiometric (quantity='%s') to actinometric (quantity='%s').",
+        log_level( WARN, "Object x has been converted from radiometric (quantity='%s') to actinometric (quantity='%s').",
                             quantity(x), quantity(out) )
         }
         

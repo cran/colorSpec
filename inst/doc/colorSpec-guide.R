@@ -64,6 +64,6 @@ sunlight
 ## ----echo=FALSE, results='asis'-----------------------------------------------
     includeplain("proofs.txt")
 
-## ---- echo=FALSE, results='asis'----------------------------------------------
+## ----echo=FALSE, results='asis'-----------------------------------------------
 sessionInfo()
 

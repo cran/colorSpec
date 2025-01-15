@@ -48,7 +48,7 @@ atmosTransmittance <- function( distance, wavelength=380:720,
         #   compute molecular attenuation.  units are m^-1
         if( ! is.numeric(molecules$N)  ||  ! is.numeric(molecules$n0) )
             {
-            log_string( ERROR, "Either N or n0 is not numeric, or missing." )
+            log_level( ERROR, "Either N or n0 is not numeric, or missing." )
             return(NULL)
             }
         
@@ -71,7 +71,7 @@ atmosTransmittance <- function( distance, wavelength=380:720,
             
             if( ! is.numeric(alpha)  ||  ! is.numeric(beta) )
                 {
-                log_string( ERROR, "Either alpha or beta is not numeric, or missing." )
+                log_level( ERROR, "Either alpha or beta is not numeric, or missing." )
                 return(NULL)
                 }            
             }
@@ -79,7 +79,7 @@ atmosTransmittance <- function( distance, wavelength=380:720,
             {
             if( ! is.numeric(aerosols$metrange)  ||  aerosols$metrange <= 0 )
                 {
-                log_string( ERROR, "metrange='%s' is not a positive number", as.character(aerosols$metrange) )
+                log_level( ERROR, "metrange='%s' is not a positive number", as.character(aerosols$metrange) )
                 return(NULL)
                 }
             
@@ -92,7 +92,7 @@ atmosTransmittance <- function( distance, wavelength=380:720,
                 
             beta    = -mu_mol0 - log(0.02) / aerosols$metrange
             
-            log_string( INFO, "From metrange=%g, computed alpha=%g, mu_mol0=%g, beta=%g.",
+            log_level( INFO, "From metrange=%g, computed alpha=%g, mu_mol0=%g, beta=%g.",
                                 aerosols$metrange, alpha, mu_mol0, beta )
             #cat( 'alpha=', alpha, '\n' )
             #cat( 'mu_mol0=', mu_mol0, '\n' )            
@@ -138,13 +138,13 @@ attenuation.aerosol   <- function( wavelength, alpha, beta, lambda0=550 )
     ok  = is.numeric(alpha) && is.numeric(beta)  && length(alpha)==1  &&  length(beta)==1
     if( ! ok )
         {
-        log_string( ERROR, "Either alpha or beta is not a numeric scalar." )
+        log_level( ERROR, "Either alpha or beta is not a numeric scalar." )
         return(NULL)
         }
         
     if( beta < 0 )
         {
-        log_string( WARN, "The turbidity coefficient beta=%g < 0, and is not physically realizable.", beta )
+        log_level( WARN, "The turbidity coefficient beta=%g < 0, and is not physically realizable.", beta )
         }        
             
     out = beta * (wavelength/lambda0)^(-alpha)

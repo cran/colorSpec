@@ -25,7 +25,7 @@ testAllReads <- function()
     pathvec = list.files( extdata, recursive=TRUE, full.names=TRUE ) #; print( pathvec )
     
     #   ignore some file extensions
-    pattern1    = "[.](png|jpg|xls|m|htm|html)$"
+    pattern1    = "[.](png|jpg|xls|m|htm|html|ti3)$"
     mask1       = grepl( pattern1, pathvec, ignore.case=TRUE )
     
     pattern2    = "^dataCCT|^illuminant"
@@ -172,6 +172,8 @@ checkQuantity <- function()
         }
     
     print( warnings() )
+    
+    cs.options( stoponerror=TRUE )    
             
     return( ok )
     }

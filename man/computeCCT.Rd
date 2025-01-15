@@ -9,7 +9,8 @@
 
 \description{
   Compute the CCT, in K,
-  of a \bold{colorSpec} object with \code{type} equal to \code{'light'}
+  of a \bold{colorSpec} object with \code{type} equal to \code{'light'}.
+  The package \bold{spacesXYZ} must be installed.
 }
 \usage{
 \S3method{computeCCT}{colorSpec}( x, isotherms='robertson', locus='robertson', strict=FALSE )

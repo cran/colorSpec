@@ -44,7 +44,7 @@ radiometric.colorSpec <- function( x, multiplier=1, warn=FALSE )
         #   the output unit for the light is joule
         phys    = 1.e-6*N_A*h*c
         final   = multiplier * phys
-        log_string( INFO, "final multiplier = multiplier * 10^{-6}*N_A*h*c / lambda = %g * %g / lambda = %g / lambda.",
+        log_level( INFO, "final multiplier = multiplier * 10^{-6}*N_A*h*c / lambda = %g * %g / lambda = %g / lambda.",
                             multiplier, phys, final )
         vec     = final / lambda
         quantity.radio  = "energy"
@@ -56,7 +56,7 @@ radiometric.colorSpec <- function( x, multiplier=1, warn=FALSE )
         e   = 1.6021766208e-19  # charge of electron, in C
         phys    = e/(h*c)
         final   = multiplier * phys
-        log_string( INFO, "final multiplier = multiplier * e/(h*c) * lambda = %g * %g * lambda = %g * lambda.",
+        log_level( INFO, "final multiplier = multiplier * e/(h*c) * lambda = %g * %g * lambda = %g * lambda.",
                             multiplier, phys, final )
         vec     = final * lambda
         quantity.radio  = sub( "photons", "energy", quantity )    
@@ -68,7 +68,7 @@ radiometric.colorSpec <- function( x, multiplier=1, warn=FALSE )
         #   this is the reciprocal of above "light"
         phys    = 1.e6/(N_A*h*c)
         final   = multiplier * phys
-        log_string( INFO, "final multiplier = multiplier * 1.e6/(N_A*h*c) * lambda = %g * %g * lambda = %g * lambda.",
+        log_level( INFO, "final multiplier = multiplier * 1.e6/(N_A*h*c) * lambda = %g * %g * lambda = %g * lambda.",
                             multiplier, phys, final )
         vec     = final * lambda
         quantity.radio  = sub( "photons", "energy", quantity )         
@@ -86,7 +86,7 @@ radiometric.colorSpec <- function( x, multiplier=1, warn=FALSE )
     
     if( warn )
         {
-        log_string( WARN, "Object x has been converted from actinometric (quantity='%s') to radiometric (quantity='%s').",
+        log_level( WARN, "Object x has been converted from actinometric (quantity='%s') to radiometric (quantity='%s').",
                             quantity(x), quantity(out) )
         }
     

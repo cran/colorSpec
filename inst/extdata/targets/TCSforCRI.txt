@@ -9,6 +9,7 @@ QUANTITY	"REFLECTANCE"
 KEYWORD	"SAMPLE_NAME"
 KEYWORD	"Munsell"
 KEYWORD	"ISCC-NBS_Name"
+COMMENT	"The wavelength vector here is 360nm to 830nm with 5nm step.  In "Measuring Colour" by Hunt, it is 380nm to 780nm.
 
 NUMBER_OF_FIELDS	98
 BEGIN_DATA_FORMAT

@@ -15,20 +15,20 @@ interpolate.colorSpec   <- function( x, p, pout, pname=deparse(substitute(p)) )
     ok  = is.numeric(p) && is.numeric(pout)
     if( ! ok )
         {
-        log_string( ERROR, "One of argument p or pout is not numeric." )
+        log_level( ERROR, "One of argument p or pout is not numeric." )
         return( out )
         }    
         
     if( length(p) != numSpectra(x) )
         {
-        log_string( ERROR, "length mismatch.  length(p)=%d  !=  %d=numSpectra(x)", length(p), numSpectra(x) )
+        log_level( ERROR, "length mismatch.  length(p)=%d  !=  %d=numSpectra(x)", length(p), numSpectra(x) )
         return( out )
         }    
         
     ok  = is.character(pname)  &&  length(pname)==1  #; print( ok )
     if( ! ok )
         {
-        log_string( ERROR, "Argument pname must be a character vector with length 1." )
+        log_level( ERROR, "Argument pname must be a character vector with length 1." )
         return( out )
         }   
     
@@ -36,7 +36,7 @@ interpolate.colorSpec   <- function( x, p, pout, pname=deparse(substitute(p)) )
         {       
         if( length(v) != length(p) )
             {
-            log_string( FATAL, "%d != %d", length(v), length(p) )   # internal error
+            log_level( FATAL, "%d != %d", length(v), length(p) )   # internal error
             return( out )
             }    
         return( stats::spline( p, v, xout=pout, method="natural" )$y )

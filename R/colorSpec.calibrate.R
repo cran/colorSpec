@@ -30,7 +30,7 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
     ok  = theType=='responsivity.light'  ||  theType=='responsivity.material'
     if( ! ok )
         {
-        log_string( ERROR, "type(x) = '%s' is invalid.", theType )
+        log_level( ERROR, "type(x) = '%s' is invalid.", theType )
         return(x)
         }
 
@@ -47,12 +47,12 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
         {
         if( theType == 'responsivity.light' )
             {
-            log_string( TRACE, "Set stimulus to Illuminant E." )
+            log_level( TRACE, "Set stimulus to Illuminant E." )
             stimulus = illuminantE( 1, wave )
             }
         else
             {
-            log_string( TRACE, "Set stimulus to the Perfect Reflecting Diffuser." )
+            log_level( TRACE, "Set stimulus to the Perfect Reflecting Diffuser." )
             stimulus = neutralMaterial( 1, wave )
             }
         }
@@ -60,13 +60,13 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
     #   check validity of stimulus
     if( ! is.colorSpec( stimulus ) )
         {
-        log_string( ERROR, "stimulus is not a valid colorSpec." )
+        log_level( ERROR, "stimulus is not a valid colorSpec." )
         return(x)
         }
 
     if( ! identical( wave, wavelength(stimulus) ) )
         {
-        log_string( ERROR, "x and stimulus do not have the same wavelengths." )
+        log_level( ERROR, "x and stimulus do not have the same wavelengths." )
         return(x)
         }
 
@@ -75,13 +75,13 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
 
     if( ! ok1  &&  ! ok2 )
         {
-        log_string( ERROR, "type(stimulus) = '%s' is invalid for x.", type(stimulus) )
+        log_level( ERROR, "type(stimulus) = '%s' is invalid for x.", type(stimulus) )
         return(x)
         }
 
     if( numSpectra( stimulus ) != 1 )
         {
-        log_string( ERROR, "numSpectra(stimulus) = %d is invalid; it must be 1.", numSpectra(stimulus) )
+        log_level( ERROR, "numSpectra(stimulus) = %d is invalid; it must be 1.", numSpectra(stimulus) )
         return(x)
         }
 
@@ -94,7 +94,7 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
         {
         if( is.neural )
             {
-            log_string( ERROR, "Since quantity(x)='%s', an explicit response is required.", quantity(x) )
+            log_level( ERROR, "Since quantity(x)='%s', an explicit response is required.", quantity(x) )
             return(x)
             }
 
@@ -102,7 +102,7 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
 
         names(response) = toupper( specnames(x) )
 
-        log_string( TRACE, "Set desired response to all 1s." )
+        log_level( TRACE, "Set desired response to all 1s." )
         }
 
     if( length(response) == 1 ) response = rep( response, m )
@@ -113,7 +113,7 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
     ok  = is.numeric(response)  &&  length(response)==m
     if( ! ok )
         {
-        log_string( ERROR, "response is invalid for x. It must be numeric with length %d.", m )
+        log_level( ERROR, "response is invalid for x. It must be numeric with length %d.", m )
         return(x)
         }
 
@@ -122,7 +122,7 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
     ok = length(idxfinite) %in% c(1,m)  &&  all(0 < response[idxfinite])
     if( ! ok )
         {
-        log_string( ERROR, "response is invalid for x. response must have either 1 or %d non-NA components, which are positive.", m )
+        log_level( ERROR, "response is invalid for x. response must have either 1 or %d non-NA components, which are positive.", m )
         return(x)
         }
 
@@ -136,7 +136,7 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
         else
             method  = "scaling"
 
-        log_string( TRACE, "Set method to '%s'.", method )
+        log_level( TRACE, "Set method to '%s'.", method )
         }
 
     Ma  = method
@@ -149,7 +149,7 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
         idx     = pmatch( tolower(method), tolower(full) )
         if( is.na(idx) )
             {
-            log_string( ERROR, "method='%s' unknown, for M=%d.", method, m )
+            log_level( ERROR, "method='%s' unknown, for M=%d.", method, m )
             return(x)
             }
 
@@ -162,11 +162,11 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
             Ma = p.Ma[[ idx ]]
 
             if( ! is.XYZ  )
-                log_string( WARN, "method='%s' is not really appropriate for non-XYZ responder x.", method )
+                log_level( WARN, "method='%s' is not really appropriate for non-XYZ responder x.", method )
             }
         else
             {
-            log_string( ERROR, "method='%s' invalid, for M=%d.", Ma, m )
+            log_level( ERROR, "method='%s' invalid, for M=%d.", Ma, m )
             return(x)
             }
         }
@@ -175,14 +175,14 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
     ok  = is.numeric(Ma)  &&  length(dim(Ma)==2)  &&  all( dim(Ma) == c(m,m) )
     if( ! ok )
         {
-        log_string( ERROR, "adaptation matrix is invalid for x. It must be a %dx%d matrix.", m, m )
+        log_level( ERROR, "adaptation matrix is invalid for x. It must be a %dx%d matrix.", m, m )
         return(x)
         }
 
     #   for validity of Ma, there is some interaction with response
     if( length(idxfinite) < m  &&  ! is.identity(Ma) )
         {
-        log_string( ERROR, "adaptation method is invalid for x. It must be 'scaling'." )
+        log_level( ERROR, "adaptation method is invalid for x. It must be 'scaling'." )
         return(x)
         }
 
@@ -199,7 +199,7 @@ calibrate.colorSpec <- function( x, stimulus=NULL, response=NULL, method=NULL )
     if( any(response.src <= 0) )
         {
         log_object( ERROR, response.src )
-        log_string( ERROR, "Cannot continue, because 1 or more x response values are non-positive." )
+        log_level( ERROR, "Cannot continue, because 1 or more x response values are non-positive." )
         return(x)
         }
 
@@ -247,7 +247,7 @@ unitMappingMatrix  <-  function( Ma, white )
     if( any( lms <= 0 ) )
         {
         log_object( lms )
-        log_string( ERROR, "One component of Ma*white is <= 0" )
+        log_level( ERROR, "One component of Ma*white is <= 0" )
         return(NULL)
         }
 

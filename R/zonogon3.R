@@ -23,13 +23,13 @@ zonogon3  <- function( W, tol=1.e-9 )
     ok  = is.numeric(W)  &&  is.matrix(W)  &&  2<=nrow(W)  &&  ncol(W)==2
     if( ! ok )
         {
-        log_string( ERROR, "argument W is not an nx2 numeric matrix, with n>=2." )
+        log_level( ERROR, "argument W is not an nx2 numeric matrix, with n>=2." )
         return(NULL)
         }
         
     if( ! all( is.finite(W) ) )
         {
-        log_string( ERROR, "matrix W is invalid because it has %d entries that are not finite.", sum(! is.finite(W) ) )
+        log_level( ERROR, "matrix W is invalid because it has %d entries that are not finite.", sum(! is.finite(W) ) )
         return(NULL)
         }
     
@@ -43,7 +43,7 @@ zonogon3  <- function( W, tol=1.e-9 )
     bad     = normal2 <= tol*tol * mean(normal2)
     if( all(bad) )
         {
-        log_string( ERROR, "argument W does not have rank 2, with relative tol=%g.", tol )
+        log_level( ERROR, "argument W does not have rank 2, with relative tol=%g.", tol )
         return(NULL)
         }
     

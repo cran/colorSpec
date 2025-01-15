@@ -19,7 +19,7 @@ emulate.colorSpec  <-  function( x, y, filter=FALSE, matrix=TRUE )
     {
     if( ! requireNamespace( 'MASS', quietly=TRUE ) )
         {
-        log_string( ERROR, "Required package 'MASS' could not be imported."  )
+        log_level( ERROR, "Required package 'MASS' could not be loaded."  )
         return(NULL)
         }
 
@@ -27,7 +27,7 @@ emulate.colorSpec  <-  function( x, y, filter=FALSE, matrix=TRUE )
     ok  = identical( wavelength(x), wavelength(y) )
     if( ! ok )
         {
-        log_string( ERROR, "wavelengths of x and y are not identical." )
+        log_level( ERROR, "wavelengths of x and y are not identical." )
         return(NULL)
         }
 
@@ -37,13 +37,13 @@ emulate.colorSpec  <-  function( x, y, filter=FALSE, matrix=TRUE )
     valid   = (type.x == 'responsivity.light'  ||  type.x == 'responsivity.material' )
     if( ! valid )
         {
-        log_string( ERROR, "type(x) is '%s', which is invalid.\n", type.x )
+        log_level( ERROR, "type(x) is '%s', which is invalid.\n", type.x )
         return(NULL)
         }
 
     if( type.y != type.x )
         {
-        log_string( ERROR, "type(y) = '%s', which is not the same as type(x) = '%s'.\n",
+        log_level( ERROR, "type(y) = '%s', which is not the same as type(x) = '%s'.\n",
                                     type.y, type.x )
         return(NULL)
         }
@@ -53,13 +53,13 @@ emulate.colorSpec  <-  function( x, y, filter=FALSE, matrix=TRUE )
 
     if( M==0  ||  N==0 )
         {
-        log_string( ERROR, "One of x or y has 0 spectra." )
+        log_level( ERROR, "One of x or y has 0 spectra." )
         return(NULL)
         }
 
     if( ! filter  &&  ! matrix )
         {
-        log_string( WARN, "Both 'filter' or 'matrix' are FALSE; returning x unmodified." )
+        log_level( WARN, "Both 'filter' or 'matrix' are FALSE; returning x unmodified." )
         return(x)
         }
 
@@ -81,7 +81,7 @@ emulate.colorSpec  <-  function( x, y, filter=FALSE, matrix=TRUE )
         if( any(mask) )
             {
             log_object( ERROR, wave[mask] )
-            log_string( ERROR, "x spectral values are too small when filter=TRUE, at the above %d wavelengths.  Try restricting the domain.",
+            log_level( ERROR, "x spectral values are too small when filter=TRUE, at the above %d wavelengths.  Try restricting the domain.",
                                 sum(mask) )
             return(NULL)
             }
@@ -92,7 +92,7 @@ emulate.colorSpec  <-  function( x, y, filter=FALSE, matrix=TRUE )
         {
         if( N == 1  &&  2 <= M )
             {
-            log_string( ERROR, "M=%d  and  N=%d; the equation to solve is under-determined. Try setting filter=FALSE.", M, N )
+            log_level( ERROR, "M=%d  and  N=%d; the equation to solve is under-determined. Try setting filter=FALSE.", M, N )
             return(NULL)
             }
 
@@ -119,14 +119,14 @@ emulate.colorSpec  <-  function( x, y, filter=FALSE, matrix=TRUE )
 
         time_elapsed    = as.double( Sys.time() ) - time_start
 
-        log_string( TRACE, "Computed filter and matrix after %d iterations and %g seconds.",
+        log_level( TRACE, "Computed filter and matrix after %d iterations and %g seconds.",
                         res$iterations, time_elapsed )
         }
     else if( filter )
         {
         if( M != N )
             {
-            log_string( ERROR, "matrix is FALSE and numSpectra of x and y are not equal; %d != %d.", M, N )
+            log_level( ERROR, "matrix is FALSE and numSpectra of x and y are not equal; %d != %d.", M, N )
             return(NULL)
             }
 
@@ -147,10 +147,10 @@ emulate.colorSpec  <-  function( x, y, filter=FALSE, matrix=TRUE )
         ran = range(d)
 
         if( ran[1] < 0 )
-            log_string( WARN, "The computed filter is not realizable, min(transmittance) = %g < 0.", ran[1] )
+            log_level( WARN, "The computed filter is not realizable, min(transmittance) = %g < 0.", ran[1] )
 
         if( 1 < ran[2] )
-            log_string( WARN, "The computed filter is not realizable, max(transmittance) = %g > 1.", ran[2] )
+            log_level( WARN, "The computed filter is not realizable, max(transmittance) = %g > 1.", ran[2] )
 
         theFilter  = colorSpec( d, wavelength=wave, quantity='transmittance' )
 
@@ -211,14 +211,14 @@ solveDAX  <-  function( A, Y, iters=200, reltol=5.e-8 )
     {
     if( ! requireNamespace( 'MASS', quietly=TRUE ) )
         {
-        log_string( ERROR, "Required package 'MASS' could not be imported."  )
+        log_level( ERROR, "Required package 'MASS' could not be loaded."  )
         return(NULL)
         }
 
     m   = nrow(A)
     if( nrow(Y) != m )
         {
-        log_string( ERROR, "Bad nrow(Y) = %d != %d.", nrow(Y), m )
+        log_level( ERROR, "Bad nrow(Y) = %d != %d.", nrow(Y), m )
         return(NULL)
         }
 
@@ -263,7 +263,7 @@ solveDAX  <-  function( A, Y, iters=200, reltol=5.e-8 )
 
     if( rep == iters )
         {
-        log_string( ERROR, "Failed to converge after %d iterations.", iters )
+        log_level( ERROR, "Failed to converge after %d iterations.", iters )
         return(NULL)
         }
 
@@ -291,7 +291,7 @@ solveDiagonal  <-  function( B, Y )
     test    = sqrt( BB )
     if( any( test < 1.e-6*max(test) ) )
         {
-        log_string( ERROR, "Matrix B is deficient.  min(sqrt(BB))=%g, max(sqrt(BB))=%g.",
+        log_level( ERROR, "Matrix B is deficient.  min(sqrt(BB))=%g, max(sqrt(BB))=%g.",
                             min(test), max(test) )
         return(NULL)
         }

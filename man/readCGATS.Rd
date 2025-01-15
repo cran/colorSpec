@@ -126,7 +126,7 @@ CGATS.17 Text File Format.
 
 \examples{
 #   read file with 2 tables of non-spectral data
-A70 = readSpectra( system.file( "tests/A70.ti3", package='colorSpec' ) )
+A70 = readCGATS( system.file( "extdata/targets/A70.ti3", package='colorSpec' ) )
 length(A70)         # [1] 2   # the file has 2 tables
 ncol( A70[[1]] )    # [1] 7   # the 1st table has 7 columns
 ncol( A70[[2]] )    # [1] 4   # the 2nd table has 4 columns

@@ -12,14 +12,14 @@ invert.colorSpec <- function( x, response, method="centroid", alpha=1 )
     #   check x
     if( ! is.regular(x) )
         {
-        log_string( ERROR, "responder x does not have regular wavelength step, which is necessary to speed and simplify calculations." )        
+        log_level( ERROR, "responder x does not have regular wavelength step, which is necessary to speed and simplify calculations." )        
         return(NULL)
         }
         
     ok  = grepl( "^responsivity", type(x) )
     if( ! ok )
         {
-        log_string( ERROR, "type(x) = '%s', but it must be 'responsivity.material' or 'responsivity.light'.", type(x) )        
+        log_level( ERROR, "type(x) = '%s', but it must be 'responsivity.material' or 'responsivity.light'.", type(x) )        
         return(NULL)
         }
     
@@ -37,7 +37,7 @@ invert.colorSpec <- function( x, response, method="centroid", alpha=1 )
     idx = pmatch( tolower(method[1]), tolower(methodvec) )
     if( is.na(idx) )
         {
-        log_string( ERROR, "method='%s' is invalid.", method )
+        log_level( ERROR, "method='%s' is invalid.", method )
         return(NULL)
         }
     method  = methodvec[idx]
@@ -52,7 +52,7 @@ invert.colorSpec <- function( x, response, method="centroid", alpha=1 )
         ok  = is.null(alpha)  ||  ( is.numeric(alpha) && length(alpha)==spectra  &&  is.null(dim(alpha)) )
         if( ! ok )
             {
-            log_string( ERROR, "alpha is invalid.  It must be a numeric vector with length = %d, but length(alpha)=%d.", spectra, length(alpha) )
+            log_level( ERROR, "alpha is invalid.  It must be a numeric vector with length = %d, but length(alpha)=%d.", spectra, length(alpha) )
             return(NULL)
             }        
         }
@@ -68,7 +68,7 @@ invert.colorSpec <- function( x, response, method="centroid", alpha=1 )
         {
         if( type(x) == 'responsivity.light' )
             {
-            log_string( ERROR, "Method 'Hawkyard' is invalid when type(x) == 'responsivity.light'."  )
+            log_level( ERROR, "Method 'Hawkyard' is invalid when type(x) == 'responsivity.light'."  )
             return(NULL)
             }  
         out = invertReflectanceHawkyard( x, response, alpha=alpha )
@@ -83,7 +83,7 @@ invert.colorSpec <- function( x, response, method="centroid", alpha=1 )
     count   = sum( is.na(out$estim.precis) )
     if( 0 < count )
         {
-        log_string( WARN, "%d of %d responses could not be inverted.", count, nrow(response) )
+        log_level( WARN, "%d of %d responses could not be inverted.", count, nrow(response) )
         }        
         
     return( out )
@@ -97,7 +97,7 @@ invertReflectanceCentroid <- function( x, response, alpha )
         {
         if( ! requireNamespace( p, quietly=TRUE ) )
             {
-            log_string( ERROR, "Required package '%s' could not be imported.",  p )
+            log_level( ERROR, "Required package '%s' could not be loaded.",  p )
             return(NULL)
             }           
         }
@@ -128,7 +128,7 @@ invertReflectanceCentroid <- function( x, response, alpha )
         ysum            = mat.responsivity %*% alpha
         if( any(ysum <= 0) )
             {
-            log_string( ERROR, "The alpha-weighted sum of the %d responsivities must be all positive.", spectra )
+            log_level( ERROR, "The alpha-weighted sum of the %d responsivities must be all positive.", spectra )
             return(NULL)
             }
 
@@ -248,7 +248,7 @@ invertReflectanceCentroid <- function( x, response, alpha )
             cat( 'rootSolve::multiroot()  res = ', str(res), '\n', file=stderr() )               
             cat( 'res$root   = ', res$root, '\n', file=stderr() )            
             cat( 'res$f.root = ', res$f.root, '\n', file=stderr() )
-            log_string( WARN, "Root-finding failed because ! all( abs(f.root) < rtol*abs(root) + atol ). estim.precis = %g.",  res$estim.precis )
+            log_level( WARN, "Root-finding failed because ! all( abs(f.root) < rtol*abs(root) + atol ). estim.precis = %g.",  res$estim.precis )
             next 
             }  
 
@@ -258,7 +258,7 @@ invertReflectanceCentroid <- function( x, response, alpha )
         #if( 1.e-6 < res$estim.precis )  # max(abs(res$f.root) ) )
         #   {
         #   mess = paste( sprintf( "%g", res$f.root ), collapse=' ' )
-        #   log_string( WARN, "Root-solving error too large: %s, iters=%d, name='%s'\n", mess, res$iter, namevec[k] )
+        #   log_level( WARN, "Root-solving error too large: %s, iters=%d, name='%s'\n", mess, res$iter, namevec[k] )
         #   next
         #   }
 
@@ -292,7 +292,7 @@ invertReflectanceHawkyard <- function( x, response, alpha=alpha )
     {   
     if( type(x) != 'responsivity.material' )
         {
-        log_string( ERROR, "type(x) = '%s', but it must be 'responsivity.material'", type(x) )        
+        log_level( ERROR, "type(x) = '%s', but it must be 'responsivity.material'", type(x) )        
         return(NULL)    
         }
         
@@ -300,7 +300,7 @@ invertReflectanceHawkyard <- function( x, response, alpha=alpha )
     #    {
     #    if( ! requireNamespace( p, quietly=TRUE ) )
     #        {
-    #        log_string( ERROR, "Required package '%s' could not be loaded.",  p )
+    #        log_level( ERROR, "Required package '%s' could not be loaded.",  p )
     #        return(NULL)
     #        }           
     #    }        
@@ -320,7 +320,7 @@ invertReflectanceHawkyard <- function( x, response, alpha=alpha )
         ysum    = mat.responsivity %*% alpha
         if( any(ysum <= 0) )
             {
-            log_string( ERROR, "The alpha-weighted sum of the %d responsivities must be all positive.", spectra )
+            log_level( ERROR, "The alpha-weighted sum of the %d responsivities must be all positive.", spectra )
             return(NULL)
             }
 
@@ -337,7 +337,7 @@ invertReflectanceHawkyard <- function( x, response, alpha=alpha )
     rank = sum( thresh < singular )
     if( rank <  spectra )
         {
-        log_string( ERROR, "The responsivity matrix is rank-deficient (rank=%d < %d).",  rank, spectra )        
+        log_level( ERROR, "The responsivity matrix is rank-deficient (rank=%d < %d).",  rank, spectra )        
         return(NULL)
         }        
     
@@ -397,7 +397,7 @@ invertEnergyCentroid <- function( x, response, alpha )
         {
         if( ! requireNamespace( p, quietly=TRUE ) )
             {
-            log_string( ERROR, "Required package '%s' could not be imported.",  p )
+            log_level( ERROR, "Required package '%s' could not be loaded.",  p )
             return(NULL)
             }           
         }
@@ -406,13 +406,13 @@ invertEnergyCentroid <- function( x, response, alpha )
     mat.responsivity            = as.matrix(x)  #; print( str(mat.responsivity) )
     if( any( mat.responsivity < 0 ) )
         {
-        log_string( ERROR, "Light responsivities are invalid because one or more values is negative." )
+        log_level( ERROR, "Light responsivities are invalid because one or more values is negative." )
         return(NULL)
         }
         
     if( any( rowSums(mat.responsivity) <= 0 ) )
         {
-        log_string( ERROR, "Light responsivities are invalid because their sum is not everywhere positive." )
+        log_level( ERROR, "Light responsivities are invalid because their sum is not everywhere positive." )
         return(NULL)
         }
     
@@ -441,7 +441,7 @@ invertEnergyCentroid <- function( x, response, alpha )
         ysum    = mat.responsivity %*% alpha
         if( any(ysum <= 0) )
             {
-            log_string( ERROR, "The alpha-weighted sum of the %d responsivities must be everywhere positive.", spectra )
+            log_level( ERROR, "The alpha-weighted sum of the %d responsivities must be everywhere positive.", spectra )
             return(NULL)
             }
 
@@ -550,7 +550,7 @@ invertEnergyCentroid <- function( x, response, alpha )
             cat( 'res = ', str(res), '\n', file=stderr() )            
             cat( 'res$root   = ', res$root, '\n', file=stderr() )            
             cat( 'res$f.root = ', res$f.root, '\n', file=stderr() )
-            log_string( INFO, "Root-finding failed because ! all( abs(f.root) < rtol*abs(root) + atol ). estim.precis = %g.",  res$estim.precis )
+            log_level( INFO, "Root-finding failed because ! all( abs(f.root) < rtol*abs(root) + atol ). estim.precis = %g.",  res$estim.precis )
             next 
             }  
             
@@ -652,7 +652,7 @@ invertTLSS <- function( x, response )
         whitelevel  = mean( colSums(mat.responsivity) )  #;  cat( "whitelevel=", whitelevel, '\n' )
         if( whitelevel <= 0 )
             {
-            log_string( ERROR, "Cannot proceed because response to all 1s is non-positive. mean whitelevel=%g.", whitelevel )
+            log_level( ERROR, "Cannot proceed because response to all 1s is non-positive. mean whitelevel=%g.", whitelevel )
             return(NULL)
             }
             
@@ -666,7 +666,7 @@ invertTLSS <- function( x, response )
             meanresp    = mean( y0 )
             if( meanresp <= 0 )
                 {
-                log_string( WARN, "Cannot invert response %d, because mean response is non-positive.   meanresp=%g.", k, meanresp )
+                log_level( WARN, "Cannot invert response %d, because mean response is non-positive.   meanresp=%g.", k, meanresp )
                 next
                 }            
                 
@@ -849,7 +849,7 @@ TLSS  <- function( z0, squash, T, y0, ftol=1.0e-8 )
             {
             #   cat( 'base::solve()  res = ', str(delta), '\n', file=stderr() )
             convergence = 2  # J is bad,  too close to singular
-            log_string( INFO, "Convergence failed because J is too close to singular." )
+            log_level( INFO, "Convergence failed because J is too close to singular." )
             break
             }
             
@@ -857,7 +857,7 @@ TLSS  <- function( z0, squash, T, y0, ftol=1.0e-8 )
             {
             #   cat( 'base::solve()  res = ', str(delta), '\n', file=stderr() )
             convergence = 3  # J is bad,  too close to singular
-            log_string( INFO, "Convergence failed because %d of %d components of delta are not finite.", 
+            log_level( INFO, "Convergence failed because %d of %d components of delta are not finite.", 
                                     sum(! is.finite(delta)), length(delta) )            
             break
             }

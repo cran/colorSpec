@@ -51,9 +51,15 @@ Some features:
 </ul>
 
 
-Regarding the dependencies, the following packages are **Suggests**:
+
+The following packages are **Imports**:
 <ul>
-<li>**spacesXYZ** @spacesXYZ, required for computing CCT, and for some vignettes</li>
+<li>**logger** @logger, used for all logging, see <a href="#appendix-g---logging">Appendix G</a> for more information.</li>
+</ul>
+
+The following packages are **Suggests**:
+<ul>
+<li>**spacesXYZ** @spacesXYZ, required for computing CCT, CRI, and for some vignettes</li>
 <li>**rootSolve** @rootSolve, required for inverse colorimetry</li>
 <li>**MASS** @MASS, required for camera emulation, which uses the matrix pseudoinverse `MASS::ginv()`</li>
 <li>**rgl** @rgl, required for plotting optimal colors in 3D</li>
@@ -438,27 +444,20 @@ This is followed by a section for each spectrum, in XY pixel units only.
 Conversion to wavelength and spectral quantities happens during on-the-fly after read.
 The organization of the returned object is `'vector'`.
 
-<br>
+<br><br>
 
 # Package Options
 
 There is a function `cs.options()` for setting options private to the package.
-There are 3 such options, and all are related to the package logging mechanism.
-All messages go to the console.
+Currently there is only one option (before v 1.6-0 there were three).
 
-There is an option for setting the logging level.
-The levels are the 6 standard ones taken from `Log4J`:
-`FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, and `TRACE`.
-One can set higher levels to see more info.
+By default, when a logging `ERROR` event occurs, execution stops.
+But if the option `colorSpec.stoponerror` is `FALSE`, execution continues.
+The logging level `FATAL` is reserved for internal errors,
+and after a `FATAL` event, execution _always_ stops.
 
-By default, when an `ERROR` event occurs, execution stops.
-But there is a **colorSpec** option to continue.
-The logging level `FATAL` is reserved for internal errors, when execution _always_ stops.
 
-Finally, there is an option for how the message is formatted - a layout option. 
-For details see the help page for the function `cs.options()`.
-
-<br>
+<br><br>
 
 # Future Work
 
@@ -494,6 +493,8 @@ the `product()` function saves the terms with the product object,
 but the `plot()` function ignores them. 
 It may be useful to have an option to plot the individual terms too.
 
+
+<br><br>
 
 # References
 
@@ -731,6 +732,36 @@ but the product of step functions is still a step function.
 In lengthy calculations using both interpretations, there are inevitable numerical errors,
 which are certainly larger than the usual numerical roundoff.
 But we do not attempt carry the error analysis any further than that.
+
+<br><br>
+
+# Appendix G - Logging
+
+Logging is performed using the package **logger**  @logger.
+This is a powerful package that allows a separate configuration
+for logging from within **colorSpec**, and that is what I have done.
+During package loading, the logging threshold is changed from `INFO` to `WARN`.
+To change it back again, one can execute:  
+`logger::log_threshold( logger::INFO, namespace="colorSpec" )     # preferred`  
+or  
+`library( logger )                                                # not preferred`  
+`log_threshold( INFO, namespace="colorSpec" )`
+
+The layout callback function is customized;
+it adds the name of the calling function to the message.
+To change it back again, one can execute:  
+`log_layout( layout_simple, namespace="colorSpec" )`  
+or to install ones own layout function, one can execute:  
+`log_layout( <your function>, namespace="colorSpec" )`.
+
+The appender callback functions is also customized;
+it comes to an immediate stop if the log event level is `FATAL`,
+or if the level is `ERROR` and the global option `colorSpec.stoponerror` is `TRUE`.
+To return to the default behavior, one can execute:  
+`log_appender( appender_console, namespace="colorSpec" )`
+
+The formatter callback function is initialized to be `formatter_sprintf()`;
+this should not be changed.
 
 
 

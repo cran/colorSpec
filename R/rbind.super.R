@@ -139,7 +139,7 @@ rbind_super.list <- function( ... )
     
     if( any( duplicated(rownames.all) ) )
         {
-        log_string( ERROR, "Row names have duplicates." )
+        log_level( ERROR, "Row names have duplicates." )
         return(NULL)
         }
         
@@ -203,7 +203,7 @@ rbind_super.list <- function( ... )
             
             if( ! all_identical(colnames.mat) )
                 {
-                log_string( ERROR, "For column '%s', one data.frame has a matrix, and another has a vector (or a matrix with different # of columns or different column names).",
+                log_level( ERROR, "For column '%s', one data.frame has a matrix, and another has a vector (or a matrix with different # of columns or different column names).",
                                 cname )
                 return(NULL)
                 }

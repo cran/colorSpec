@@ -1,21 +1,69 @@
 
 #   g.* are global variables for colorSpec that are "unlocked" in .onAttach()
 
-#   g.options is a list with private copies of the colorSpec.* options managed by the base package
-#   these copies are used because g.loglevel and g.word[] are derived variables,
-#   and we want to see whether the user has changed a global colorSpec.* option
-g.options   <- list(loglevel = 'WARN',                                  #   must be character
-                    logformat = "%t{%H:%M:%OS3} %l %n::%f(). %m",       #   must be character
+#   g.options is a list used to initialize the colorSpec.* options managed by the base package
+#   after initOptions() is called, g.options is not used again (starting in 2025 that is),
+#   except that it is used to determine the correct variable type in cs.options()
+g.options   <- list(
+                    #loglevel = 'WARN',                                 #   must be character
+                    #logformat = "%t{%H:%M:%OS3} %l %n::%f(). %m",      #   must be character
                     stoponerror = TRUE                                  #   must be logical
                     )
 
 #   g.loglevel  is an integer derived from g.options$loglevel which is a string
 #               it is managed in logging.R
-g.loglevel  <- 0L               # 0L is invalid
+#g.loglevel  <- 0L               # 0L is invalid
 
 #   g.word[]    is a vector of strings derived from g.options$logformat
 #               it is managed in logging.R
-g.word      <- character(0)     # character(0) is invalid
+#g.word      <- character(0)     # character(0) is invalid
+
+
+
+
+#   set the R global .Options in base
+#   this is only called once, from .onLoad()
+
+initOptions <- function( pkgname )
+    {
+    #unlockBinding( "g.options", asNamespace('colorSpec') )          # asNamespace(pkgname) here generates a NOTE !
+    #unlockBinding( "g.word", asNamespace('colorSpec') )             # asNamespace(pkgname) here generates a NOTE !
+    #unlockBinding( "g.loglevel", asNamespace('colorSpec') )         # asNamespace(pkgname) here generates a NOTE !
+
+
+    #   print( g.options )
+
+    #   initialize the colorSpec options managed by base package
+    for( opt in names(g.options) )
+        {
+        fopt    = sprintf( "%s.%s", pkgname, opt )
+
+        value   = base::getOption( fopt )
+
+        if( is.null( value ) )
+            {
+            #   fopt is not set, so set it now from g.options
+            argv        = list( g.options[[ opt ]] )
+            names(argv) = fopt
+            base::options( argv )         # this changes the global object .Options
+            }
+        else
+            {
+            #   the option has already been set in the base package, probably from Profile.site. so do nothing
+            # assignPrivateOption( opt, value )
+            }
+        }
+
+    #   force update of derived variables
+    #setLogLevel( .Options$colorSpec.loglevel )      # updates g.loglevel, an integer
+    #setLogFormat( .Options$colorSpec.logformat )    # updates g.word[], a character array
+
+    # checkBaseOptions()
+
+    
+    return(TRUE)
+    }
+
 
 
 
@@ -38,7 +86,7 @@ cs.options  <-  function(...)
 
     if( is.null(namevec) )
         {
-        cat( sprintf( "WARN  cs.options() All of the %d arguments are unnamed, and ignored\n", n ), file=stderr() )
+        cat( sprintf( "WARN  cs.options() All of the %d arguments are unnamed, and ignored.\n", n ), file=stderr() )
         return( do.call(myfun,list()) )
         }
 
@@ -49,8 +97,8 @@ cs.options  <-  function(...)
     if( 0 < length(idx.unnamed) )
         {
         mess    = paste( idx.unnamed, sep=', ', collapse=' ' )
-        mess    = sprintf( "WARN  cs.options() Arguments indexed '%s' are unnamed, and ignored.", mess )
-        cat( mess, '\n', file=stderr() )
+        mess    = sprintf( "WARN  cs.options() Arguments indexed '%s' are unnamed, and ignored.\n", mess )
+        cat( mess, file=stderr() )
         }
 
     theList = theList[ mask ]       #; print(theList)
@@ -59,17 +107,16 @@ cs.options  <-  function(...)
 
     #   extract just the args with names that partially match the full names, and ignore the rest
     fullname    = names(g.options)
-    #fullname    = c( "loglevel", "logformat", "stoponerror" )
 
-    idx     = pmatch( namevec, fullname )
+    idx     = pmatch( namevec, fullname, duplicates.ok=TRUE )
 
     idx.na  = which( is.na(idx) )
 
     if( 0 < length(idx.na) )
         {
         mess    = paste( namevec[idx.na], collapse=' ' )
-        mess    = sprintf( "WARN  cs.options() Arguments named '%s' cannot be matched, and are ignored.", mess )
-        cat( mess, '\n', file=stderr() )
+        mess    = sprintf( "WARN  cs.options() Arguments named '%s' cannot be matched, and are ignored.\n", mess )
+        cat( mess, file=stderr() )
 
         if( length(idx.na) == length(idx) ) return( do.call(myfun,list())  )
         }
@@ -78,65 +125,106 @@ cs.options  <-  function(...)
 
     #print( idx )    ;   print( mask )
 
-    theList = theList[ mask ]  #    ; print(theList)
-    idx     = idx[ mask ]   # this must have positive length
+    theList     = theList[ mask ]  #    ; print(theList)
+    idx         = idx[ mask ]           # to be valid this must have positive length
+    fullname    = fullname[idx]
 
-    names(theList)  = sprintf( "colorSpec.%s", fullname[idx] )    # prepend
+    if( length(theList) == 0 )
+        {
+        mess    = sprintf( "ERROR  cs.options(). no options are recognized.\n" )
+        cat( mess, file=stderr() )
+        return( do.call(myfun,list())  )
+        }
 
-    #print( theList )
+    names(theList)  = sprintf( "colorSpec.%s", fullname )    # prepend 'colorSpec.'
 
-    #   finally ready to assign global options
-    options( theList )  # this changes the global object .Options
+    #   check the type
+    for( k in length(theList):1 )
+        {
+        value   = theList[[k]]
 
-    checkBaseOptions()
+        thetype = typeof( g.options[[ fullname[k] ]] )
 
-    updatePrivateOptions()
+        if( thetype == "logical" )
+            ok  = is.logical(value)
+        else if( thetype == "integer" )
+            ok  = is.integer(value)
+        else if( thetype == "double" )
+            ok  = is.double(value)
+        else if( thetype == "character" )
+            ok  = is.character(value)
+
+        if( ! ok )
+            {
+            mess    = sprintf( "ERROR cs.options()  Value of option %s is '%s', which has the wrong type.\n",
+                                             names(theList)[k], as.character(value) )
+            cat( mess, file=stderr() )
+
+            #   drop this one
+            theList = theList[-k]
+            }
+        }
+
+
+    if( 0 < length(theList) )
+        {
+        #   finally ready to assign global options
+        base::options( theList )  # this changes the global object .Options
+
+        #print( theList )
+        #cat( "cs.options().   stop=", .Options$colorSpec.stoponerror, '\n'  )
+
+        #   checkBaseOptions()
+
+        # updatePrivateOptions()
+        }
+    else
+        {
+        mess    = sprintf( "WARN  cs.options(). no options were assigned.\n" )
+        cat( mess, file=stderr() )
+        }
 
     return( do.call(myfun,list())  )
     }
 
 
-#   updatePrivateOptions    copy values from public base package .Options to private copies in g.options
-#                           and update derived globals (g.word and g.loglevel) if necessary
-updatePrivateOptions <- function()
+
+
+
+#####################       deadwood below      #########################################
+
+
+checkBaseOptions    <- function()
     {
-    #if( ! unlockPrivateOptions() )
-    #    {
-    #    #   should not happen, this is FATAL
-    #    mess = sprintf( "FATAL  Cannot unlock private options." )
-    #    stop( mess, '\n', call.=FALSE )
-    #    }
-        
-
-    if( ! identical( g.options$loglevel, .Options$colorSpec.loglevel ) )
+    for( name in names(g.options) )
         {
-        setLogLevel( .Options$colorSpec.loglevel )
-        }
+        baseopt    = sprintf( "colorSpec.%s", name )
 
-    if( ! identical( g.options$logformat, .Options$colorSpec.logformat ) )
-        {
-        setLogFormat( .Options$colorSpec.logformat )
-        }
+        value   = base::getOption( baseopt )
 
-    if( is.logical(.Options$colorSpec.stoponerror) )
-        {
-        if( ! identical( g.options$stoponerror, .Options$colorSpec.stoponerror ) )
+        if( is.null(value) )
             {
-            assignPrivateOption( 'stoponerror', .Options$colorSpec.stoponerror )
+            mess    = sprintf( "ERROR checkBaseOptions() Option '%s' is unassigned.", baseopt  )
+            cat( mess, '\n', file=stderr() )
+            next
+            }
+
+        if( name == 'stoponerror' )
+            ok  = is.logical(value)
+        else
+            ok  = is.character(value)
+
+        if( ! ok )
+            {
+            mess    = sprintf( "ERROR checkBaseOptions()  Value of option %s is '%s', which has the wrong type.", baseopt, as.character(value) )
+            cat( mess, '\n', file=stderr() )
             }
         }
-    else
-        {
-        mess = sprintf( "WARN  updatePrivateOptions() colorSpec.stoponerror='%s' is not logical - ignored.",
-                            as.character(.Options$colorSpec.stoponerror) )
-        cat( mess, '\n', file=stderr() )
-        }
-
-    return(TRUE)
     }
-    
-    
-    
+
+
+
+
 #   this is only called once, from myonLoad()
 
 unlockPrivateOptions <- function()
@@ -146,7 +234,7 @@ unlockPrivateOptions <- function()
     #if( ! base::bindingIsLocked( "g.options", env ) )
     #    #   all 3 variables have already been unlocked, nothing to do
      #   return(TRUE)
-        
+
     #   this is the first time the function has been called
     for( sym in c("g.options","g.word","g.loglevel") )
         {
@@ -156,9 +244,9 @@ unlockPrivateOptions <- function()
         if( base::bindingIsLocked( sym, env ) )
             return(FALSE)
         }
-    
+
     return(TRUE)
-    }    
+    }
 
 
 #   name        one of 'loglevel', 'logformat', 'stoponerror'
@@ -180,80 +268,3 @@ assignPrivateOption <- function( name, value )
     #   cat( name, sprintf( '%s\n', as.character(g.options[[name]]) ) )
     }
 
-
-checkBaseOptions    <- function()
-    {
-    for( name in names(g.options) )
-        {
-        baseopt    = sprintf( "colorSpec.%s", name )
-
-        value   = getOption( baseopt )
-
-        if( is.null(value) )
-            {
-            mess    = sprintf( "ERROR checkBaseOptions() Option '%s' is unassigned.", baseopt  )
-            cat( mess, '\n', file=stderr() )
-            next
-            }
-
-        if( name == 'stoponerror' )
-            ok  = is.logical(value)
-        else
-            ok  = is.character(value)
-
-        if( ! ok )
-            {
-            mess    = sprintf( "ERROR checkBaseOptions()  Value of option %s is '%s', which has the wrong type.", baseopt, as.character(value) )
-            cat( mess, '\n', file=stderr() )
-            }
-        }
-    }
-    
-    
-    
-
-#   synchronize R global .Options in base,  and g.options in colorSpec
-#   this is only called once, from .onLoad()
-
-initOptions <- function( pkgname )
-    {
-    #unlockBinding( "g.options", asNamespace('colorSpec') )          # asNamespace(pkgname) here generates a NOTE !
-    #unlockBinding( "g.word", asNamespace('colorSpec') )             # asNamespace(pkgname) here generates a NOTE !
-    #unlockBinding( "g.loglevel", asNamespace('colorSpec') )         # asNamespace(pkgname) here generates a NOTE !
-
-
-    #   print( g.options )
-
-    #   initialize the colorSpec options managed by base package
-    for( opt in names(g.options) )
-        {
-        fopt    = sprintf( "%s.%s", pkgname, opt )
-
-        value   = getOption( fopt )
-
-        if( is.null( value ) )
-            {
-            #   fopt is not set, so set it now from g.options
-            argv        = list( g.options[[ opt ]] )
-            names(argv) = fopt
-            base::options( argv )         # this changes the global object .Options
-            }
-        else
-            {
-            #   option has been set in the base package, probably from Profile.site
-            assignPrivateOption( opt, value )
-            }
-        }
-
-    #   force update of derived variables
-    setLogLevel( .Options$colorSpec.loglevel )      # updates g.loglevel, an integer
-    setLogFormat( .Options$colorSpec.logformat )    # updates g.word[], a character array
-
-    checkBaseOptions()
-
-    #   the options are now in synch !
-    return(TRUE)
-    }
-    
-    
-    

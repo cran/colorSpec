@@ -57,14 +57,14 @@ zonohedron  <- function( W, tol1=5.e-7, tol2=5.e-10, perf=FALSE )
     ok  = is.numeric(W)  &&  is.matrix(W)  &&  3<=nrow(W)  &&  ncol(W)==3
     if( ! ok )
         {
-        log_string( ERROR, "argument W is not an nx3 numeric matrix, with n>=3." )
+        log_level( ERROR, "argument W is not an nx3 numeric matrix, with n>=3." )
         return(NULL)
         }
         
     mask    = is.finite(W)
     if( ! all(mask) )
         {
-        log_string( ERROR, "matrix W is invalid because it has %d entries that are not finite.", sum(! mask) )
+        log_level( ERROR, "matrix W is invalid because it has %d entries that are not finite.", sum(! mask) )
         return(NULL)
         }
         
@@ -133,7 +133,7 @@ zonohedron  <- function( W, tol1=5.e-7, tol2=5.e-10, perf=FALSE )
         bad     = normal2 <= tol2*tol2 * W1W2     #; print( bad )
         if( all(bad) )
             {
-            log_string( ERROR, "matrix W does not have rank 2, with relative tol2=%g.", tol2 )
+            log_level( ERROR, "matrix W does not have rank 2, with relative tol2=%g.", tol2 )
             return(NULL)
             }
             
@@ -141,7 +141,7 @@ zonohedron  <- function( W, tol1=5.e-7, tol2=5.e-10, perf=FALSE )
             {    
             #mess    = sprintf( "%d bad face normals, out of %d.\n", sum(bad), length(bad) )
             #cat(mess)
-            #   log_string( INFO, "%d normals flagged as too small, out of %d.", sum(bad), length(bad) )
+            #   log_level( INFO, "%d normals flagged as too small, out of %d.", sum(bad), length(bad) )
             normal[ bad, ]  = NA_real_        
             #   angle[ bad ]    = NA_real_            
             }
@@ -204,7 +204,7 @@ zonohedron  <- function( W, tol1=5.e-7, tol2=5.e-10, perf=FALSE )
         
         if( all( out$clusteridx==1  |  is.na(out$clusteridx) ) )
             {
-            log_string( ERROR, "matrix W does not have rank 3." )
+            log_level( ERROR, "matrix W does not have rank 3." )
             return(NULL)
             }
         
@@ -412,7 +412,7 @@ zonohedron  <- function( W, tol1=5.e-7, tol2=5.e-10, perf=FALSE )
                     print( i )
                     print( cluster )
                     print( idx )
-                    log_string( FATAL, "no match for idx=%d,%d.  Try reducing tol2=%g to a smaller value", 
+                    log_level( FATAL, "no match for idx=%d,%d.  Try reducing tol2=%g to a smaller value", 
                                         idx[1], idx[2], tol2 )                    
                     return(NULL)
                     }
@@ -447,7 +447,7 @@ zonohedron  <- function( W, tol1=5.e-7, tol2=5.e-10, perf=FALSE )
     betamin = min( out$face$beta  )
     if( betamin <= 0 )
         {
-        log_string( FATAL, "Internal Error.  min(beta)=%g <= 0.", betamin )
+        log_level( FATAL, "Internal Error.  min(beta)=%g <= 0.", betamin )
         return(NULL)
         }
         
@@ -459,7 +459,7 @@ zonohedron  <- function( W, tol1=5.e-7, tol2=5.e-10, perf=FALSE )
         tiny    = 5.e-8
         if( tiny < max(betarange) )
             {
-            log_string( WARN, "For cluster %d, plane constant range = %g > %g.", 
+            log_level( WARN, "For cluster %d, plane constant range = %g > %g.", 
                                 which.max(betarange), max(betarange), tiny )
             }
         }
@@ -560,7 +560,7 @@ raytrace.zonohedron <- function( x, base, direction )
     ok  = is.numeric(base)  &&  length(base)==3  &&  all( is.finite(base) )
     if( ! ok )
         {
-        log_string( ERROR, "base is invalid. It must be a numeric vector of length 3, and all entries finite." )
+        log_level( ERROR, "base is invalid. It must be a numeric vector of length 3, and all entries finite." )
         return(NULL)
         }
         
@@ -598,7 +598,7 @@ raytrace.zonohedron <- function( x, base, direction )
         
     if( ! ok )
         {
-        log_string( ERROR, "point base=(%g,%g,%g) is not in the interior of the zonohedron.  distance=%g >= 0.", 
+        log_level( ERROR, "point base=(%g,%g,%g) is not in the interior of the zonohedron.  distance=%g >= 0.", 
                                 base[1], base[2], base[3], distance )
         return(NULL)
         }
@@ -780,7 +780,7 @@ raytrace2.zonohedron <- function( x, base, direction )
     ok  = is.numeric(base)  &&  length(base)==3  &&  all( is.finite(base) )
     if( ! ok )
         {
-        log_string( ERROR, "base is invalid. It must be a numeric vector of length 3, and all entries finite." )
+        log_level( ERROR, "base is invalid. It must be a numeric vector of length 3, and all entries finite." )
         return(NULL)
         }
         
@@ -903,7 +903,7 @@ raytrace2.zonohedron <- function( x, base, direction )
         if( 1.e-10 < delta )
             {
             # cat( out$delta, '\n' )
-            log_string( ERROR, "Failed verification, delta=%g.", delta )
+            log_level( ERROR, "Failed verification, delta=%g.", delta )
             return(NULL)
             }
         }
@@ -951,7 +951,7 @@ invertboundary.zonohedron <- function( x, boundary, data=NULL, tol=NULL )      #
     ok  = is.numeric(boundary)  &&  is.matrix(boundary)  &&  0<nrow(boundary)  &&  ncol(boundary)==3
     if( ! ok )
         {
-        log_string( ERROR, "argument boundary is invalid." )
+        log_level( ERROR, "argument boundary is invalid." )
         return(NULL)
         }
         
@@ -970,7 +970,7 @@ invertboundary.zonohedron <- function( x, boundary, data=NULL, tol=NULL )      #
         eps = 5.e-10
         if( eps < delta )
             {
-            log_string( WARN, "boundary delta = %g > %g.", delta, eps )
+            log_level( WARN, "boundary delta = %g > %g.", delta, eps )
             }
 
         #return(NULL)
@@ -984,7 +984,7 @@ invertboundary.zonohedron <- function( x, boundary, data=NULL, tol=NULL )      #
     ok  = ok   &&   !is.null(data$faceidx)  &&  !is.null(data$sign)  &&  !is.null(data$alpha)
     if( ! ok )
         {
-        log_string( ERROR, "argument data is invalid." )
+        log_level( ERROR, "argument data is invalid." )
         return(NULL)
         }
     
@@ -1093,7 +1093,7 @@ invertboundary.zonohedron <- function( x, boundary, data=NULL, tol=NULL )      #
         out$delta   = rowSums(delta)
         
         if( tol <= max(out$delta,na.rm=TRUE) )
-            log_string( WARN, "Verification failed. max(delta)=%g > %g.", max(delta), tol )
+            log_level( WARN, "Verification failed. max(delta)=%g > %g.", max(delta), tol )
         }
            
 
@@ -1115,7 +1115,7 @@ expandcoeffs <- function( x, pcube, tol=NULL )
     {
     if( length(pcube) != nrow(x$Wcond) )
         {
-        log_string( FATAL, "mismatch %d != %d", length(pcube), nrow(x$Wcond) )
+        log_level( FATAL, "mismatch %d != %d", length(pcube), nrow(x$Wcond) )
         return(NULL)
         }
    
@@ -1198,7 +1198,7 @@ expandcoeffs <- function( x, pcube, tol=NULL )
         mad = max( abs(delta) ) ; cat( "mad=", mad, '\n' )
         if( tol < mad )
             {
-            log_string( WARN, "%g < %g = max(abs(delta))", tol, mad )
+            log_level( WARN, "%g < %g = max(abs(delta))", tol, mad )
             }
         }
 
@@ -1221,14 +1221,14 @@ section.zonohedron <- function( x, normal, beta )
     ok  = is.numeric(normal)  &&  length(normal)==3  &&  all( is.finite(normal) )
     if( ! ok )
         {
-        log_string( ERROR, "normal is invalid. It must be a numeric vector of length 3, and all entries finite." )
+        log_level( ERROR, "normal is invalid. It must be a numeric vector of length 3, and all entries finite." )
         return(NULL)
         }
         
     ok  = is.numeric(beta)  &&  0<length(beta)   &&  all( is.finite(beta) )
     if( ! ok )
         {
-        log_string( ERROR, "beta is invalid. It must be a numeric vector of positive length, and all entries finite." )
+        log_level( ERROR, "beta is invalid. It must be a numeric vector of positive length, and all entries finite." )
         return(NULL)
         }
         
@@ -1327,7 +1327,7 @@ section.zonohedron <- function( x, normal, beta )
         if( length(indexvec) == 0 )  
             {    
             # should not happen
-            # log_string( WARN, .... )
+            # log_level( WARN, .... )
             next
             }
 
@@ -1534,7 +1534,7 @@ dumpcluster.zonohedron <- function( x, k, maxrows=50 )
     ok  = 1<=k  &&  k<=length(x$cluster)
     if( ! ok )
         {
-        log_string( ERROR, "argument k=%d is invalid; it is not in [1,%d].", k, length(x$cluster) )
+        log_level( ERROR, "argument k=%d is invalid; it is not in [1,%d].", k, length(x$cluster) )
         return(FALSE)
         }
         
@@ -1578,14 +1578,14 @@ plotcluster.zonohedron <- function( x, k )
     {
     if( length(x$cluster) == 0 )
         {
-        log_string( ERROR, "The zonohedron has no clusters." )
+        log_level( ERROR, "The zonohedron has no clusters." )
         return(FALSE)
         }
     
     ok  = 1<=k  &&  k<=length(x$cluster)
     if( ! ok )
         {
-        log_string( ERROR, "k=%d is outside [1,%d].", length(x$cluster) )
+        log_level( ERROR, "k=%d is outside [1,%d].", length(x$cluster) )
         return(FALSE)
         }    
     
@@ -1674,7 +1674,7 @@ plot.zonohedron <- function( x, type='w', both=TRUE, axes=c(1,2), cidx=0, faceid
     {
     if( ! requireNamespace( 'rgl', quietly=TRUE ) ) 
         {
-        log_string( ERROR, "Package 'rgl' is required.  Please install it." )        
+        log_level( ERROR, "Package 'rgl' is required.  Please install it." )        
         return(FALSE)
         }
             
@@ -1988,7 +1988,7 @@ plotpolygon.zonohedron <- function( x, normal=c(1,1,1) )
         {
         if( ! requireNamespace( 'quadprog', quietly=TRUE ) )
             {
-            log_string( ERROR, "Required package 'quadprog' could not be imported."  )
+            log_level( ERROR, "Required package 'quadprog' could not be imported."  )
             return(NULL)
             }     
         
@@ -1997,7 +1997,7 @@ plotpolygon.zonohedron <- function( x, normal=c(1,1,1) )
         
         if( inherits(res,"try-error") )    
             {
-            log_string( ERROR, "zonohedron x is not salient." )
+            log_level( ERROR, "zonohedron x is not salient." )
             return(FALSE)
             }
         
@@ -2011,7 +2011,7 @@ plotpolygon.zonohedron <- function( x, normal=c(1,1,1) )
     denom   = as.numeric( x$W %*% normal )
     if( ! all(0 < denom) )
         {
-        log_string( ERROR, "normal=%g,%g,%g is invalid.", normal[1], normal[2], normal[3] )
+        log_level( ERROR, "normal=%g,%g,%g is invalid.", normal[1], normal[2], normal[3] )
         return(FALSE)
         }
         
@@ -2300,7 +2300,7 @@ frame3x2fun <- function( normal )
     ok  = is.numeric(normal)  &&  length(normal)==3  &&  0<sum(abs(normal))
     if( ! ok )
         {
-        log_string( ERROR, "argument normal is invalid." )
+        log_level( ERROR, "argument normal is invalid." )
         return(NULL)
         }
         
@@ -2331,13 +2331,13 @@ frame3x2fun <- function( normal )
         test    = normal %*% out
         if( 1.e-14 < max(abs(test)) )
             {
-            log_string( ERROR, "frame3x2fun() failed orthogonal test = %g!", max(abs(test))  )
+            log_level( ERROR, "frame3x2fun() failed orthogonal test = %g!", max(abs(test))  )
             }
         
         test    = t(out) %*% out  -  diag(2)
         if( 1.e-14 < max(abs(test)) )
             {
-            log_string( ERROR, "frame3x2fun() failed product test = %g!", max(abs(test))  )
+            log_level( ERROR, "frame3x2fun() failed product test = %g!", max(abs(test))  )
             }
         }
         
@@ -2388,7 +2388,7 @@ condenseGenerators <- function( W, tol )
         
     if( all(zeromask) )
         {
-        log_string( ERROR, "W is invalid; all rows are 0." )
+        log_level( ERROR, "W is invalid; all rows are 0." )
         return(NULL)
         }
     
@@ -2466,7 +2466,7 @@ condenseGenerators <- function( W, tol )
             test    = Wgroup %*% Wgroup[1, ]
             if( any( test < 0 ) )
                 {
-                log_string( ERROR, "Generators are invalid. One generator is a negative multiple of another one." )
+                log_level( ERROR, "Generators are invalid. One generator is a negative multiple of another one." )
                 return(NULL)
                 }
                 

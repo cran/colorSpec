@@ -49,6 +49,7 @@ If \code{legend=FALSE} then no legend is drawn.
 \item{CCT}{
 If \code{CCT=TRUE} and the \code{type} of \code{x} is \code{'light'} then
 the CCT of each spectrum is added to the legend; see \code{\link{computeCCT}()}.
+The package \bold{spacesXYZ} must be installed.
 }
 
 \item{add}{

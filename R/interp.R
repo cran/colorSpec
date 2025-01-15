@@ -24,7 +24,7 @@ interpQuad  <-  function( .quad, .point, .val )
     zeros   = sum( e2 == 0 )    
     if( 2 <= zeros )
         {
-        log_string( ERROR, ".quad is vertex-degenerate." )
+        log_level( ERROR, ".quad is vertex-degenerate." )
         return(NULL)
         }
 
@@ -34,7 +34,7 @@ interpQuad  <-  function( .quad, .point, .val )
     if( zeros == 1 )
         {
         #   quadrangle degenerates to a triangle - a special case
-        log_string( WARN, ".quad degenerates to a triangle." )
+        log_level( WARN, ".quad degenerates to a triangle." )
         del = which( e2 == 0 )
         tri = .quad[ -del, ]    ; log_object( TRACE, tri )
         
@@ -49,7 +49,7 @@ interpQuad  <-  function( .quad, .point, .val )
             }        
         else
             {
-            log_string( ERROR, "Point %g,%g is not inside the degenerate quadrangle.", .point[1], .point[2] )
+            log_level( ERROR, "Point %g,%g is not inside the degenerate quadrangle.", .point[1], .point[2] )
             return(NULL)        
             }
         }
@@ -72,7 +72,7 @@ interpQuad  <-  function( .quad, .point, .val )
     
     if( 2 <= zeros )
         {
-        log_string( ERROR, ".quad is edge-degenerate." )
+        log_level( ERROR, ".quad is edge-degenerate." )
         return(NULL)
         }
     
@@ -88,7 +88,7 @@ interpQuad  <-  function( .quad, .point, .val )
         
         if( sum.cross == 0 )
             {
-            log_string( ERROR, ".quad is not a simple polygon." )
+            log_level( ERROR, ".quad is not a simple polygon." )
             return(NULL)
             }
         
@@ -108,12 +108,12 @@ interpQuad  <-  function( .quad, .point, .val )
             }
         else
             {
-            log_string( FATAL, "Internal error.  sum.cross=%g.", sum.cross )
+            log_level( FATAL, "Internal error.  sum.cross=%g.", sum.cross )
             return(NULL)
             }
         }
         
-    log_string( TRACE, "Split polygon at vertex=%d.", split )
+    log_level( TRACE, "Split polygon at vertex=%d.", split )
 
     
     #   determine which triangle contains .point, using barycentric coords
@@ -148,7 +148,7 @@ interpQuad  <-  function( .quad, .point, .val )
         return( as.numeric(out) )
         }
     
-    log_string( ERROR, "Point %g,%g is not inside the quadrangle.", .point[1], .point[2] )
+    log_level( ERROR, "Point %g,%g is not inside the quadrangle.", .point[1], .point[2] )
     
     return(NULL)
     }
@@ -238,7 +238,7 @@ interpSprague  <-  function( .mat, .wavemin, .wavestep, .wavenew )
         
     if( any( is.nan(out) ) )
         {
-        log_string( FATAL, "Failed to fill all the %dx%d entries !", nrow(out), ncol(out) )
+        log_level( FATAL, "Failed to fill all the %dx%d entries !", nrow(out), ncol(out) )
         return(NULL)
         }
         

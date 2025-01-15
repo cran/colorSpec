@@ -32,7 +32,7 @@ ptransform.colorSpec  <-  function( x, primary, white, digits=Inf   )
     valid   = is.colorSpec(x) &&  grep( "^responsivity", type(x) )
     if( ! valid )
         {
-        log_string( ERROR, "x is not a colorSpec responder; type(x)='%s'.", type(x) )
+        log_level( ERROR, "x is not a colorSpec responder; type(x)='%s'.", type(x) )
         return(NULL)
         }
     
@@ -41,7 +41,7 @@ ptransform.colorSpec  <-  function( x, primary, white, digits=Inf   )
     valid   = is.numeric(primary) && !is.null(dim(primary)) &&  !is.null(rownames(primary))  &&  all( dim(primary)==c(m,m) ) 
     if( ! valid )
         {
-        log_string( ERROR, "primary is invalid. It must be a %dx%d matrix with rownames.", m, m )
+        log_level( ERROR, "primary is invalid. It must be a %dx%d matrix with rownames.", m, m )
         return(NULL)
         }
 
@@ -54,7 +54,7 @@ ptransform.colorSpec  <-  function( x, primary, white, digits=Inf   )
         
         if( min(2,m) <= length(idx) )
             {
-            log_string( ERROR, "The %th row of primary has %d NAs, which is too many.", i, length(idx) )
+            log_level( ERROR, "The %th row of primary has %d NAs, which is too many.", i, length(idx) )
             return(NULL)
             }
         
@@ -72,7 +72,7 @@ ptransform.colorSpec  <-  function( x, primary, white, digits=Inf   )
     valid   = is.numeric(white)  &&  (length(white)==m)  
     if( ! valid )
         {
-        log_string( ERROR, "white is invalid. It must be a numeric vector of length %d.", m )
+        log_level( ERROR, "white is invalid. It must be a numeric vector of length %d.", m )
         return(NULL)
         }
         
@@ -83,7 +83,7 @@ ptransform.colorSpec  <-  function( x, primary, white, digits=Inf   )
         white.sum   = sum(white)
         if( white.sum == 0 )
             {
-            log_string( ERROR, "sum(white) = %g, which is invalid.", white.sum )
+            log_level( ERROR, "sum(white) = %g, which is invalid.", white.sum )
             return(NULL)
             }
         
@@ -100,7 +100,7 @@ ptransform.colorSpec  <-  function( x, primary, white, digits=Inf   )
     B   = projectiveMatrix( t(primary), white )
     if( is.null(B) )
         {
-        log_string( ERROR, "primary and/or white are degenerate." )
+        log_level( ERROR, "primary and/or white are degenerate." )
         return(NULL)
         }    
     

@@ -23,8 +23,15 @@ testSink <- function()
 
     #   path should have 4 lines in it
     line    = readLines( path )   #;   cat( length(line), '\n' )
+    
+    ok  = length(line) == 4
+    if( ! ok )
+        {
+        cat( "bad file:\n" )
+        cat( line, sep='\n' )
+        }
 
-    return( length(line) == 4 )
+    return( ok )
     }
 
 

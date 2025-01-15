@@ -1,5 +1,11 @@
 # NEWS for **colorSpec** package
 
+
+### Changes for version 1.6-0  [2025-01-15]
+* added function `computeCRIdata()` and improved the capability of `computeCRI()`
+* all logging done with package **logger**, which is imported
+* improved the wording of some logged messages
+
 ### Changes for version 1.5-0  [2024-01-28]
 * moved initialization of `colorSpec` options from `.onAttach()` to `.onLoad()`, so `colorSpec` can be used without attaching it; thanks to Pedro Aphalo
 * fixed some internal warnings about `partial argument match`; thanks to Pedro Aphalo

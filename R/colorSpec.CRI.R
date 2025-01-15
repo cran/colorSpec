@@ -1,40 +1,40 @@
 
-#   x      a colorSpec object with type 'light'
+#   x      a colorSpec object with a single spectrum and type 'light'.  Already verified.
 #
-#   returns CRI in interval (-Inf,100], or NA
-
+#   if full is FALSE, just returns the CRI in interval (-Inf,100], or NA
+#   if full is TRUE, returns a list of intermediate data, and also the CRI
+#
 #   requires private data frame TCSforCRI, which is lazy-loaded from sysdata.rda;  see savePrivateDatasets()
+#
+#   in case of error, returns NULL
 
-computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
+computeCRIsingle   <- function( x, full, CCT=NULL, adapt=TRUE, tol=5.4e-3 )
     {
-    out = NA_real_
-
-    if( numSpectra( x ) != 1 )
+    if( is.null(CCT) )
         {
-        log_string( ERROR, "Object '%s' has %d spectra, but must have exactly 1.",
-                    deparse(substitute(x)), numSpectra( x ) )
-        return( out )
+        if( ! requireNamespace( "spacesXYZ", quietly=TRUE ) )
+            {
+            log_level( WARN, "Package 'spacesXYZ' needs to be installed to compute CCT." )
+            return( NULL )
+            }
+
+        CCT = computeCCT( x )
         }
 
-    names(out)  = specnames(x)
+    ok  = length(CCT)==1  &&  is.numeric(CCT)  &&  is.finite(CCT)  &&  0<CCT
 
-    if( type(x) != 'light' )
+    if( ! ok )
         {
-        log_string( WARN, "The type of of '%s' is '%s', but it must be 'light'.",
-                    deparse(substitute(x)), type(x) )
-        return( out )
+        log_level( WARN, "CCT is invalid.  It must be a single positive number." )
+        return(NULL)
         }
-
-    CCT = computeCCT( x )     #;  print(CCT)
-
-    if( is.na(CCT) )    return(out) # error message already issued
 
     wave    = wavelength(x)
 
     #   find the reference illuminant
     locus   = ifelse( CCT < 5000, 'planckian', 'daylight' )
 
-    #log_string( DEBUG, "For CCT=%g, using %s radiator as reference.", CCT, locus )
+    #log_level( DEBUG, "For CCT=%g, using %s radiator as reference.", CCT, locus )
 
     if( locus == 'planckian' )
         #   Planckian radiator
@@ -42,6 +42,9 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
     else
         #   daylight radiator
         illum.ref   = daylightSpectra( CCT, wavelength=wave, roundMs=TRUE )
+
+    if( is.null(illum.ref) )    return(NULL)    # error already issued
+
 
     XYZ.illum.test  = product( x, colorSpec::xyz1931.1nm, wavelength=wave )
 
@@ -61,14 +64,13 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
     xy.illum.ref  = xyY_from_XYZ(XYZ.illum.ref)[ ,1:2, drop=F]
     uv.illum.ref  = uv_from_xy( xy.illum.ref )      #; cat( "uv (ideal)", uv.illum.ref, '\n' )
 
-    dc  = sqrt( sum( (uv.illum.test - uv.illum.ref)^2 ) )      #; print(dc)
+    Delta_uv  = sqrt( sum( (uv.illum.test - uv.illum.ref)^2 ) )      #; print(Delta_uv)
 
-    if( tol < dc )
+    if( tol < Delta_uv )
         {
-        #   print(dc)
-        log_string( ERROR, "The distance from uv.test to uv.ref (on the %s locus) = %g > %g.  It is too large.",
-                                locus, dc, tol )
-        return( out )
+        log_level( WARN, "For spectrum '%s', the distance from uv.test to uv.ref (on the %s locus) = %g > %g.  It is too large.",
+                                specnames(x), locus, Delta_uv, tol )
+        return( NULL )
         }
 
     #   compute UVW.ref for the first 8 test samples
@@ -81,6 +83,9 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
 
     XYZ.test    = product( x, TCSforCRI, colorSpec::xyz1931.1nm, wavelength=wave )
 
+    #   prepend an 'R' to the test sample number
+    rnames  = paste0( 'R', 1:nrow(TCSforCRI) )
+    
     if( adapt )
         {
         #   compute uv for each test sample
@@ -93,12 +98,12 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
 
         #class(uv.before)    = 'model.matrix'
         #class(uv)           = 'model.matrix'
-        #table4  = data.frame( before=uv.before, after=uv, difference=uv-uv.before )
+        #table3  = data.frame( before=uv.before, after=uv, difference=uv-uv.before )
 
-        table4              = data.frame( row.names=1:nrow(uv) )
-        table4$before       = uv.before
-        table4$after        = uv
-        table4$difference   = uv - uv.before
+        table3              = data.frame( row.names=rnames )
+        table3$before       = uv.before
+        table3$after        = uv
+        table3$difference   = uv - uv.before
 
         uvY.0   =  c( uv.illum.ref, XYZ.illum.test[2] )    # note use of uv ref illum here
 
@@ -108,53 +113,154 @@ computeCRI.colorSpec   <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3  )
     else
         {
         UVW.test = UVW_from_XYZ( XYZ.test, XYZ.illum.test )         # note use of test illum here
-        table4  = NULL
+        table3  = NULL
         }
 
     #   now for the DeltaE's
     DeltaE  = sqrt( rowSums( (UVW.test- UVW.ref)^2 ) )  # a vector of length 14
     CRI     = 100 - 4.6*DeltaE                          # a vector of length 14
 
-    #print( rbind(DeltaE,CRI) )
-
-    #   the output is the mean of the 1st 8 test samples only !!
-    out = mean( CRI[1:8] )
-
-    names(out)  = specnames(x)
-
-    if( attach )
+    if( ! full )
         {
-        table1  = rbind( XYZ.illum.test, XYZ.illum.ref )
-        table2  = rbind( xy.illum.test, xy.illum.ref )
-        table3  = rbind( uv.illum.test, uv.illum.ref )
-
-        table1  = cbind( table1, table2, table3 )
-
-        #class(XYZ.ref)  = 'model.matrix'
-        #class(XYZ.test) = 'model.matrix'
-        df2         = data.frame( row.names=1:nrow(XYZ.ref) )
-        df2$referen = XYZ.ref
-        df2$test    = XYZ.test
-
-
-        #class(UVW.ref)  = 'model.matrix'
-        #class(UVW.test) = 'model.matrix'
-        df4         = data.frame( row.names=1:nrow(UVW.ref) )
-        df4$referen = UVW.ref
-        df4$test    = UVW.test
-        df4$DeltaE  = DeltaE
-        df4$CRI     = CRI
-
-        attr(out,'data')    = list( CCT=CCT,
-                                    table1=table1,
-                                    table2=df2,     # data.frame( referen=XYZ.ref,  test=XYZ.test),
-                                    table3=table4,
-                                    table4=df4 )      # data.frame( referen=UVW.ref,  test=UVW.test, DeltaE=DeltaE, CRI=CRI ) )
+        #   only a number is requested, so we can exit now
+        #   the final CRI is the mean of the 1st 8 test samples only !!
+        return( mean( CRI[1:8] ) )
         }
 
+    #print( rbind(DeltaE,CRI) )
+
+    tab1    = rbind( XYZ.illum.test, XYZ.illum.ref )
+    tab2    = rbind( xy.illum.test, xy.illum.ref )
+    tab3    = rbind( uv.illum.test, uv.illum.ref )
+
+    table1  = cbind( tab1, tab2, tab3 )
+
+    #class(XYZ.ref)  = 'model.matrix'
+    #class(XYZ.test) = 'model.matrix'
+    table2          = data.frame( row.names=rnames )
+    table2$referen  = XYZ.ref
+    table2$test     = XYZ.test
+
+
+    table4          = data.frame( row.names=rnames )
+    table4$referen  = UVW.ref
+    table4$test     = UVW.test
+    table4$DeltaE   = DeltaE
+    table4$CRI      = CRI
+
+    #   the final CRI is the mean of the 1st 8 test samples only !!
+    out = list( CCT=CCT,
+                illum.ref=illum.ref,
+                table1=table1,
+                Delta_uv=Delta_uv,
+                table2=table2,     # data.frame( referen=XYZ.ref,  test=XYZ.test),
+                table3=table3,
+                table4=table4,
+                CRI=mean( CRI[1:8] ) )      # data.frame( referen=UVW.ref,  test=UVW.test, DeltaE=DeltaE, CRI=CRI ) )
 
     return( out )
     }
+
+
+#   x      a colorSpec object with type 'light'
+#
+#   returns a list of intermediate data, followed by CRI in interval (-Inf,100], or NA
+
+#   requires private data frame TCSforCRI, which is lazy-loaded from sysdata.rda;  see savePrivateDatasets()
+#
+#   in case of error, returns NULL
+
+computeCRIdata.colorSpec   <- function( x, CCT=NULL, adapt=TRUE, tol=5.4e-3 )
+    {
+    if( numSpectra( x ) != 1 )
+        {
+        log_level( WARN, "Object '%s' has %d spectra, but must have exactly 1.",
+                    deparse(substitute(x)), numSpectra( x ) )
+        return( NULL )
+        }
+
+    if( type(x) != 'light' )
+        {
+        log_level( WARN, "The type of of '%s' is '%s', but it must be 'light'.",
+                    deparse(substitute(x)), type(x) )
+        return( NULL )
+        }
+
+    return( computeCRIsingle( x, full=TRUE, CCT=CCT, adapt=adapt, tol=tol ) )
+    }
+
+
+#   x      a colorSpec object with type 'light'
+#
+#   returns a vector of CRIs in interval (-Inf,100], or NA
+
+computeCRI.colorSpec <- function( x, CCT=NULL, adapt=TRUE, tol=5.4e-3, attach=FALSE )
+    {
+    n   = numSpectra( x )
+
+    out = rep( NA_real_, n )
+
+    if( n == 0 )
+        {
+        log_level( WARN, "Object '%s' has 0 spectra; it is empty.  Returning 0-length vector.", deparse(substitute(x)) )
+        return( out )
+        }
+
+    names(out)  = specnames(x)
+
+
+    if( type(x) != 'light' )
+        {
+        log_level( WARN, "The type of of '%s' is '%s', but it must be 'light'.",
+                                deparse(substitute(x)), type(x) )
+        return( out )
+        }
+        
+    if( ! is.null(CCT) )
+        {
+        if( length(CCT)==1 )    CCT = rep( CCT, n )
+        
+        ok  = length(CCT)==n  &&  is.numeric(CCT)
+        if( ! ok )
+            {
+            log_level( WARN, "CCT is invalid." )
+            return( out )
+            }
+        }
+
+    if( attach && n==1 )
+        {
+        #   a special case
+        dat = computeCRIsingle( x, full=TRUE, CCT=CCT, adapt=adapt, tol=tol )    # dat is a big list
+
+        if( ! is.null(dat) )
+            {
+            out[1]  = dat$CRI
+            attr(out,'data')    = dat
+            }
+
+        return( out )
+        }
+
+    for( k in 1:n )
+        {
+        if( is.null(CCT) )
+            CCTk = NULL
+        else
+            CCTk = CCT[k]
+        
+        CRI = computeCRIsingle( subset(x,k), full=FALSE, CCT=CCTk, adapt=adapt, tol=tol )     # CRI is just a number
+
+        if( is.null(CRI) )  next
+
+        out[k]  = CRI
+        }
+
+    return( out )
+    }
+
+
+
 
 
 #   .uv         Mx2 matrix of test uv's
@@ -217,8 +323,12 @@ cd_from_uv  <- function( .uv )
 
 #--------       UseMethod() calls           --------------#
 
+computeCRIdata <- function( x, CCT=NULL, adapt=TRUE, tol=5.4e-3 )
+    {
+    UseMethod("computeCRIdata")
+    }
 
-computeCRI <- function( x, adapt=TRUE, attach=FALSE, tol=5.4e-3    )
+computeCRI <- function( x, CCT=NULL, adapt=TRUE, tol=5.4e-3, attach=FALSE  )
     {
     UseMethod("computeCRI")
     }

@@ -20,7 +20,7 @@ readCGATS <-  function( path, collapsesingle=FALSE )
     
     attr( out, 'path' ) = path
     
-    log_string( INFO, "%d tables read from '%s'.", length(out), path )    
+    log_level( INFO, "%d tables read from '%s'.", length(out), path )    
     
     if( length(out) == 1  &&  collapsesingle )
         {
@@ -54,7 +54,7 @@ parseCGATS <-  function( .line_vec )
     tables  = length(idx_end)
     if( tables == 0 )
         {
-        log_string( ERROR, "Cannot find any tables (^END_DATA lines)." )
+        log_level( ERROR, "Cannot find any tables (^END_DATA lines)." )
         return(NULL)
         }
         
@@ -118,7 +118,7 @@ extractTableCGATS <- function( .line_vec, table_idx )
     idx_number = which( grepl( pattern, .line_vec ) )   #; print( idx_number )
     if( length(idx_number) != 1 )
         {
-        log_string( ERROR, "In table %d, expected exactly 1 NUMBER_OF_FIELDS lines, but found %d.", 
+        log_level( ERROR, "In table %d, expected exactly 1 NUMBER_OF_FIELDS lines, but found %d.", 
                             table_idx, length(idx_number) )
         return(NULL)
         }
@@ -140,7 +140,7 @@ extractTableCGATS <- function( .line_vec, table_idx )
     idx_format_begin = which( grepl( "^BEGIN_DATA_FORMAT[ \t,]*$", .line_vec ) )
     if( length(idx_format_begin) != 1  )
         {
-        log_string( ERROR, "In table %d, expected exactly 1 BEGIN_DATA_FORMAT lines, but found %d.", 
+        log_level( ERROR, "In table %d, expected exactly 1 BEGIN_DATA_FORMAT lines, but found %d.", 
                                     table_idx, length(idx_format_begin) )
         return(NULL)
         }
@@ -148,14 +148,14 @@ extractTableCGATS <- function( .line_vec, table_idx )
     idx_format_end = which( grepl( "^END_DATA_FORMAT[ \t,]*$", .line_vec ) )
     if( length(idx_format_begin) != 1  )
         {
-        log_string( ERROR, "In table %d, expected exactly 1 END_DATA_FORMAT lines, but found %d.", 
+        log_level( ERROR, "In table %d, expected exactly 1 END_DATA_FORMAT lines, but found %d.", 
                                     table_idx, length(idx_format_end) )
         return(NULL)
         }
         
     if( idx_format_end <= idx_format_begin+1 )
         {
-        log_string( ERROR, "In table %d, BEGIN_DATA_FORMAT and END_DATA_FORMAT lines do not enclose a valid block of lines.", 
+        log_level( ERROR, "In table %d, BEGIN_DATA_FORMAT and END_DATA_FORMAT lines do not enclose a valid block of lines.", 
                                     table_idx )
         return(NULL)
         }
@@ -164,7 +164,7 @@ extractTableCGATS <- function( .line_vec, table_idx )
     idx_number = which( grepl( pattern, .line_vec ) )   #; print( idx_number )
     if( length(idx_number) != 1 )
         {
-        log_string( ERROR, "In table %d, expected exactly 1 NUMBER_OF_SETS lines, but found %d.", 
+        log_level( ERROR, "In table %d, expected exactly 1 NUMBER_OF_SETS lines, but found %d.", 
                             table_idx, length(idx_number) )
         return(NULL)
         }
@@ -176,7 +176,7 @@ extractTableCGATS <- function( .line_vec, table_idx )
     idx_begin = which( grepl( "^BEGIN_DATA[ \t,]*$", .line_vec ) )
     if( length(idx_begin) != 1 )
         {
-        log_string( ERROR, "In table %d, expected exactly 1 BEGIN_DATA lines, but found %d.", 
+        log_level( ERROR, "In table %d, expected exactly 1 BEGIN_DATA lines, but found %d.", 
                                     table_idx, length(idx_begin) )        
         log_object( ERROR, idx_begin )
         return(NULL)
@@ -185,20 +185,20 @@ extractTableCGATS <- function( .line_vec, table_idx )
     idx_end = which( grepl( "^END_DATA[ \t,]*$", .line_vec ) )
     if( length(idx_end) != 1 )
         {
-        log_string( FATAL, "In table %d, expected exactly 1 END_DATA lines, but found %d.", 
+        log_level( FATAL, "In table %d, expected exactly 1 END_DATA lines, but found %d.", 
                                     table_idx, length(idx_begin) )        
         log_object( FATAL, idx_begin )
         return(NULL)
         }
     if( idx_end != length(.line_vec) )
         {
-        log_string( FATAL, "In table %d, expected END_DATA line at line %d, but found it at line %d.", 
+        log_level( FATAL, "In table %d, expected END_DATA line at line %d, but found it at line %d.", 
                                     table_idx, length(idx_begin), idx_end )        
         return(NULL)
         }
     if( idx_end <= idx_begin+1 )
         {
-        log_string( ERROR, "In table %d, BEGIN_DATA and END_DATA lines do not enclose a valid block of lines.", 
+        log_level( ERROR, "In table %d, BEGIN_DATA and END_DATA lines do not enclose a valid block of lines.", 
                                     table_idx )
         return(NULL)
         }        
@@ -212,13 +212,13 @@ extractTableCGATS <- function( .line_vec, table_idx )
     
     if( length(cname) != number_of_fields )
         {
-        log_string( INFO, "In table %d, using CGATS-standard white-space specification.", table_idx )
+        log_level( INFO, "In table %d, using CGATS-standard white-space specification.", table_idx )
 
         #   try to split fields again, but this time using CGATS-standard white-space
         cname = strsplit( paste(block,collapse=''), '[ \t\n\r]+' )[[1]]     #; print( cname )
         if( length(cname) != number_of_fields )
             {
-            log_string( ERROR, "In table %d, cannot split format lines so that NUMBER_OF_FIELDS == %d.",
+            log_level( ERROR, "In table %d, cannot split format lines so that NUMBER_OF_FIELDS == %d.",
                                 table_idx, number_of_fields )
             return(NULL)
             }
@@ -233,7 +233,7 @@ extractTableCGATS <- function( .line_vec, table_idx )
         }
     else
         {
-        log_string( INFO, "In table %d, using non-CGATS-standard single tabs for white-space.", table_idx )
+        log_level( INFO, "In table %d, using non-CGATS-standard single tabs for white-space.", table_idx )
         
         if( 0 )
         {
@@ -244,7 +244,7 @@ extractTableCGATS <- function( .line_vec, table_idx )
         if( 0 < length(idx) )
             {
             log_object( ERROR, cname[idx] )
-            log_string( ERROR, "In table %d, %d field names have embedded spaces, or are empty.",
+            log_level( ERROR, "In table %d, %d field names have embedded spaces, or are empty.",
                         table_idx, length(idx) )
             return(NULL)
             }
@@ -260,7 +260,7 @@ extractTableCGATS <- function( .line_vec, table_idx )
             if( length( data[[i]] ) != number_of_fields )
                 {
                 log_object( ERROR, .line_vec[ idx_begin+i ] )
-                log_string( ERROR, "In table %d and row %d, NUMBER_OF_FIELDS mismatch %d != %d.",
+                log_level( ERROR, "In table %d and row %d, NUMBER_OF_FIELDS mismatch %d != %d.",
                                     table_idx, i, length( data[[i]] ), number_of_fields )
                 return(NULL)
                 }
@@ -272,7 +272,7 @@ extractTableCGATS <- function( .line_vec, table_idx )
         #   should be a matrix
         if( ! is.matrix(data_mat) )
             {
-            log_string( FATAL, "Internal Error. Object returned from sapply should be a matrix." )
+            log_level( FATAL, "Internal Error. Object returned from sapply should be a matrix." )
             return(NULL)
             }
 
@@ -286,7 +286,7 @@ extractTableCGATS <- function( .line_vec, table_idx )
     if( 0 < length(idx) )
         {
         log_object( ERROR, cname[idx] )
-        log_string( ERROR, "In table %d, %d field names are invalid.",
+        log_level( ERROR, "In table %d, %d field names are invalid.",
                     table_idx, length(idx) )
         return(NULL)
         }
@@ -301,7 +301,7 @@ extractTableCGATS <- function( .line_vec, table_idx )
     
     if( nrow(out) != number_of_records )
         {
-        log_string( WARN, "In table %d, expected %d records, but found %d.", 
+        log_level( WARN, "In table %d, expected %d records, but found %d.", 
                                     table_idx, number_of_records, nrow(out) )        
         }
                                         
@@ -329,7 +329,7 @@ writeCGATS  <- function( .data, .path, .sep=' ' )
     
     if( .sep != ' '  &&  .sep != '\t' )
         {
-        log_string( ERROR, "separator=''%s', but it must be a space or tab.\n", .sep )
+        log_level( ERROR, "separator=''%s', but it must be a space or tab.\n", .sep )
         }
     
     if( is.data.frame(.data)  ||  is.colorSpec(.data) )
@@ -344,7 +344,7 @@ writeCGATS  <- function( .data, .path, .sep=' ' )
         
     if( ! is.list(.data) )    
         {
-        log_string( ERROR, ".data is invalid\n"  )
+        log_level( ERROR, ".data is invalid\n"  )
         return(FALSE)
         }    
         
@@ -522,7 +522,7 @@ extractFieldFromHeader  <-  function( .header, .name )
     
     if( 1 < length(idx) )
         {
-        log_string( WARN, "Found %d matches for '%s'; using the last one.", length(idx) )
+        log_level( WARN, "Found %d matches for '%s'; using the last one.", length(idx) )
         idx = idx[ length(idx) ]
         }
 
@@ -551,7 +551,7 @@ plotVideoLUTs  <-  function( .pathvec )
         
          if( is.null(data[[1]]$RGB_I) )
             {
-            log_string( ERROR, "%s(). RGB_I not found in '%s'\n", .pathvec[i] )
+            log_level( ERROR, "%s(). RGB_I not found in '%s'\n", .pathvec[i] )
             return(FALSE)
             }
                
