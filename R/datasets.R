@@ -291,6 +291,28 @@ savePrivateDatasets  <- function( .path="sysdata.rda" )
     path    = "../inst/extdata/targets/TCSforCRI.txt"
     TCSforCRI = readSpectra( path )
     savevec = c( savevec, "TCSforCRI" )
+    
+    #-----    spectra and hue background for TM30 reports  ------------##
+    path    = "../inst/extdata/targets/99_CES_TM-30-18.csv"
+    CESforTM30  = readSpectra( path )
+    quantity(CESforTM30) = "reflectance"
+    savevec = c( savevec, "CESforTM30" )
+    
+    if( ! requireNamespace( 'png', quietly=TRUE ) )
+        {
+        log_level( WARN, "Required package 'png' could not be loaded; returning FALSE."  )
+        return(FALSE)
+        }
+
+    path    = system.file( 'extdata/targets/backgroundTM-30.png', package='colorSpec' )
+    if( nchar(path) == 0 )
+        {
+        stop( "Cannot locate required file '%s'.", "backgroundTM-30.png" )
+        return(FALSE)
+        }
+
+    backgroundTM30  = png::readPNG( path, native=TRUE, info=FALSE )
+    savevec = c( savevec, "backgroundTM30" )
 
     #---------------       lens absorbance dependence on age     -------##
     path    = "../inst/extdata/eyes/LensAbsorbance1987.txt"
@@ -321,7 +343,7 @@ savePrivateDatasets  <- function( .path="sysdata.rda" )
     }    
     
     
-pingDatasets  <- function( .path="../data/colorSpec.rda", .verbose=FALSE )    
+pingDatasets  <- function( .path="sysdata.rda", .verbose=FALSE )    
     {
     theName     = load(.path)
     print( theName )

@@ -113,7 +113,7 @@ plotImageEdges  <- function( W )
     if( n < 3 ) return(FALSE)
     
     
-    zono    = zonogon( W )
+    zono    = zonohedra::zonogon( W )
     if( is.null(zono) ) return(FALSE)
     
     plot( zono, interior=FALSE )

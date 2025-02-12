@@ -1,16 +1,18 @@
 
-library( colorSpec )
 
 #   reproduce Fig. 3(3.7) page 182, and similar ones, in Wyszecki & Stiles
 
 
+#   seclist     list of sections
+#   Ylevel      beta, the plane constant
+#   obj         the light responder
+#   white       white XYZ, of the illuminant
 
-
-#   .obj        the colorSpec responder    "responsivity.material"
-#   .data       as returned from computeOptimals()
-plotOptimals <- function( seclist, Ylevel, .obj, white )
+plotSections <- function( seclist, Ylevel, obj, white, col='black', add=FALSE )
     {
-    plotChromaticityDiagram( .obj, white )
+    if( ! add ) plotChromaticityDiagram( obj, white )
+    
+    lwd = 1   # ifelse( add, 0.5, 1 )
     
     for( k in 1:length(seclist) )
         {
@@ -20,36 +22,25 @@ plotOptimals <- function( seclist, Ylevel, .obj, white )
         x   = section[ ,1] / denom
         y   = section[ ,2] / denom
         
-        polygon( x, y )
+        polygon( x, y, border=col, lwd=lwd )
         
-        idx     = which.min( x + y )
-        gray    = Ylevel[k]
-        if( gray < 1 )
-            # display as a percentage
-            gray = 100 * gray
+        if( ! add )
+            {
+            idx     = which.min( x + y )
+            gray    = Ylevel[k]
+            if( gray < 1 )
+                # display as a percentage
+                gray = 100 * gray
 
-        text( x[idx], y[idx], sprintf( "%g", gray ), adj=c(-0.25,0), cex=0.6 )
+            text( x[idx], y[idx], sprintf( "%g", gray ), adj=c(-0.25,0), cex=0.6 )
+            }
         }
 
-    plotWavelengthPoints( .obj )    
+    if( ! add ) plotWavelengthPoints( obj )    
 
     return( invisible(TRUE) )
     }
 
-computeOptimals <- function( .obj, .Ylevel=c( seq( 0.10, 0.90, by=0.1 ), 0.95 ), .angles=360 )
-    {
-    theta   = seq( 0, 360, len=.angles+1 )
-    theta   = theta[ 1:.angles ] * pi/180
-    direction   = cbind( cos(theta), 0, sin(theta) )    #; print( direction )
-
-    out = NULL
-    for( Y in .Ylevel )
-        out = rbind( out, probeOptimalColors( .obj, Y, direction, aux=F ) )
-
-    #   print( str(out) )
-    
-    return( out )
-    }
     
 plotChromaticityDiagram  <-  function( .xyz=xyz1931.1nm, white )
     {
@@ -58,7 +49,7 @@ plotChromaticityDiagram  <-  function( .xyz=xyz1931.1nm, white )
     x   = coredata[ ,1] / denom
     y   = coredata[ ,2] / denom    
     
-    xylab   = tolower( substr(specnames(.xyz),1,1) )
+    xylab   =  tolower( specnames(.xyz) )   #tolower( substr(specnames(.xyz),1,1) )
     
     plot.default( range(x), range(y), type='n', las=1, xlab='', ylab='', asp=1, lab=c(10,8,7), tcl=0, mgp=c(3, 0.25, 0)  )
     title( xlab=xylab[1], line=1.5 )
@@ -72,6 +63,9 @@ plotChromaticityDiagram  <-  function( .xyz=xyz1931.1nm, white )
     # denom   = sum( white )
     xy      = white[1:2] / sum(white)
     points( xy[1], xy[2], pch=20 )
+    
+    legend( 'topright', c("Schrödinger","optimal"), col=c("black","red"), bty='n', lty=1, lwd=5 )  #, seg.len=4 )
+        
     
     return( TRUE )
     }

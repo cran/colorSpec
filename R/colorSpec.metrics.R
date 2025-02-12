@@ -1,14 +1,14 @@
 
 
 
-    
+
 #   x           a colorSpec object with type "responsivity.material" or "responsivity.light"
 #
 #   value is a list with items
 #       generators  a pair of integers, the 1st is the number of original generators,
 #                   and the 2nd is the number of 'condensed' generators
 #       zeros       vector of wavelengths at which the responsivity is 0 (in all channels)
-#       multiples   a list of groups of wavelengths, 
+#       multiples   a list of groups of wavelengths,
 #                   the responsivities in each group are positive multiples of each other
 #       salient     a logical where TRUE means that there is some open linear halfspace that contains
 #                   all the non-zero generators
@@ -28,271 +28,299 @@
 #   If the type of x is "responsivity.material" then the list also contains:
 #       area        the surface are of the color solid
 #       volume      the volume of the color solid
-    
+
 responsivityMetrics.colorSpec <- function( x )
     {
     theName = deparse(substitute(x))
-    
+
     ok  = (numSpectra(x) == 3L)
     if( ! ok )
         {
-        log_level( ERROR, "numSpectra(%s) = %d  != 3.", theName, numSpectra(x) )     
+        log_level( ERROR, "numSpectra(%s) = %d  != 3.", theName, numSpectra(x) )
         return(NULL)
-        }        
+        }
 
-    ok  = type(x)=="responsivity.light"  ||  type(x)=="responsivity.material" 
+    ok  = type(x)=="responsivity.light"  ||  type(x)=="responsivity.material"
     if( ! ok )
         {
-        log_level( ERROR, "type(%s) = '%s' is invalid.", theName, type(x) )        
+        log_level( ERROR, "type(%s) = '%s' is invalid.", theName, type(x) )
         return(NULL)
-        }    
+        }
         
-    x   = linearize(x)
-     
-    out = list()
-    
-    wave    = wavelength(x)    
-    step    = breakandstep(wave)$stepvec
-    W       = step * as.matrix( x )  #;  print(W)    # step   is replicated to all columns of as.matrix(x)
+    if( ! requireNamespace( 'zonohedra', quietly=TRUE ) )
+        {
+        log_level( WARN, "Required package 'zonohedra' could not be loaded; returning NULL."  )
+        return(NULL)
+        }
 
-    #   the tolerance here is for collinearity, which can be larger than the face normal differences
-    condlist    = condenseGenerators( W, tol=5.e-7 )
-    if( is.null(condlist) )    return(NULL)
+        
+
+    x   = linearize(x)
     
-    ncond   = nrow(condlist$Wcond)    
-    if( ncond < 3 )
+    wave    = wavelength(x)  
+        
+    ground  = 1:length(wave)
+    
+    if( type(x) == "responsivity.material" )
         {
-        log_level( ERROR, "Invalid number of condensed generators = %d < 3.", ncond )
-        return(NULL)
+        zono    = zonotope( x, ground=ground )
+        if( is.null(zono) )  return(NULL)
+        
+        mat = zonohedra::getmatroid(zono)
+        }
+    else    
+        {
+        step    = breakandstep(wave)$stepvec
+        W       = t( step * as.matrix( x ) )     #;  print(W)    # step   is replicated to all columns of as.matrix(x)
+        
+        mat     = zonohedra::matroid( W, ground=ground )
+        if( is.null(mat) )  return(NULL)        
         }
         
-    out$generators  = c( nrow(W), ncond )
         
-    out$zeros   = wave[ is.na(condlist$groupidx) ]
+    out = list()
+
+   
+    matsimp = zonohedra::getsimplified(mat)
     
-    #   record the groups of generators that are multiples of each other
-    lenvec          = sapply( condlist$group, length )  #; print(lenvec)
-    #   print( str(condlist$group[ 1 < lenvec ]) )
-    out$multiples   = lapply( condlist$group[ 1 < lenvec ], function(idx) { wave[idx] }  )
-        
-        
+    nsimp   = length(zonohedra::getground(matsimp))
+
+    out$generators  = c( length(zonohedra::getground(mat)), nsimp )
+
+    out$zeros   = wave[ zonohedra::getloop(mat) ]
+
+    out$multiples   = lapply( zonohedra::getmultiple(mat), function(idx) { wave[idx] } )
+
+    #   we want Wsimp to have points in the rows, with 3 columns
+    #   so take the transpose
+    Wsimp   = t( zonohedra::getmatrix(matsimp) )
+    
+    
     #   salient
-    #   first try the obvious normal=(1,1,1)     
+
+    salient = NA
     normal  = NA_real_
-    if( all(0 < colSums(W)) )
+    if( all(0 < colSums(Wsimp)) )
         {
-        normal  = sqrt( c(1,1,1)/3 )
+        #   we can take normal=(1,1,1)        
+        normal  = c(1,1,1) / sqrt(3)
+        salient = TRUE
         }
-    else
+    else if( requireNamespace( 'quadprog', quietly=TRUE ) )
         {
-        if( ! requireNamespace( 'quadprog', quietly=TRUE ) )
-            {
-            log_level( ERROR, "Required package 'quadprog' could not be loaded."  )
-            return(NULL)
-            }     
-        
-        res = try( quadprog::solve.QP( diag(3), numeric(3), t(x$Wcond), rep(1,ncond) ), silent=TRUE )
-        #   print(res)
-        
-        if( inherits(res,"try-error") )    
+        #   use quadprog to solve for the normal
+        res = try( quadprog::solve.QP( diag(3), numeric(3), t(Wsimp), rep(1,nsimp) ), silent=TRUE )
+
+        if( ! inherits(res,"try-error") )
             {
             normal  = res$solution
             normal  = normal / sqrt( sum(normal^2) )
-            }        
+            salient = TRUE            
+            }
+        else
+            {
+            log_level( WARN, "quadprog::solve.QP() could not compute properties 'normal' and 'salient'."  )
+            }
         }
-        
-    out$salient = all( is.finite(normal) )
+    else
+        {
+        log_level( WARN, "property 'salient' cannot be computed, because required package 'quadprog' could not be loaded."  )
+        }    
+    
+    out$salient = salient
     out$normal  = normal
-    
-    if( ! out$salient ) return(out)
-    
 
-        
-    #   compute the exterior angles of the spherical polygon
-    knext   = c( 2:ncond, 1 )
-    kprev   = c( ncond, 1:(ncond-1) )
-    
-    #   unitize all the rows, to make a spherical polygon
-    W2      = .rowSums( condlist$Wcond*condlist$Wcond, nrow(condlist$Wcond), ncol(condlist$Wcond) )  
-    Wunit   = condlist$Wcond / sqrt( W2 )   # the denominator is replicated to all columns of Wcond
-    
-    anglescone  = externalangles( Wunit )
-    
-    #   compute solid angle of the cone generated by rows of Wcond, and W
-    #   this is the same as the area of the spherical polygon
-    coneangle   = areaSphericalPolygon( Wunit, normal )   # max( 2*pi - sum(anglescone), 0 )
-    theSign     = sign(coneangle)
-    
-    if( theSign < 0 )
-        anglescone  = -anglescone
-    
-    #   expand these angles from condensed to original generators
-    extangle    = rep( NA_real_, nrow(W) )
-    for( k in 1:ncond )
+    if( isTRUE(salient) )
         {
-        extangle[ condlist$group[[k]] ] = anglescone[k]
-        }
+        #   compute the exterior angles of the spherical polygon
+        knext   = c( 2:nsimp, 1 )
+        kprev   = c( nsimp, 1:(nsimp-1) )
 
-    #   make data.frame
-    df  = data.frame( wavelength=wave, extangle=extangle )  #; print(df)
-    #   only keep negative angles, but not -pi
-    mask    = is.finite(extangle)  &  extangle<0  &  -pi<extangle
-    out$concavities = df[ mask, ]
-    
-    #   compute solid angle of the cone generated by rows of Wcond, and W
-    #   this is the same as the area of the spherical polygon
-    out$coneangle   = theSign * coneangle   # max( 2*pi - sum(anglescone), 0 )
+        #   unitize all the rows, to make a spherical polygon
+        W2      = .rowSums( Wsimp^2, nrow(Wsimp), ncol(Wsimp) )
+        Wunit   = Wsimp / sqrt( W2 )   # the denominator is replicated to all columns of Wsimp
+
+        anglescone  = externalangles( Wunit )
+
+        #   compute solid angle of the cone generated by rows of Wcond, and W
+        #   this is the same as the area of the spherical polygon
+        coneangle   = areaSphericalPolygon( Wunit, normal )   # max( 2*pi - sum(anglescone), 0 )
+        theSign     = sign(coneangle)
+
+        if( theSign < 0 )
+            anglescone  = -anglescone
+
+        #   expand these angles from condensed to original generators
+        #extangle    = rep( NA_real_, nrow(W) )
+        #for( k in 1:nsimp )
+        #    {
+        #    extangle[ condlist$group[[k]] ] = anglescone[k]
+        #    }
+
+        #   make data.frame, with a row for each of the simplified generators
+        wavesimp    = wave[ zonohedra::getground(matsimp) ]
         
-    #   compute the convex hull of this spherical polygon
-    #   denom is guaranteed to be all positive, by construction
-    denom   = as.numeric( condlist$Wcond %*% normal )
-    xyz     = condlist$Wcond / denom        # replicated to all columns
-    xy      = xyz %*% frame3x2fun(normal)
-    
-    convexidx       = grDevices::chull( xy[ ,1], xy[ ,2] ) #; print( str(convexidx) )
-    #   anglescxcone    = externalangles( Wunit[convexidx, ] )
-    out$cxconeangle = abs( areaSphericalPolygon( Wunit[convexidx, ], normal ) )       # max( 2*pi - sum(anglescxcone), 0 )
-    
-    #   quick check
-    ok  = out$coneangle <= out$cxconeangle
-    if( ! ok )
-        {
-        #print( out$coneangle )
-        #print( out$cxconeangle )
-        #log_level( WARN, "coneangle=%g  >  %g=cxconeangle.  One or both must be incorrect.",
-        #                        out$coneangle, out$cxconeangle )
-        }
-    
-    
-    #   compute cyclicorder - in the sense of Paul Centore   
-    #   out$cyclicorder = cyclicorderfun( condlist, convexidx )
+        df  = data.frame( wavelength=wavesimp, extangle=anglescone )  #; print(df)
+        #   only keep negative angles, but not -pi
+        mask    = anglescone<0  &  -pi<anglescone   # is.finite(anglescone)  &  
+        out$concavities = df[ mask, ]
 
+        #   compute solid angle of the cone generated by rows of Wcond, and W
+        #   this is the same as the area of the spherical polygon
+        out$coneangle   = theSign * coneangle   # max( 2*pi - sum(anglescone), 0 )
+
+        #   compute the convex hull of this spherical polygon
+        #   denom is guaranteed to be all positive, by construction
+        denom   = as.numeric( Wsimp %*% normal )
+        xyz     = Wsimp / denom        # replicated to all columns
+        xy      = xyz %*% frame3x2fun(normal)
+
+        convexidx       = grDevices::chull( xy[ ,1], xy[ ,2] ) #; print( str(convexidx) )
+        #   anglescxcone    = externalangles( Wunit[convexidx, ] )
+        out$cxconeangle = abs( areaSphericalPolygon( Wunit[convexidx, ], normal ) )       # max( 2*pi - sum(anglescxcone), 0 )
+
+        #   quick check
+        ok  = out$coneangle <= out$cxconeangle
+        if( ! ok )
+            {
+            #print( out$coneangle )
+            #print( out$cxconeangle )
+            log_level( WARN, "Internal issue.  coneangle=%g  >  %g=cxconeangle.  One or both must be incorrect.",
+                                    out$coneangle, out$cxconeangle )
+            }
+        }
+        
+        
     if( type(x) == "responsivity.material" )
         {
-        #   for area and volume, explicitly make the zonohedron.
-        #   clustering is not necessary, so set tol2=NULL to skip that.
-        zono    = zonohedron( W, tol2=NULL )
-        if( is.null(zono) ) return(NULL)
-        
-        mets    = metrics( zono )
+        mets    = zonohedra::getmetrics( zono )
+            
         out$area    = mets$area
-        out$volume  = mets$volume
+
+        dat =   zonohedra:::getmetrics2trans( zono, angles=FALSE )
+        
+        if( ! is.null(dat)  &&  ! is.null(dat$volumedeficient) )
+            out$volumesch   = mets$volume - dat$volumedeficient
+        else
+            out$volumesch   = NA_real_
+            
+        out$volumeopt  = mets$volume
         }
 
-    return( invisible(out) )
+    return( out )
     }
-    
-    
-#   compute cyclicorder - in the sense of Paul Centore    
+
+
+#   compute cyclicorder - in the sense of Paul Centore
 
 cyclicorderfun <- function( condlist, convexidx )
     {
     #   first check that the wavelengths in each collinear group are contiguous
     contig  = sapply( condlist$group, contiguous, nrow(condlist$W) )  #;    print( cyclicorder )
     if( ! all(contig) ) return(FALSE)
-    
+
     #   check that every vertex of xy is on the convex hull of xy
-    ncond   = nrow(condlist$Wcond)   
+    ncond   = nrow(condlist$Wcond)
     if( length(convexidx) != ncond )    return(FALSE)
 
     #   check that convexidx can be cyclically rotated to 1:ncond or c(1,ncond:2)
     idx = which( convexidx == 1 )
     if( length(idx) != 1 )  return(FALSE)
-    
+
     if( idx != 1 )
         #   rotate the indexes to put 1 in the first place
         convexidx = convexidx[ c(idx:ncond,1:(idx-1)) ]
-        
+
 
     ok  = all( convexidx==1:ncond )  ||  all( convexidx==c(1,ncond:2) )
     if( ! ok ) return(FALSE)
-    
+
     return(TRUE)
     }
-    
-    
-    
+
+
+
 #   Wunit   Mx3 matrix with each row on the unit sphere
 #           no duplicate rows, and no antipodals allowed
 #
 #   value   M-vector with exterior angle, angle[k] = exterior angle at k
-#           the path is from kprev to k to knext    
+#           the path is from kprev to k to knext
 #           reversing orientation of polygon changes sign of all angles
 
 externalangles <- function( Wunit )
     {
     m       = nrow(Wunit)
-    
+
     knext   = c( 2:m, 1 )
     kprev   = c( m, 1:(m-1) )
-    
+
     #   precompute dot product of each unit vector with the next one
     dotnext = rowSums( Wunit * Wunit[knext, ] )
-    
+
     out     = rep( NA_real_, m )
     for( k in 1:m )
         {
         #   compute 2 tangent vectors at point k
         wk      = Wunit[k, ]
-        
+
         #tannext = -dotnext[k]*wk        + Wunit[knext[k], ]
         #tanprev =  dotnext[kprev[k]]*wk - Wunit[kprev[k], ]
 
         tanprev = crossproduct( Wunit[kprev[k], ], wk )
         tannext = crossproduct( wk, Wunit[knext[k], ] )
-        
+
         #cat( "---------", k, '\n' )
         #print( tannext )
         #print( tanprev )
-        
+
         out[k]  = angleBetween( tanprev, tannext )
-        
+
         if( is.na(out[k]) ) next
-        
+
         #   now for the sign
         # cross   = crossproduct( tanprev, tannext )
-        #theSign = sign( sum( wk * cross ) )         
+        #theSign = sign( sum( wk * cross ) )
         #out[k]  = sign( det( rbind( wk, tanprev, tannext ) ) ) * out[k]
         #next
-        
+
         if( det( rbind( wk, tanprev, tannext ) ) < 0 )
             # reverse it
             out[k]  = -out[k]
         }
-    
+
     #   if( sum(out) < 0 )  out = -out      # reverse it
-        
+
     return( out )
     }
-    
+
 #   Wunit   3x3 matrix with unit vectors in the rows
 #
-#   return *signed* area of the triangle    
+#   return *signed* area of the triangle
 areaSphericalTriangle  <- function( Wunit )
     {
     anglevec    = externalangles( Wunit )   #; print( anglevec )
-    
+
     if( any( is.na(anglevec) ) )    return(0)   # duplicate vertices
-    
+
     theSum  = sum(anglevec)
     s       = sign(theSum)
-    
+
     return( s * (2*pi - s*theSum) )
     }
-    
+
 #   Wunit   3x3 matrix with unit vectors in the rows
 #   h       center of hemisphere that contains all points of Wunit
 #           h can be any point so that -h is different than any point in Wunit
 #
 #   return *signed* area of polygon
-    
+
 areaSphericalPolygon  <- function( Wunit, h )
     {
-    #   accumulate the signed area of all the triangles 
+    #   accumulate the signed area of all the triangles
     #   based at h and formed from edges of input polygon
     n       = nrow(Wunit)
     inext   = c(2:n,1)
-    
+
     out = 0
     for( i in 1:n )
         {
@@ -301,11 +329,11 @@ areaSphericalPolygon  <- function( Wunit, h )
 
     return( out )
     }
-    
 
-#--------       UseMethod() calls           --------------#            
-              
+
+#--------       UseMethod() calls           --------------#
+
 responsivityMetrics <- function( x )
     {
     UseMethod("responsivityMetrics")
-    }    
+    }

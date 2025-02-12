@@ -21,6 +21,7 @@ The final CRI is the average of these 8 CRI values.
 
 \usage{
 \S3method{computeCRI}{colorSpec}( x, CCT=NULL, adapt=TRUE, tol=5.4e-3, attach=FALSE )
+
 \S3method{computeCRIdata}{colorSpec}( x, CCT=NULL, adapt=TRUE, tol=5.4e-3 )
 }
 
@@ -89,7 +90,7 @@ The items in the list are:
 \code{Delta_uv} \tab  the distance between the illuminants in the CIE 1960 uniform chromaticity space. \cr
 \code{table2} \tab a data frame with 14 rows, with CIE XYZ data of the 14 color samples. \cr
 \code{table3} \tab a data frame with 14 rows, with CIE uv data of the 14 color samples. If argument \code{adapt} is \code{FALSE}, then \code{table3=NULL}. \cr
-\code{table4} \tab a data frame with 14 rows, with UVW data of the 14 color samples. \cr
+\code{table4} \tab a data frame with 14 rows, with UVW data of the 14 color samples, including the CRI of each sample. \cr
 }
 
 The columns of \code{table1} are:
@@ -173,15 +174,20 @@ computeCRI( Fs.5nm, adapt=FALSE )
 ##       F1       F2       F3       F4  F5  F6       F7       F8       F9      F10      F11      F12 
 ## 77.73867 65.38567 57.20553 50.65979  NA  NA 90.18551 95.96459 90.27063 82.86106 82.86306 83.10613 
 
-computeCRI( subset(Fs.5nm,'F2') )
+F2 =  subset(Fs.5nm,'F2')
+computeCRI( F2 )
 ##       F2 
 ## 64.15195 
 
-computeCRI( subset(Fs.5nm,'F2'), CCT=4200 )
+computeCRI( F2, CCT=4200 )
 ##       F2
 ## 63.96502
 
-computeCRIdata( subset(Fs.5nm,'F2') )   # returns a very large list, ending with CRI = 64.15195 
+computeCRIdata( F2 )   # returns a very large list, ending with CRI = 64.15195 
+
+mean( computeCRIdata( F2 )$table4$CRI[1:8] ) ==  computeCRI( F2 )
+##   F2 
+## TRUE 
 }
 
 

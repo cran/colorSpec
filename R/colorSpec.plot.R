@@ -223,7 +223,7 @@ plot.colorSpec  <- function( x, color=NULL, subset=NULL, main=TRUE, legend=TRUE,
         if( 1 < length(color_vec)  &&  length( unique(color_vec) ) == 1 )   #  1 < length( unique(vararg$lty) )
             lwd = 2     # thinner so we can distinguish the lty
         else
-            lwd = 11    # thicker so we can see colors instead
+            lwd = 5    # thicker so we can see colors instead
 
         legend( location, legend, col=color_vec, bty='n', lty=lty.legend, lwd=lwd, seg.len=4 )
         }

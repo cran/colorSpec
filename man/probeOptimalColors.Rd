@@ -36,11 +36,12 @@ of the object-color solid, which makes it possible to discover more than 2 trans
 The inspiration for this change is the article by \cite{Centore}.
 To \emph{inspect} these computed spectra, the argument \code{spectral} must be set
 to \code{TRUE}.
+The function is essentially a wrapper around \code{\link[zonohedra:raytrace]{zonohedra::raytrace()}}.
 }
 
 
 \usage{
-\S3method{probeOptimalColors}{colorSpec}( x, gray, direction, aux=FALSE, spectral=FALSE, tol=1.e-6 )
+\S3method{probeOptimalColors}{colorSpec}( x, gray, direction, aux=FALSE, spectral=FALSE )
 
 }
 
@@ -60,8 +61,6 @@ equal to \code{'responsivity.material'} and 3 spectra}
 \item{spectral}{if \code{TRUE}, the function returns a \bold{colorSpec} object
 with the optimal spectra, see \bold{Value}.
 }
-
-\item{tol}{error tolerance for the intersection of probe and object-color boundary}
 }
     
     
@@ -84,36 +83,26 @@ The columns in the output are:
 the optimal color on the boundary; \eqn{optimal = basepoint + s*direction} 
 }
   
-\item{lambda}{
-lambda.1 and lambda.2 at the 2 transitions, in nm. 
-lambda.1 < lambda.2 => bandpass,
-and lambda.1 > lambda.2 => bandstop.
-It will happen that the optimal spectrum has more than 2 transitions;
-in this case both lambdas are set to \code{NA}.
-}
 
-\item{dol}{
-\code{delta} and \code{omega} - the Logvinenko parameters \eqn{(\delta,\omega)} for optimal colors, plus \code{lambda} (\eqn{\lambda}) in nm. 
-\eqn{\omega} is the reparameterization of \eqn{\lambda} ;  see \cite{Logvinenko}.
-If there are more than 2 transistions, these are set to \code{NA}.
-}
             
-If aux is \code{TRUE}, these auxiliary columns related to performance and diagnostics are added:   
+If \code{aux} is \code{TRUE}, these extra columns related to performance and diagnostics are added:   
 
 \item{timetrace}{time to trace the ray, in seconds}
 
-\item{parallelograms}{
-# of parallelograms in the (possibly compound) face. 1 means just a single parallelogram.
+\item{facetgens}{
+# of generators of the zonogon facet that the ray intersects.
+Typically it is 2, which means the facet is a parallelogram.
 }
 
-\item{tested}{
-# of parallelograms actually tested for ray intersection. This only has meaning for compound faces.
-}
+If \code{spectral} is \code{TRUE}, these extra columns are added:
 
-\item{alpha}{the 2 coordinates of the intersection point inside the parallelogram}
+\item{distance}{the signed distance from \code{optimal} to the boundary; it should be very small.}
+
+\item{transitions}{the number of transitions in the optimal spectrum; it is a non-negative even integer.}
 
 
-If argument \code{spectral=TRUE},
+
+If \code{spectral} is \code{TRUE},
 \code{probeOptimalColors()} returns a \bold{colorSpec} object with quantity 
 \code{'reflectance'}.
 This object contains the optimal spectra, and can be used to inspect the spectra
@@ -151,20 +140,14 @@ And this time goes up rapidly with the number of wavelengths.
 We recommend using a wavelength step of 5nm, as in the \bold{Examples}.
 For best results, batch a lot of rays into a single function call
 and then process the output.
-\cr
-Moreover, the preprocessing time is dominated by the partitioning
-of the compound faces into parallelograms.
-This is made worse by spectral responses with little overlap,
-as in \code{\link{scanner.ACES}}.
-In these cases, try a larger step size, and then reduce.
-Optimizing these compound faces is a possible topic for the future.
 }
 
 \seealso{
-\code{\link{type}},
+\code{\link{type}()},
 vignette \href{../doc/optimals.pdf}{\bold{Plotting Chromaticity Loci of Optimal Colors}},
 \code{\link{scanner.ACES}},
-\code{\link{extradata}()}
+\code{\link{extradata}()},
+\code{\link[zonohedra:raytrace]{zonohedra::raytrace()}}
 }
 
 \references{
@@ -230,21 +213,22 @@ XYZ
 white.XYZ   = product( neutralMaterial(1,wave=wave), D50.eye )
 direction   = XYZ - white.XYZ/2
 
-res = probeOptimalColors( D50.eye, 0.5, direction, aux=FALSE )
-res$s         
-##  1.00004   the ray has gone past the original color to the boundary
+res = probeOptimalColors( D50.eye, 0.5, direction, spectral=TRUE )
+res = extradata(res)
+res$s
+##  [1] 1.00004
+## And since s=1.00004 > 1,
+## XYZ is actually in the interior of the color solid, and not on the boundary.
+## The boundary point res$optimal is a little-bit further along the ray,
+## and the corresponding spectrum has more than 2 transitions.
 
 res$optimal
 ##              X        Y          Z
 ##  [1,] 33.41958 21.96774 0.02808178
 
-res$lambda    
-##  NA NA     because there are more than 2 transitions in the true optimal
+res$transitions
+##  [1] 8
 
-# since s=1.00004 > 1,
-# XYZ is actually in the interior of the color solid, and not on the boundary.
-# The boundary is a little-bit further along the ray,
-# and the corresponding spectrum has more than 2 transitions.
 }
 
 

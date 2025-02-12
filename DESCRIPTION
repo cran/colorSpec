@@ -1,29 +1,30 @@
 Package: colorSpec
 Type: Package
 Title: Color Calculations with Emphasis on Spectral Data
-Version: 1.6-0
+Version: 1.7-0
 Encoding: UTF-8
-Date: 2025-01-15
+Date: 2025-02-11
 Authors@R: person( given="Glenn", family="Davis", email="gdavis@gluonics.com", role=c("aut", "cre") )
 Maintainer: Glenn Davis <gdavis@gluonics.com>
 Description: Calculate with spectral properties of light sources, materials, cameras, eyes, and scanners.
     Build complex systems from simpler parts using a spectral product algebra. For light sources,
-    compute CCT, CRI, and SSI.  For object colors, compute optimal colors and Logvinenko coordinates.
+    compute CCT, CRI, SSI, and IES TM-30 reports.  For object colors, compute optimal colors and Logvinenko coordinates.
     Work with the standard CIE illuminants and color matching functions, and read spectra from 
     text files, including CGATS files.  Estimate a spectrum from its response. A user guide and 9 vignettes are included.
 License: GPL (>= 3)
 LazyLoad: yes
 LazyData: yes
-Depends: R (>= 3.5.0)
+Depends: R (>= 4.0.0)
 Imports: logger
-Suggests: spacesXYZ, rootSolve, MASS, quadprog, rgl, knitr, rmarkdown,
-        spacesRGB, microbenchmark, arrangements
+Suggests: spacesXYZ (>= 1.5-1), rootSolve, MASS, quadprog, rgl,
+        spacesRGB, zonohedra (>= 0.4-0), microbenchmark, arrangements,
+        knitr, rmarkdown, png
 Enhances: plyr
 NeedsCompilation: no
 Repository: CRAN
 VignetteBuilder: knitr
 BuildVignettes: yes
 ByteCompile: no
-Packaged: 2025-01-15 02:46:57 UTC; Glenn
+Packaged: 2025-02-11 02:24:53 UTC; Glenn
 Author: Glenn Davis [aut, cre]
-Date/Publication: 2025-01-15 08:00:19 UTC
+Date/Publication: 2025-02-12 17:40:02 UTC

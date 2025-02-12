@@ -1,6 +1,12 @@
 # NEWS for **colorSpec** package
 
 
+### Changes for version 1.7-0  [2025-02-11]
+* rewrote functions `probeOptimalColors()`, `sectionOptimalColors()`, and `computeADL()` to use package `zonohedra`, which is a new Import
+* rewrote functions `plotOptimals3D()` and `plotOptimals2D()` to use package `zonohedra`
+* added new functions `sectionSchrodingerColors()`, `insideSchrodingerColors()`, and `insideOptimalColors()`
+* added new function `computeTM30()` for creating ANSI/IES TM-30 reports
+
 ### Changes for version 1.6-0  [2025-01-15]
 * added function `computeCRIdata()` and improved the capability of `computeCRI()`
 * all logging done with package **logger**, which is imported

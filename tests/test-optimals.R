@@ -2,7 +2,7 @@
 library( colorSpec )
 options( width=180 )
 
-testProbe <- function()
+testProbe <- function( tol=5.e-8 )
     {
     wave    = seq(400,700,by=5)
     
@@ -24,15 +24,11 @@ testProbe <- function()
     #   compute XYZ
     XYZ = product( rectspec, D50.eye )  #; print(XYZ)
     
-    white.XYZ   = product( neutralMaterial(1,wavelength=wave), D50.eye )  #; print( white.XYZ/2 )
+    #white.XYZ   = product( neutralMaterial(1,wavelength=wave), D50.eye )  #; print( white.XYZ/2 )
     
-    # white.XYZ   = step.wl( D50.eye ) * colSums( as.matrix(D50.eye) ) #; print( white.XYZ/2 )
+    #direction   = XYZ - matrix( white.XYZ/2, count, 3, byrow=TRUE )
     
-    direction   = XYZ - matrix( white.XYZ/2, count, 3, byrow=TRUE )
-    
-    res = probeOptimalColors( D50.eye, 0.5, direction, aux=F )
-
-
+    res = computeADL( D50.eye, XYZ )
     
     delta   = rowSums( abs(lambda - res$lambda) )
     
@@ -42,10 +38,11 @@ testProbe <- function()
     
     failures    = sum( is.na( delta ) )
     cat( sprintf( "inversion failures: %d of %d\n", failures, count ) )
+
+    deltamax    = max( delta, na.rm=TRUE )  
+    cat( sprintf( "deltamax = %g    tol = %g\n", deltamax, tol ) )
     
-    if( 1.e-6 < max( delta, na.rm=TRUE) ) return(FALSE)
-    
-    return(TRUE)
+    return( failures==0  &&  deltamax<=tol )
     }
     
 

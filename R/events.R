@@ -47,6 +47,25 @@ g.microbenchmark    = FALSE     # logical value, whether the package microbenchm
 
 
 
+.onAttach <- function( libname, pkgname )
+    {
+    #packageStartupMessage( libname )
+    #packageStartupMessage( pkgname )
+
+    info    = library( help='colorSpec' )        #eval(pkgname)
+    info    = format( info )
+    mask    = grepl( "^(Version|Author|Built):", info )     #Title
+    info    = gsub( "[ ]+", ' ', info[mask] )
+    mess    = sprintf( "Attaching %s", pkgname )
+    mess    = paste( c( mess, info ), collapse='.  ' )   #; cat(mess)
+    packageStartupMessage( mess )
+
+    #initOptions()
+    }
+
+
+################            deadwood below      ###########################
+
 myonLoad <- function( pkgname, pkgpath )
     {
     #  packageStartupMessage( "myonLoad()" )
@@ -60,24 +79,5 @@ myonLoad <- function( pkgname, pkgpath )
     }
 
 
-
-
-
-
-.onAttach <- function( libname, pkgname )
-    {
-    #packageStartupMessage( libname )
-    #packageStartupMessage( pkgname )
-
-    info    = library( help='colorSpec' )        #eval(pkgname)
-    info    = format( info )
-    mask    = grepl( "^(Version|Author|Built)", info )     #Title
-    info    = gsub( "[ ]+", ' ', info[mask] )
-    mess    = sprintf( "Attaching %s", pkgname )
-    mess    = paste( c( mess, info ), collapse='.  ' )   #; cat(mess)
-    packageStartupMessage( mess )
-
-    #initOptions()
-    }
 
 

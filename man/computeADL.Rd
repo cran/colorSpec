@@ -8,42 +8,46 @@
 
 \description{
 Consider a \bold{colorSpec} object \code{x} with \code{type} equal to \code{responsivity.material}.
-The set of all possible material reflectance functions (or transmittance functions) 
-is convex, closed, and bounded (in any reasonable function space),
-and this implies that the set of all possible output responses 
-from \code{x} is also convex, closed, and bounded.
-The latter set is called the \emph{object-color solid} or \emph{Rösch Farbkörper} for \code{x}.
-A color on the boundary of the \emph{object-color solid} is called an \emph{optimal color}.
-The special points \bold{W} (the response to the perfect reflecting diffuser)
-and \bold{0} are on the boundary of this set.
-The interior of the line segment of neutrals joining \bold{0} to \bold{W} is in the interior of the
-\emph{object-color solid}.
-It is natural to parameterize this segment from 0 to 1 (from \bold{0} to \bold{W}).
-The solid is symmetrical about the neutral gray midpoint \bold{G}=\bold{W/2}.
+The set of all possible material reflectance functions (or transmittance functions)
+that take the value 0 or 1, and with 2 or 0 transitions is called the \emph{2-transition spectrum space}.
+When there are 2 transitions, there are 2 types of spectra: \emph{bandpass} and \emph{bandstop}.
+When there are 0 transitions, the spectrum is either identically 0 or identically 1.
+When \code{x} is applied to this space, the corresponding surface in response space
+is called the \emph{2-transition surface}.  
+The special points \bold{0} and \bold{W} (the response to the perfect reflecting diffuser)
+are on this surface.
+The surface is symmetrical about the neutral gray midpoint \bold{G}=\bold{W/2}.
+Following \cite{West and Brill}, colors on the surface are called \emph{Schrödinger colors}.
+For details see:
+\code{\link[zonohedra:raytrace2trans]{zonohedra::raytrace2trans()}}.
 
-Now suppose that \code{x} has 3 spectra (3 responses)
-and consider a color response \bold{R} not equal to \bold{G}.
+This surface is a subset of the \emph{object-color solid} or \emph{Rösch Farbkörper} for \code{x}.
+Points on the boundary of of the solid are called \emph{optimal colors},
+see \code{\link{probeOptimalColors}()}.
+In most cases, a point on the 2-transition surface (a Schrödinger color) is an optimal color,
+but this is not always true, see the vignette
+\href{../doc/convexity.pdf}{\bold{Convexity and Transitions}}.
+
+Now consider a color response \bold{R} not equal to \bold{G}.
 There is a ray based at \bold{G} and passing through \bold{R}
-that intersects the boundary of the 
-\emph{object-color solid} at an \emph{optimal color} \bold{B} on the boundary
+that intersects the 2-transition surface
+at a \emph{Schrödinger color} \bold{B}
 with Logvinenko coordinates \eqn{(\delta,\omega)}.
 If these 2 coordinates are combined with \eqn{\alpha}, where
-\bold{R} = \eqn{(1-\alpha)}\bold{G} + \eqn{\alpha}\bold{B}, 
+\bold{R} = \bold{G} + \eqn{\alpha}(\bold{B}-\bold{G}), 
 it yields the \emph{Logvinenko coordinates}
 \eqn{(\alpha,\delta,\omega)} of \bold{R}.
 These coordinates are also denoted by ADL; see \bold{References}.
-A response is in the \emph{object-color solid} iff \eqn{\alpha \le 1}.
-A response is  \emph{optimal} iff \eqn{\alpha=1}.
+A color is Schrödinger iff \eqn{\alpha{=}1}.
 
-The coordinates of \bold{0} are \eqn{(\alpha,\delta,\omega)}=(1,0,0).
-The coordinates of \bold{W} are \eqn{(\alpha,\delta,\omega)}=(1,1,0).
-The coordinates of \bold{G} are undefined.
+The coordinates of \bold{0} are \eqn{(\alpha,\delta,\omega)}=(1,0,NA).
+The coordinates of \bold{W} are \eqn{(\alpha,\delta,\omega)}=(1,1,NA).
+The coordinates of \bold{G} are \eqn{(\alpha,\delta,\omega)}=(0,NA,NA).
 }
 
 
 \usage{
 \S3method{computeADL}{colorSpec}( x, response )
-
 }
 
 \arguments{
@@ -57,14 +61,13 @@ The coordinates of \bold{G} are undefined.
 \code{computeADL()} returns a \code{data.frame} with a row for each response.
 The columns in the data frame are:
 \item{response}{the input response vector}
-\item{ADL}{the computed ADL coordinates of the response vector}  
-\item{omega}{the reparameterized \eqn{\lambda} in the interval [0,1];  see \bold{References}}
 \item{lambda}{lambda.1 and lambda.2 at the 2 transitions, in nm.
 lambda.1 < lambda.2  => bandpass,
 and lambda.1 > lambda.2 => bandstop.}
+\item{ADL}{the computed ADL coordinates of the response vector}  
+\item{omega}{the reparameterized \eqn{\lambda} in the interval [0,1];  see \cite{Logvinenko}}
 
 If an individual ray could not be traced,
-or if the optimal spectrum has more than 2 transitions,
 the row contains \code{NA} in appropriate columns.
 \cr
 In case of global error, the function returns \code{NULL}.
@@ -80,27 +83,29 @@ done by \code{\link{probeOptimalColors}()}.
 
 \section{WARNING}{
 Since this function is really a simple wrapper around 
-\code{\link{probeOptimalColors}()},
-please see the performance warnings there.
+\code{\link[zonohedra:raytrace2trans]{zonohedra::raytrace2trans()}}.
+Please see the warnings about star-shaped regions there.
 }
 
 
 \seealso{
 \code{\link{type}()},
 \code{\link{probeOptimalColors}()},
-vignette \href{../doc/optimals.pdf}{\bold{Plotting Chromaticity Loci of Optimal Colors}}
+\code{\link[zonohedra:raytrace2trans]{zonohedra::raytrace2trans()}},
+vignette \href{../doc/convexity.pdf}{\bold{Convexity and Transitions}}
 }
 
 \examples{
 D50.eye = product( D50.5nm, 'varmat', xyz1931.1nm, wave=seq(360,830,by=5) )
 computeADL( D50.eye, c(30,50,70) )
-##    response.X response.Y response.Z   ADL.alpha   ADL.delta  ADL.lambda     omega 
-##  1         30         50         70   0.7371475   0.5384104 473.3594572 0.3008817
 
-##  lambda.1 lambda.2
-##  427.2011 555.5261
+##    response.X response.Y response.Z lambda.1 lambda.2 ADL.alpha ADL.delta  ADL.lambda
+##  1         30         50         70 427.2011 555.5262 0.7371480 0.5384106 473.3594244
 
-## since alpha < 1, XYZ=c(30,50,70) is *inside* the object-color solid of D50.eye
+##     omega
+## 0.3008816
+ 
+## since alpha < 1, XYZ=c(30,50,70) is *inside* the Schrodinger color surface of D50.eye
 }
 
 
@@ -116,6 +121,11 @@ Godau, Christoph and Brian Funt.
 XYZ to ADL: Calculating Logvinenko's Object Color Coordinates.
 Proceedings Eighteenth IS&T Color Imaging Conference.
 San Antonio. Nov 2009.
+
+West, G. and M. H. Brill.
+Conditions under which Schrödinger object colors are optimal.
+\bold{Journal of the Optical Society of America}.
+73. pp. 1223-1225. 1983.
 }
 
 

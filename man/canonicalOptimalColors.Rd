@@ -40,9 +40,10 @@ Interestingly, the special points \bold{W} and \bold{0} are not canonical.
 equal to \code{'responsivity.material'} and 3 spectra}
 
 \item{lambda}{a numeric Mx2 matrix whose rows contain distinct pairs of wavelengths of \code{x},
-               or a numeric vector that can be converted to such a matrix, by row.
-               If any entry in \code{lambda} is not a wavelength of \code{x},
-               it is an error. }
+or a numeric vector that can be converted to such a matrix, by row.
+If any entry in \code{lambda} is not a wavelength of \code{x},
+it is an error, and the corresponding returned data is set to \code{NA}.
+}
           
 \item{spectral}{if \code{TRUE}, the function returns a \bold{colorSpec} object
 with the optimal spectra, see \bold{Value}.
@@ -92,6 +93,10 @@ If the 2 wavelengths are \eqn{\lambda_1} and \eqn{\lambda_2},
 and \eqn{\lambda_1 < \lambda_2} then the spectrum is approximately a bandpass filter.
 If the 2 wavelengths are swapped, then the spectrum is "flipped"
 and is approximately a bandstop filter.
+\cr
+If the responsivities of \code{x} at wavelengths \eqn{\lambda_1} and \eqn{\lambda_2}
+are multiples of each other (or 0), it is an error,
+and the corresponding returned data is set to \code{NA}.
 }
 
 

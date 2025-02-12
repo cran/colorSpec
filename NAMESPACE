@@ -41,14 +41,18 @@ S3method(computeCCT,colorSpec)
 S3method(computeCRI,colorSpec)
 S3method(computeCRIdata,colorSpec)
 S3method(computeSSI,colorSpec)
+S3method(computeTM30,colorSpec)
 S3method(radiometric,colorSpec)
 S3method(is.radiometric,colorSpec)
 S3method(actinometric,colorSpec)
 S3method(is.actinometric,colorSpec)
+S3method(insideOptimalColors,colorSpec)
 S3method(photometric,colorSpec)
 S3method(probeOptimalColors,colorSpec)
 S3method(canonicalOptimalColors,colorSpec)
 S3method(sectionOptimalColors,colorSpec)
+S3method(sectionSchrodingerColors,colorSpec)
+S3method(insideSchrodingerColors,colorSpec)
 S3method(plotOptimals3D,colorSpec)
 S3method(plotOptimals2D,colorSpec)
 S3method(computeADL,colorSpec)
@@ -58,6 +62,13 @@ S3method(emulate,colorSpec)
 S3method(invert,colorSpec)
 S3method(responsivityMetrics,colorSpec)
 S3method(bandRepresentation,colorSpec)
+S3method(zonotope,colorSpec)
+
+
+## methods for class TM30
+S3method(plot,TM30)
+S3method(print,TM30)
+
 
 S3method(as.colorSpec,default)
 
@@ -96,14 +107,18 @@ export(numSpectra,
     computeCRI,
     computeCRIdata,
     computeSSI,
+    computeTM30,
     radiometric,
     is.radiometric,
+    insideOptimalColors,
     actinometric,
     is.actinometric,
     photometric,
     probeOptimalColors,
     canonicalOptimalColors,
     sectionOptimalColors,
+    sectionSchrodingerColors,
+    insideSchrodingerColors,
     plotOptimals3D,
     plotOptimals2D,
     computeADL,
@@ -123,7 +138,9 @@ export(
     as.data.frame.colorSpec,
     print.colorSpec,
     summary.colorSpec,
-    plot.colorSpec
+    plot.colorSpec,
+    plot.TM30,
+    print.TM30    
     )
 
 
@@ -153,23 +170,13 @@ export(
     atmosTransmittance
     )
 
-#export(
-#   daylightLocus,
-#    CCTfromXYZ,
-#    CCTfromxy,
-#    CCTfromuv
-#    )
 
-# export(plotPatchesRGB)
 export(DisplayRGBfromLinearRGB)
 export(RGBfromXYZ)
 export(officialXYZ)
 
 export(cs.options)
 
-
-# importFrom( MASS, ginv )
-# importFrom( spacesXYZ, CCTfromXYZ, standardXYZ )
 
 import( logger )
 
@@ -182,6 +189,4 @@ importFrom( stats ,  approx, coef, lm, loess, predict,
              runif, spline, splinefun, rnorm )
 importFrom( utils, capture.output, flush.console, modifyList,
              object.size, read.table, write.table, str, type.convert )
-#importFrom( rootSolve, multiroot )
-#   importFrom( minpack.lm, nls.lm )  was used in CCTfromuv() but no longer
-# importFrom( spacesRGB, SignalRGBfromLinearRGB )
+

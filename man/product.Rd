@@ -212,10 +212,10 @@ They may also use the Hadamard matrix product \code{*}, as in sequences 1 to 4.
 
 
 The argument \code{wavelength} can also be \code{'auto'} or \code{NULL}.
-In this case the intersection of all the wavelength ranges of the objects is computed.
+In this case the intersection of all the wavelength intervals of the objects is computed.
 If the intersection is empty, it is an ERROR and the function returns \code{NULL}.
 The wavelength step \code{\link{step.wl}}
-is taken to be the smallest over all the object wavelength sequences.
+is taken to be the smallest step over all the object wavelength sequences.
 If the minimum \code{\link{step.wl}} is less than 1 nanometer,
 it is rounded off to the nearest power of 2 (e.g 1, 0.5, 0.25, ...).
 }

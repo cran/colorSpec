@@ -30,15 +30,17 @@ from \code{x} is also convex, closed, and bounded.
 The latter set is called the \emph{object-color solid},
 or \emph{Rösch Farbkörper}, for \code{x}.
 A color on the boundary of the \emph{object-color solid} is called an \emph{optimal color}.
-For more discussion see \code{\link{sectionOptimalColors}()}.
 
+These functions are essentially wrappers around
+\code{\link[zonohedra:plot.zonogon]{zonohedra::plot.zonogon()}} and
+\code{\link[zonohedra:plot.zonohedron]{zonohedra::plot.zonohedron()}}. 
 }
 
 
 \usage{
-\S3method{plotOptimals3D}{colorSpec}( x, size=50, type='w', both=TRUE )
+\S3method{plotOptimals3D}{colorSpec}( x, ... )
 
-\S3method{plotOptimals2D}{colorSpec}( x )
+\S3method{plotOptimals2D}{colorSpec}( x, ... )
 
 }
 
@@ -47,45 +49,20 @@ For more discussion see \code{\link{sectionOptimalColors}()}.
 \code{'responsivity.material'} and 2 or 3 spectra, as appropriate.
 }
 
-\item{size}{an integer giving the number of wavelengths at which to resample \code{x}.
-To skip resampling, set \code{size=NA}.
+\item{...}{more arguments passed to
+\code{\link[zonohedra:plot.zonogon]{zonohedra::plot.zonogon()}} or
+\code{\link[zonohedra:plot.zonohedron]{zonohedra::plot.zonohedron()}} 
+as appropriate.
+For \code{plotOptimals3D()}, examples are \code{type} and \code{both}.
+For \code{plotOptimals2D()}, examples are \code{orientation} and \code{elabels}.
 }
 
-\item{type}{\code{type='w'} for a wireframe plot of the parallelogram faces.
-\code{type='p'} for a point plot with points at the centers of the parallelograms.
-}
-
-\item{both}{the color solid is symmetric about its center, so only half of it must
-be computed.
-If \code{both=TRUE} it plots one half in black and the other half in red.
-If \code{both=FALSE} it only plots one half in black.
-}
 }
 
     
 \value{
 The functions return \code{TRUE} or \code{FALSE}.
 }    
-
-
-\section{Details for 3D}{
-If \code{n} is the number of wavelengths,
-the number of parallelogram faces of the zonohedron is \code{n*(n-1)}.
-The time to compute these faces increase with \code{n} even faster,
-so that is why the default \code{size=50} is a fairly small number.
-It was chosen to be a reasonable compromise between detail and performance.
-\cr
-In addition to the wireframe or points,
-it draws the box with opposite vertices at the "poles" \bold{0} and \bold{W}
-and the diagonal segment of neutral grays that connects \bold{0} and \bold{W}.
-}
-
-\section{Details for 2D}{
-If \code{n} is the number of wavelengths,
-the number of edges in the zonogon is \code{2*n}.
-Computing these edges is fast and visualization is easy,
-so there are no plotting options at this time.
-}
 
 
 \section{Note}{
@@ -101,7 +78,9 @@ Indeed, the box may actually be \emph{inside} the optimals.
 \code{\link{type}()},
 \code{\link{probeOptimalColors}()},
 \code{\link{sectionOptimalColors}()},  
-vignette \href{../doc/optimals.pdf}{\bold{Plotting Chromaticity Loci of Optimal Colors}}
+\code{\link[zonohedra:plot.zonogon]{zonohedra::plot.zonogon()}},
+\code{\link[zonohedra:plot.zonohedron]{zonohedra::plot.zonohedron()}}, 
+vignette \href{../doc/optimals.pdf}{\bold{Plotting Chromaticity Loci of Optimal and Schrodinger Colors}}
 }
 
 
