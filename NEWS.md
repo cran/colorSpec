@@ -1,6 +1,9 @@
 # NEWS for **colorSpec** package
 
 
+### Changes for version 1.8-0  [2025-06-08]
+* added function `referenceSpectraTM30()`
+
 ### Changes for version 1.7-0  [2025-02-11]
 * rewrote functions `probeOptimalColors()`, `sectionOptimalColors()`, and `computeADL()` to use package `zonohedra`, which is a new Import
 * rewrote functions `plotOptimals3D()` and `plotOptimals2D()` to use package `zonohedra`

@@ -7,6 +7,7 @@
 \alias{lightSpectra}
 \alias{daylightSpectra}
 \alias{planckSpectra}
+\alias{referenceSpectraTM30}
 \alias{illuminantE}
 
 \description{
@@ -20,6 +21,8 @@ planckSpectra( temperature, wavelength=300:830, normalize=TRUE, c2=1.4388e-2 )
 
 daylightSpectra( temperature, wavelength=NULL, 
                     components=colorSpec::daylight1964, roundMs=FALSE )
+                    
+referenceSpectraTM30( temperature, wavelength=380:780, ... )                    
 
 illuminantE( energy=1, wavelength=380:780 )
 }
@@ -57,15 +60,18 @@ rounding intermediate coefficients M1 and M2 to 3 decimal places.
 This rounding is necessary to reproduce the tabulated values in Table T.1 of the CIE
 publication in \bold{References}.}
 
+\item{...}{other args - \code{components} and \code{roundMs} - passed to \code{daylightSpectra}}
+
 \item{energy}{a vector of energy levels}
 }
     
 \value{
-For \code{planckSpectra()} and \code{daylightSpectra()} :\cr
-A \bold{colorSpec} object with \code{\link{quantity}} equal to \code{'energy'},
+For \code{planckSpectra()}, \code{daylightSpectra()}, and \code{referenceSpectraTM30()}  :\cr
+a \bold{colorSpec} object with \code{\link{quantity}} equal to \code{'energy'},
 and \code{\link{organization}} equal to \code{'matrix'} or \code{'vector'}.
-The \code{specname}s are \code{PNNNN} or \code{DNNNN}
-for \code{planckSpectra()} and \code{daylightSpectra()} respectively.\cr
+The \code{specname}s are \code{'PNNNN'} or \code{'DNNNN'}
+for \code{planckSpectra()} and \code{daylightSpectra()} respectively.
+And for \code{referenceSpectraTM30()} \code{'blended CCT=NNNN'} is used.\cr
 The number of spectra in the object is the number of temperatures = \code{length(temperature)}.\cr
   
 For \code{illuminantE()} :\cr
@@ -88,9 +94,15 @@ the spectrum is set to all \code{NA}s.
 If \code{temperature=Inf} and \code{normalize=TRUE}, 
 the spectrum is set to the pointwise limit \eqn{(560/\lambda)^4} (which appears blue).
 
-
 For \code{daylightSpectra()} the valid range of temperatures is 4000 to 25000 K.
 For a temperature outside this range the spectrum is set to all \code{NA}s.
+
+For \code{referenceSpectraTM30()} the valid range of temperatures is 0 to 25000 K.
+The spectrum is computed from the recipe in standard IES TM-30, see \bold{ANSI/IES TM-30-20}.
+For a temperature \eqn{\le} 4000K, the reference is the Planck spectrum.
+For a temperature \eqn{\ge} 5000K, the reference is the Daylight spectrum.
+And for a temperature between 4000K and 5000K, the reference is a weighted blend of
+the Planck and Daylight spectra at that temperature.
 
 The equations for \code{daylightSpectra()} and \code{planckSpectra()} are complex 
 and can be found in the \bold{References}.
@@ -114,6 +126,10 @@ CIE Colorimetry, in
 \emph{Colorimetry: Understanding the CIE System}. 
 Wiley Interscience. 2007.
 p. 42.
+
+\bold{ANSI/IES TM-30-20}.
+\bold{Technical Memorandum: IES Method for Evaluating Light Source Color Rendition}.
+\url{https://store.ies.org/product/technical-memorandum-ies-method-for-evaluating-light-source-color-rendition/}
 }
 
 \seealso{

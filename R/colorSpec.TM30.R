@@ -97,34 +97,12 @@ computeTM30.colorSpec <-function( x, reference=NULL )
 
     if( is.na(CCT) )    return(NULL)
 
-
     if( is.null(reference) )
         {
-        #   make planck spectrum and scale so Y=100
-        planck      = planckSpectra( CCT, wavelength=wave, normalize=FALSE )
-        XYZ         = product( planck, colorSpec::xyz1964.1nm, wavelength=wave )
-        planck      = multiply( planck, 100/XYZ[2] )
-        specnames(planck)   = sprintf( "Planck reference CCT=%g", CCT )
+        #   compute reference, possibly blended, with Y=100
+        reference   = referenceSpectraTM30( CCT, wavelength=wave )
 
-        #   make daylight spectrum and scale so Y=100
-        daylight    = daylightSpectra( CCT, wavelength=wave )
-        XYZ         = product( daylight, colorSpec::xyz1964.1nm, wavelength=wave )
-        daylight    = multiply( daylight, 100/XYZ[2] )
-        specnames(daylight)   = sprintf( "daylight reference CCT=%g", CCT )
-
-        if( CCT <= 4000 )
-            reference   = planck
-        else if( 5000 <= CCT )
-            reference   = daylight
-        else
-            {
-            #   compute weighted average of planck and daylight
-            rho = (5000 - CCT) / (5000 - 4000)
-
-            mat = rho * as.matrix(planck)  +  (1 - rho) * as.matrix(daylight)
-
-            reference   = colorSpec( mat, wavelength=wave, quantity=quantity(planck), specnames="blended reference" )
-            }
+        if( is.null(reference) )    return(NULL)
         }
     else
         {
@@ -305,6 +283,67 @@ computeTM30.colorSpec <-function( x, reference=NULL )
 
     return(out)
     }
+
+referenceSpectraTM30    <- function( temperature, wavelength=380:780, ... )
+    {
+    ok  = is.numeric(temperature)  &&  0<length(temperature)  &&  all( 0 < temperature )
+    if( ! ok )
+        {
+        log_level( ERROR, "argument temperature is invalid." )
+        return(NULL)
+        }
+    
+    #   allocate matrix to hold values
+    mat = matrix( NA_real_, length(wavelength), length(temperature) )
+    
+    #   allocate character vector for the specnames
+    specnames   = character( length(temperature) )
+
+    for( k in 1:length(temperature) )
+        {
+        CCT = temperature[k]
+        
+        #   make planck spectrum and scale so Y=100, for xyz1964
+        planck      = planckSpectra( CCT, wavelength=wavelength, normalize=FALSE )
+        XYZ         = product( planck, colorSpec::xyz1964.1nm, wavelength=wavelength )
+        planck      = multiply( planck, 100/XYZ[2] )
+
+        #   make daylight spectrum and scale so Y=100, for xyz1964
+        daylight    = daylightSpectra( CCT, wavelength=wavelength, ... )
+        XYZ         = product( daylight, colorSpec::xyz1964.1nm, wavelength=wavelength )
+        daylight    = multiply( daylight, 100/XYZ[2] )
+
+        if( CCT <= 4000 )
+            {
+            reference   = coredata( planck )
+            specname    = specnames( planck )
+            }
+        else if( 5000 <= CCT )
+            {
+            reference   = coredata( daylight )
+            specname    = specnames( daylight )
+            }
+        else
+            {
+            #   compute weighted average of planck and daylight, a blend
+            #   we still have Y=100
+            rho = (5000 - CCT) / (5000 - 4000)
+
+            reference   = rho * coredata(planck)  +  (1 - rho) * coredata(daylight)
+            specname    = sprintf( "blended CCT=%g", CCT )
+            }
+            
+        #   fill the k'th column, and k'th entry
+        mat[ ,k]        = reference
+        specnames[k]    = specname
+        }
+
+    out = colorSpec( mat, wavelength=wavelength, quantity=quantity(planck), specnames=specnames )
+
+    return( out )
+    }
+
+
 
 
 #   returns a vector the same length as delta

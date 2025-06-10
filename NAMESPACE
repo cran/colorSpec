@@ -166,6 +166,7 @@ export(
     lensAbsorbance,
     planckSpectra,
     daylightSpectra,
+    referenceSpectraTM30,    
     illuminantE,
     atmosTransmittance
     )

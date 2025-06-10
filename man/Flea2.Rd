@@ -26,8 +26,7 @@ plot in \bold{Flea2-spectral.png}.
 }
 
 \source{
-% \url{http://www.ptgrey.com/support/downloads/10117}
-\url{https://ptgreycamera.com/product/camera/flir/flea2/firewireb-flea2/fl2-14s3c-c/}
+\url{https://store.imrnasia.com/fl2-14s3c-c/}
 \cr
 }
 
